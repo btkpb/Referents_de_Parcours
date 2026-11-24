@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configuration des e-mails | E2C-MENAET{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="rounded-4 p-4 p-lg-5 mb-4 text-white shadow-sm"
+         style="background: linear-gradient(120deg, #245b91, #5B9BD5);">
+        <h1 class="h3 fw-bold mb-2 text-white">Configuration des e-mails</h1>
+        <p class="mb-0 text-white">
+            Paramétrage du nom affiché lors de l'envoi des convocations aux candidats.
+        </p>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">Identité de l'expéditeur</h2>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Adresse e-mail d'expédition</label>
+                <input type="email" class="form-control" value="{{ adresseExpediteur }}" readonly>
+                <div class="form-text">
+                    Cette adresse Yahoo est conservée. Elle ne peut pas être modifiée depuis cette page.
+                </div>
+            </div>
+
+            <form method="post" action="{{ path('admin_configuration_email_save') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('configuration_email') }}">
+
+                <div class="mb-3">
+                    <label for="nom_expediteur" class="form-label fw-semibold">
+                        Nom affiché de l'expéditeur
+                    </label>
+                    <input
+                        type="text"
+                        id="nom_expediteur"
+                        name="nom_expediteur"
+                        class="form-control form-control-lg"
+                        value="{{ nomExpediteur }}"
+                        maxlength="120"
+                        required
+                    >
+                    <div class="form-text">
+                        Exemple : Admin Référent de Parcours Plateforme.
+                        Maximum 120 caractères.
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        Enregistrer le nom
+                    </button>
+                    <a href="{{ path('dashboard') }}" class="btn btn-outline-secondary">
+                        Retour au tableau de bord
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info rounded-3">
+        <strong>Paramètres protégés :</strong>
+        cette page modifie uniquement le nom affiché de l'expéditeur.
+        L'adresse Yahoo, le mot de passe, le serveur SMTP, le port et le transport
+        ne sont pas modifiés. L'enregistrement de ce paramètre ne déclenche aucun envoi d'e-mail.
+    </div>
+</div>
+{% endblock %}

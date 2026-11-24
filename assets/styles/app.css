@@ -1,0 +1,44 @@
+﻿:root{--navy:#071a3a;--gold:#f4b400}body{background:#f5f7fb}.bg-navy{background:var(--navy)!important}.navbar-brand span{color:var(--gold)}.metric{border-left:5px solid var(--gold)}.card{border-radius:16px}.btn-primary{background:var(--navy);border-color:var(--navy)}.btn-primary:hover{background:#102d60}.display-1{color:#198754}.table th{white-space:nowrap}footer{font-size:.9rem}@media(max-width:768px){h1{font-size:1.7rem}}
+
+/* E2C_THEME_BLEU_CLAIR_DEBUT */
+html, body {
+    background-color: #EAF4FF !important;
+    color: #24364B !important;
+    min-height: 100%;
+}
+
+body {
+    background-image: none !important;
+}
+
+main, .main-content, .content-wrapper, .page-content,
+.daip-main, .daip-content, .container, .container-fluid {
+    background-color: transparent !important;
+}
+
+.card, .modal-content, .dropdown-menu, .offcanvas {
+    background-color: #FFFFFF !important;
+    color: #24364B !important;
+}
+
+.navbar, .navbar-light {
+    background-color: #FFFFFF !important;
+}
+
+.table {
+    --bs-table-bg: #FFFFFF;
+    --bs-table-color: #24364B;
+}
+
+.form-control, .form-select {
+    background-color: #FFFFFF !important;
+    color: #24364B !important;
+}
+
+.btn-primary {
+    background-color: #145DA0 !important;
+    border-color: #145DA0 !important;
+    color: #FFFFFF !important;
+}
+/* E2C_THEME_BLEU_CLAIR_FIN */
+

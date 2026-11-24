@@ -1,0 +1,307 @@
+﻿<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use Doctrine\DBAL\Connection;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/admin/campagnes', name: 'admin_campagnes_')]
+class CampagneAdminController extends AbstractController
+{
+    private function verifierAcces(): void
+    {
+        $this->denyAccessUnlessGranted('ROLE_GESTIONNAIRE');
+    }
+
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        $campagnes = $db->fetchAllAssociative(
+            "SELECT ca.*,
+                (SELECT COUNT(*) FROM candidat c
+                 WHERE c.campagne_id = ca.id) AS nombre_candidats,
+                (SELECT COALESCE(SUM(q.quota), 0)
+                 FROM quota_metier q
+                 WHERE q.campagne_id = ca.id) AS total_quotas
+             FROM campagne ca
+             ORDER BY ca.active DESC, ca.dateDebut DESC, ca.id DESC"
+        );
+
+        return $this->render('admin/campagnes/index.html.twig', [
+            'campagnes' => $campagnes,
+        ]);
+    }
+
+    #[Route('/nouvelle', name: 'new', methods: ['GET', 'POST'])]
+    public function nouvelle(Request $request, Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        return $this->formulaire(null, $request, $db);
+    }
+
+    #[Route('/{id}/modifier', name: 'edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function modifier(int $id, Request $request, Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        $campagne = $db->fetchAssociative(
+            'SELECT * FROM campagne WHERE id = :id',
+            ['id' => $id]
+        );
+
+        if (!$campagne) {
+            throw $this->createNotFoundException('Campagne introuvable.');
+        }
+
+        return $this->formulaire($campagne, $request, $db);
+    }
+
+    private function formulaire(
+        ?array $campagne,
+        Request $request,
+        Connection $db
+    ): Response {
+        $edition = $campagne !== null;
+        $id = $edition ? (int) $campagne['id'] : null;
+
+        $campagne ??= [
+            'nom' => '',
+            'dateDebut' => '',
+            'dateFin' => '',
+            'ageMin' => 12,
+            'ageMax' => 35,
+            'quotaGlobal' => '',
+        ];
+
+        if ($request->isMethod('POST')) {
+            $campagne['nom'] = trim((string) $request->request->get('nom', ''));
+            $campagne['dateDebut'] = trim((string) $request->request->get('dateDebut', ''));
+            $campagne['dateFin'] = trim((string) $request->request->get('dateFin', ''));
+            $campagne['ageMin'] = trim((string) $request->request->get('ageMin', ''));
+            $campagne['ageMax'] = trim((string) $request->request->get('ageMax', ''));
+            $campagne['quotaGlobal'] = trim((string) $request->request->get('quotaGlobal', ''));
+
+            $tokenValide = $this->isCsrfTokenValid(
+                'campagne_form',
+                (string) $request->request->get('_token', '')
+            );
+
+            $debut = \DateTimeImmutable::createFromFormat('!Y-m-d', $campagne['dateDebut']);
+            $fin = \DateTimeImmutable::createFromFormat('!Y-m-d', $campagne['dateFin']);
+
+            $ageMinValide = filter_var($campagne['ageMin'], FILTER_VALIDATE_INT);
+            $ageMaxValide = filter_var($campagne['ageMax'], FILTER_VALIDATE_INT);
+
+            $quota = $campagne['quotaGlobal'] === ''
+                ? null
+                : filter_var($campagne['quotaGlobal'], FILTER_VALIDATE_INT);
+
+            if (!$tokenValide) {
+                $this->addFlash('error', 'Jeton de sÃ©curitÃ© invalide.');
+            } elseif ($campagne['nom'] === '' || mb_strlen($campagne['nom']) > 160) {
+                $this->addFlash('error', 'Le nom est obligatoire (160 caractÃ¨res maximum).');
+            } elseif (!$debut || !$fin || $debut->format('Y-m-d') !== $campagne['dateDebut']
+                || $fin->format('Y-m-d') !== $campagne['dateFin']) {
+                $this->addFlash('error', 'Veuillez renseigner des dates valides.');
+            } elseif ($fin < $debut) {
+                $this->addFlash('error', 'La date de fin doit Ãªtre postÃ©rieure Ã  la date de dÃ©but.');
+            } elseif ($ageMinValide === false || $ageMaxValide === false
+                || $ageMinValide < 1 || $ageMaxValide < $ageMinValide) {
+                $this->addFlash('error', 'La tranche dâ€™Ã¢ge renseignÃ©e est invalide.');
+            } elseif ($campagne['quotaGlobal'] !== ''
+                && ($quota === false || $quota < 0)) {
+                $this->addFlash('error', 'Le quota global doit Ãªtre un entier positif ou nul.');
+            } else {
+                $donnees = [
+                    'nom' => $campagne['nom'],
+                    'dateDebut' => $campagne['dateDebut'],
+                    'dateFin' => $campagne['dateFin'],
+                    'ageMin' => (int) $ageMinValide,
+                    'ageMax' => (int) $ageMaxValide,
+                    'quotaGlobal' => $quota,
+                ];
+
+                if ($edition) {
+                    $db->update('campagne', $donnees, ['id' => $id]);
+                    $this->addFlash('success', 'Campagne modifiÃ©e. Son statut dâ€™activation a Ã©tÃ© conservÃ©.');
+                } else {
+                    // Une campagne nouvellement crÃ©Ã©e reste inactive.
+                    $db->insert('campagne', $donnees + ['active' => 0]);
+                    $this->addFlash('success', 'Nouvelle campagne crÃ©Ã©e. Activez-la lorsque vous serez prÃªt.');
+                }
+
+                return $this->redirectToRoute('admin_campagnes_index');
+            }
+        }
+
+        if ($edition) {
+            foreach (['dateDebut', 'dateFin'] as $champ) {
+                if ($campagne[$champ] instanceof \DateTimeInterface) {
+                    $campagne[$champ] = $campagne[$champ]->format('Y-m-d');
+                } elseif ($campagne[$champ] !== '') {
+                    $campagne[$champ] = substr((string) $campagne[$champ], 0, 10);
+                }
+            }
+        }
+
+        return $this->render('admin/campagnes/form.html.twig', [
+            'campagne' => $campagne,
+            'edition' => $edition,
+        ]);
+    }
+
+    #[Route('/{id}/activer', name: 'activate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function activer(int $id, Request $request, Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        if (!$this->isCsrfTokenValid(
+            'activer_campagne_' . $id,
+            (string) $request->request->get('_token', '')
+        )) {
+            $this->addFlash('error', 'Jeton de sÃ©curitÃ© invalide.');
+            return $this->redirectToRoute('admin_campagnes_index');
+        }
+
+        $campagne = $db->fetchAssociative(
+            'SELECT id, nom FROM campagne WHERE id = :id',
+            ['id' => $id]
+        );
+
+        if (!$campagne) {
+            throw $this->createNotFoundException('Campagne introuvable.');
+        }
+
+        $db->transactional(function (Connection $db) use ($id): void {
+            $db->executeStatement('UPDATE campagne SET active = 0');
+            $db->update('campagne', ['active' => 1], ['id' => $id]);
+        });
+
+        $this->addFlash('success', 'La campagne Â« ' . $campagne['nom'] . ' Â» est maintenant active.');
+        return $this->redirectToRoute('admin_campagnes_index');
+    }
+
+    #[Route('/{id}/cloturer', name: 'close', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function cloturer(int $id, Request $request, Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        if (!$this->isCsrfTokenValid(
+            'cloturer_campagne_' . $id,
+            (string) $request->request->get('_token', '')
+        )) {
+            $this->addFlash('error', 'Jeton de sÃ©curitÃ© invalide.');
+            return $this->redirectToRoute('admin_campagnes_index');
+        }
+
+        $nombre = $db->executeStatement(
+            'UPDATE campagne SET active = 0 WHERE id = :id',
+            ['id' => $id]
+        );
+
+        $this->addFlash(
+            $nombre ? 'success' : 'error',
+            $nombre
+                ? 'Campagne clÃ´turÃ©e. Son historique et ses candidatures sont conservÃ©s.'
+                : 'Campagne introuvable.'
+        );
+
+        return $this->redirectToRoute('admin_campagnes_index');
+    }
+
+    #[Route('/{id}/quotas', name: 'quotas', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function quotas(int $id, Request $request, Connection $db): Response
+    {
+        $this->verifierAcces();
+
+        $campagne = $db->fetchAssociative(
+            'SELECT * FROM campagne WHERE id = :id',
+            ['id' => $id]
+        );
+
+        if (!$campagne) {
+            throw $this->createNotFoundException('Campagne introuvable.');
+        }
+
+        $metiers = $db->fetchAllAssociative(
+            'SELECT m.id, m.nom, m.secteur, m.actif,
+                    COALESCE(q.quota, 0) AS quota
+             FROM metier_catalogue m
+             LEFT JOIN quota_metier q
+                ON q.metier_id = m.id AND q.campagne_id = :campagne
+             ORDER BY m.actif DESC, m.nom ASC',
+            ['campagne' => $id]
+        );
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid(
+                'quotas_campagne_' . $id,
+                (string) $request->request->get('_token', '')
+            )) {
+                $this->addFlash('error', 'Jeton de sÃ©curitÃ© invalide.');
+                return $this->redirectToRoute('admin_campagnes_quotas', ['id' => $id]);
+            }
+
+            $valeurs = $request->request->all('quotas');
+            $total = 0;
+            $aEnregistrer = [];
+
+            foreach ($metiers as $metier) {
+                $metierId = (int) $metier['id'];
+                $valeur = (string) ($valeurs[$metierId] ?? '0');
+
+                if (!preg_match('/^\d+$/', $valeur)) {
+                    $this->addFlash('error', 'Chaque quota doit Ãªtre un nombre entier positif ou nul.');
+                    return $this->redirectToRoute('admin_campagnes_quotas', ['id' => $id]);
+                }
+
+                $quota = (int) $valeur;
+                $total += $quota;
+                $aEnregistrer[] = ['metier_id' => $metierId, 'quota' => $quota];
+            }
+
+            if ($campagne['quotaGlobal'] !== null && $total > (int) $campagne['quotaGlobal']) {
+                $this->addFlash(
+                    'error',
+                    'Le total des quotas par mÃ©tier (' . $total . ') dÃ©passe le quota global (' . $campagne['quotaGlobal'] . ').'
+                );
+                return $this->redirectToRoute('admin_campagnes_quotas', ['id' => $id]);
+            }
+
+            $db->transactional(function (Connection $db) use ($id, $aEnregistrer): void {
+                foreach ($aEnregistrer as $ligne) {
+                    $existant = $db->fetchOne(
+                        'SELECT id FROM quota_metier WHERE campagne_id = :campagne AND metier_id = :metier',
+                        ['campagne' => $id, 'metier' => $ligne['metier_id']]
+                    );
+
+                    if ($existant) {
+                        $db->update('quota_metier', ['quota' => $ligne['quota']], ['id' => $existant]);
+                    } else {
+                        $db->insert('quota_metier', [
+                            'campagne_id' => $id,
+                            'metier_id' => $ligne['metier_id'],
+                            'quota' => $ligne['quota'],
+                        ]);
+                    }
+                }
+            });
+
+            $this->addFlash('success', 'Les quotas par mÃ©tier ont Ã©tÃ© enregistrÃ©s.');
+            return $this->redirectToRoute('admin_campagnes_quotas', ['id' => $id]);
+        }
+
+        return $this->render('admin/campagnes/quotas.html.twig', [
+            'campagne' => $campagne,
+            'metiers' => $metiers,
+        ]);
+    }
+}

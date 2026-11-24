@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('input[type=file]').forEach(i=>i.addEventListener('change',()=>{if(i.files[0]&&i.files[0].size>10*1024*1024){alert('Fichier trop volumineux : maximum 10 Mo.');i.value='';}}));});

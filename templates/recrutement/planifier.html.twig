@@ -1,0 +1,446 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planification des entretiens physiques | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .planif-page {
+        --planif-blue: #245b91;
+        --planif-sky: #5B9BD5;
+        color: #26384a;
+        padding-bottom: 35px;
+    }
+
+    .planif-header {
+        background: linear-gradient(120deg, #174675, #245b91 55%, #5B9BD5);
+        color: #fff;
+        border-radius: 16px;
+        padding: 27px 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 22px rgba(36, 91, 145, .18);
+    }
+
+    .planif-header h1 {
+        color: #fff !important;
+        font-size: 1.65rem;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .planif-header p {
+        color: rgba(255,255,255,.85);
+        margin: 0;
+    }
+
+    .planif-header .btn {
+        font-weight: 600;
+        border-radius: 9px;
+        padding: 10px 16px;
+    }
+
+    .planif-card {
+        background: #fff;
+        border: 1px solid #e6edf4;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(30, 60, 90, .055);
+        margin-bottom: 22px;
+        overflow: hidden;
+    }
+
+    .planif-card-header {
+        padding: 17px 21px;
+        border-bottom: 1px solid #edf1f5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .planif-card-header .step {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #eaf3fc;
+        color: #245b91;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .planif-card-header h2 {
+        font-size: 1.02rem;
+        font-weight: 750;
+        margin: 0;
+        color: #203b57;
+    }
+
+    .planif-card-body {
+        padding: 22px;
+    }
+
+    .planif-page .form-label {
+        color: #344b62;
+        font-weight: 650;
+        margin-bottom: 8px;
+    }
+
+    .planif-page .form-control,
+    .planif-page .form-select {
+        min-height: 46px;
+        border: 1px solid #d9e2ec;
+        border-radius: 9px;
+        padding: 10px 13px;
+    }
+
+    .planif-page .form-control:focus,
+    .planif-page .form-select:focus {
+        border-color: #5B9BD5;
+        box-shadow: 0 0 0 .2rem rgba(91,155,213,.15);
+    }
+
+    .planif-help {
+        color: #718096;
+        font-size: .84rem;
+        margin-top: 7px;
+    }
+
+    .planif-info {
+        background: #edf6ff;
+        border: 1px solid #cfe5fa;
+        border-radius: 11px;
+        padding: 15px 18px;
+        color: #24527b;
+        margin-bottom: 22px;
+    }
+
+    .jury-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+        gap: 12px;
+    }
+
+    .jury-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        min-height: 78px;
+        border: 1px solid #dfe7ef;
+        border-radius: 11px;
+        cursor: pointer;
+        transition: .18s ease;
+        background: #fff;
+    }
+
+    .jury-option:hover {
+        border-color: #5B9BD5;
+        background: #f6faff;
+    }
+
+    .jury-option:has(input:checked) {
+        border-color: #377db8;
+        background: #edf6ff;
+        box-shadow: 0 0 0 1px #377db8 inset;
+    }
+
+    .jury-option input {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: #245b91;
+    }
+
+    .jury-option strong {
+        color: #2b435b;
+        display: block;
+        font-size: .94rem;
+    }
+
+    .jury-option small {
+        display: block;
+        color: #718096;
+        overflow-wrap: anywhere;
+        margin-top: 3px;
+    }
+
+    .planif-actions {
+        border-top: 1px solid #edf1f5;
+        padding: 19px 22px;
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        background: #fbfcfe;
+    }
+
+    .planif-actions .btn {
+        min-height: 44px;
+        border-radius: 9px;
+        padding: 10px 19px;
+        font-weight: 650;
+    }
+
+    .planif-primary {
+        background: #245b91;
+        border-color: #245b91;
+        color: #fff;
+    }
+
+    .planif-primary:hover {
+        background: #174675;
+        border-color: #174675;
+        color: #fff;
+    }
+
+    .planif-empty {
+        padding: 28px;
+        text-align: center;
+        background: #fffaf0;
+        border: 1px solid #f4dfad;
+        border-radius: 12px;
+        color: #795c20;
+    }
+
+    @media(max-width: 576px) {
+        .planif-header {
+            padding: 21px 18px;
+        }
+        .planif-header h1 {
+            font-size: 1.3rem;
+        }
+        .planif-card-body {
+            padding: 17px;
+        }
+        .planif-actions {
+            padding: 16px;
+        }
+        .planif-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid planif-page">
+
+    <div class="planif-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="small text-uppercase fw-semibold mb-2" style="letter-spacing:1.3px;color:#d9eafa;">
+                    Recrutement · E2C-MENAET
+                </div>
+                <h1>Planification des entretiens physiques</h1>
+                <p>Organisez les convocations et affectez les membres du jury aux candidats admissibles.</p>
+            </div>
+
+            <a href="{{ path('recruitment_interviews') }}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-2"></i>Retour aux entretiens
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
+
+    <div class="planif-card">
+        <div class="planif-card-header">
+            <span class="step">1</span>
+            <div>
+                <h2>Campagne de recrutement</h2>
+                <div class="small text-muted">Sélectionnez la campagne concernée par les entretiens.</div>
+            </div>
+        </div>
+
+        <div class="planif-card-body">
+            <form method="get" action="{{ path('recruitment_planifier') }}">
+                <label for="campagne" class="form-label">Campagne active <span class="text-danger">*</span></label>
+                <div class="row g-2">
+                    <div class="col-lg-9">
+                        <select name="campagne" id="campagne" class="form-select" required>
+                            <option value="">-- Choisir une campagne --</option>
+                            {% for c in campagnes %}
+                                <option value="{{ c.id }}"
+                                    {{ campagneSelectionnee and campagneSelectionnee.id == c.id ? 'selected' : '' }}>
+                                    {{ c.nom }} — {{ c.ageMin ?? 12 }} à {{ c.ageMax ?? 35 }} ans
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <button class="btn btn-outline-primary w-100" type="submit" style="min-height:46px;">
+                            <i class="bi bi-search me-2"></i>Afficher les candidats
+                        </button>
+                    </div>
+                </div>
+
+                <div class="planif-help">
+                    Seules les campagnes actuellement actives peuvent être sélectionnées.
+                </div>
+
+                {% if campagnes is empty %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Aucune campagne active n'est disponible.
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if campagneSelectionnee %}
+        <div class="planif-info">
+            <div class="d-flex align-items-start gap-3">
+                <i class="bi bi-info-circle-fill fs-4"></i>
+                <div>
+                    <strong>Campagne sélectionnée : {{ campagneSelectionnee.nom }}</strong>
+                    <div class="small mt-1">
+                        Les candidats affichés satisfont aux critères d'âge, de nationalité et de diplôme configurés pour cette campagne.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if candidatsEligibles is empty %}
+            <div class="planif-empty">
+                <i class="bi bi-people fs-2 d-block mb-2"></i>
+                <strong>Aucun candidat admissible disponible</strong>
+                <div class="small mt-1">Vérifiez les inscriptions et les critères d'éligibilité de cette campagne.</div>
+            </div>
+        {% else %}
+
+            <form method="post" action="{{ path('recruitment_planifier') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('planifier_entretien') }}">
+                <input type="hidden" name="campagne_id" value="{{ campagneSelectionnee.id }}">
+
+                <div class="planif-card">
+                    <div class="planif-card-header">
+                        <span class="step">2</span>
+                        <div>
+                            <h2>Choix du candidat et de l'entretien</h2>
+                            <div class="small text-muted">Définissez le candidat, la date, l'heure et le lieu du rendez-vous.</div>
+                        </div>
+                    </div>
+
+                    <div class="planif-card-body">
+                        <div class="mb-4">
+                            <label for="candidat_id" class="form-label">Candidat admissible <span class="text-danger">*</span></label>
+                            <select name="candidat_id" id="candidat_id" class="form-select" required>
+                                <option value="">-- Sélectionner un candidat --</option>
+                                {% for c in candidatsEligibles %}
+                                    <option value="{{ c.id }}">
+                                        {{ c.numero }} — {{ c.nom }} {{ c.prenoms }} — {{ c.metier }} ({{ c.age }} ans)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="planif-help">
+                                La liste contient uniquement les candidats déclarés éligibles pour la campagne sélectionnée.
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="dateHeure" class="form-label">Date et heure de l'entretien <span class="text-danger">*</span></label>
+                                <input type="datetime-local"
+                                       name="dateHeure"
+                                       id="dateHeure"
+                                       class="form-control"
+                                       min="{{ 'now'|date('Y-m-d\\TH:i') }}"
+                                       required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="lieu" class="form-label">Lieu de l'entretien <span class="text-danger">*</span></label>
+                                <input type="text"
+                                       name="lieu"
+                                       id="lieu"
+                                       class="form-control"
+                                       maxlength="180"
+                                       placeholder="Ex. : Centre de formation, salle 2"
+                                       required>
+                                <div class="planif-help">180 caractères maximum.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planif-card">
+                    <div class="planif-card-header">
+                        <span class="step">3</span>
+                        <div>
+                            <h2>Affectation des membres du jury</h2>
+                            <div class="small text-muted">Sélectionnez les personnes chargées de conduire l'entretien physique.</div>
+                        </div>
+                    </div>
+
+                    <div class="planif-card-body">
+                        {% if jurys is empty %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Aucun compte jury actif n'est disponible. Activez ou créez d'abord un compte Jury.
+                            </div>
+                        {% else %}
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <span class="small text-muted">
+                                    <i class="bi bi-person-check me-1"></i>
+                                    {{ jurys|length }} membre(s) du jury disponible(s)
+                                </span>
+                                <span class="badge text-bg-light border">Au moins un jury obligatoire</span>
+                            </div>
+
+                            <div class="jury-grid">
+                                {% for jury in jurys %}
+                                    <label class="jury-option">
+                                        <input type="checkbox"
+                                               name="jurys[]"
+                                               value="{{ jury.id }}"
+                                               class="form-check-input">
+                                        <span>
+                                            <strong>{{ jury.prenoms }} {{ jury.nom }}</strong>
+                                            <small>{{ jury.email }}</small>
+                                        </span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+
+                            <div class="planif-help mt-3">
+                                Vous pouvez affecter plusieurs membres du jury au même entretien.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="planif-actions">
+                        <a href="{{ path('recruitment_interviews') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Annuler
+                        </a>
+                        <button type="submit"
+                                class="btn planif-primary"
+                                {% if jurys is empty %}disabled{% endif %}>
+                            <i class="bi bi-calendar2-check me-2"></i>Enregistrer la planification
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+    {% else %}
+        <div class="planif-empty">
+            <i class="bi bi-calendar2-week fs-2 d-block mb-2"></i>
+            <strong>Commencez par sélectionner une campagne</strong>
+            <div class="small mt-1">Les candidats admissibles seront affichés après validation de votre choix.</div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

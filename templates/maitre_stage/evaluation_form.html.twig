@@ -1,0 +1,371 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle fiche de suivi en entreprise{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Fiche de suivi en entreprise</h1>
+            <p class="text-muted mb-0">
+                Évaluation de l'apprenti par le Maître de stage / Tuteur
+            </p>
+        </div>
+        <a href="{{ path('maitre_stage_index') }}" class="btn btn-outline-secondary">
+            Retour à mon espace
+        </a>
+    </div>
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post" id="fiche-entreprise">
+        <input type="hidden" name="_token"
+               value="{{ csrf_token('fiche_entreprise_' ~ candidat.id) }}">
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                ** FICHE DE SUIVI EN ENTREPRISE **
+            </div>
+            <div class="card-body">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Intitulé du projet</label>
+                        <input class="form-control"
+                               name="fiche[intituleProjet]"
+                               value="{{ donnees.intituleProjet|default(evaluation.intituleProjet|default('')) }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Nom et prénom du Référent</label>
+                        <input class="form-control"
+                               name="fiche[nomReferent]"
+                               value="{{ donnees.nomReferent|default(evaluation.nomReferent|default('')) }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Période du suivi — début</label>
+                        <input type="date" class="form-control"
+                               name="fiche[periodeSuiviDebut]"
+                               value="{{ donnees.periodeSuiviDebut|default(evaluation.periodeSuiviDebut ? evaluation.periodeSuiviDebut|date('Y-m-d') : '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Période du suivi — fin</label>
+                        <input type="date" class="form-control"
+                               name="fiche[periodeSuiviFin]"
+                               value="{{ donnees.periodeSuiviFin|default(evaluation.periodeSuiviFin ? evaluation.periodeSuiviFin|date('Y-m-d') : '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Date du suivi</label>
+                        <input type="date" required class="form-control"
+                               name="fiche[dateSuivi]"
+                               value="{{ donnees.dateSuivi|default(evaluation.dateSuivi|date('Y-m-d')) }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">APPRENTI / STAGIAIRE</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nom</label>
+                        <input class="form-control" readonly value="{{ candidat.nom }}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Prénoms</label>
+                        <input class="form-control" readonly value="{{ candidat.prenoms }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">N° de téléphone</label>
+                        <input class="form-control" readonly value="{{ candidat.telephone|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Métier</label>
+                        <input class="form-control" readonly value="{{ candidat.metier }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">FORMATION THÉORIQUE</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Nom du centre</label>
+                        <input class="form-control" name="fiche[nomCentre]"
+                               value="{{ donnees.nomCentre|default(evaluation.nomCentre|default('')) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nom du formateur</label>
+                        <input class="form-control" name="fiche[nomFormateur]"
+                               value="{{ donnees.nomFormateur|default(evaluation.nomFormateur|default('')) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">N° de téléphone du formateur</label>
+                        <input class="form-control" name="fiche[telephoneFormateur]"
+                               value="{{ donnees.telephoneFormateur|default(evaluation.telephoneFormateur|default('')) }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">ENTREPRISE</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nom de l'entreprise</label>
+                        <input class="form-control" name="fiche[nomEntreprise]"
+                               value="{{ donnees.nomEntreprise|default(evaluation.nomEntreprise|default('')) }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nom du responsable</label>
+                        <input class="form-control" name="fiche[nomResponsable]"
+                               value="{{ donnees.nomResponsable|default(evaluation.nomResponsable|default('')) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nom du tuteur</label>
+                        <input class="form-control" name="fiche[nomTuteur]"
+                               value="{{ donnees.nomTuteur|default(evaluation.nomTuteur|default('')) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fonction</label>
+                        <input class="form-control" name="fiche[fonctionTuteur]"
+                               value="{{ donnees.fonctionTuteur|default(evaluation.fonctionTuteur|default('')) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">N° de téléphone</label>
+                        <input class="form-control" name="fiche[telephoneTuteur]"
+                               value="{{ donnees.telephoneTuteur|default(evaluation.telephoneTuteur|default('')) }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">
+                I. ÉVALUATION DES COMPÉTENCES TECHNIQUES
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    Les intitulés doivent être repris fidèlement du Référentiel
+                    de Formation (RF) correspondant au métier de l'apprenti.
+                    Ne saisissez aucune compétence qui ne figure pas dans ce RF.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="min-width:100px">Référence RF</th>
+                                <th style="min-width:250px">Énoncé des compétences</th>
+                                <th style="min-width:240px">Niveau</th>
+                                <th style="min-width:220px">Observations du tuteur</th>
+                            </tr>
+                        </thead>
+                        <tbody id="competences-body">
+                        {% set competencesForm = donnees.competences|default([]) %}
+                        {% set nombreLignes = competencesForm|length %}
+                        {% if nombreLignes < 5 %}
+                            {% set nombreLignes = 5 %}
+                        {% endif %}
+                        {% for i in 0..(nombreLignes - 1) %}
+                            <tr>
+                                <td>
+                                    <input class="form-control"
+                                           name="fiche[competences][{{ i }}][referenceRf]"
+                                           value="{{ donnees.competences[i].referenceRf|default('') }}">
+                                </td>
+                                <td>
+                                    <textarea class="form-control" rows="2"
+                                              name="fiche[competences][{{ i }}][intitule]">{{ donnees.competences[i].intitule|default('') }}</textarea>
+                                </td>
+                                <td>
+                                    <select class="form-select"
+                                            name="fiche[competences][{{ i }}][niveau]">
+                                        <option value="">Choisir un niveau</option>
+                                        <option value="MAITRISE"
+                                            {% if donnees.competences[i].niveau|default('') == 'MAITRISE' %}selected{% endif %}>
+                                            Maîtrisé — autonomie totale
+                                        </option>
+                                        <option value="AUTONOMIE_PARTIELLE"
+                                            {% if donnees.competences[i].niveau|default('') == 'AUTONOMIE_PARTIELLE' %}selected{% endif %}>
+                                            Autonomie partielle — avec assistance
+                                        </option>
+                                        <option value="DEPENDANCE_TOTALE"
+                                            {% if donnees.competences[i].niveau|default('') == 'DEPENDANCE_TOTALE' %}selected{% endif %}>
+                                            Dépendance totale — non maîtrisé
+                                        </option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <textarea class="form-control" rows="2"
+                                              name="fiche[competences][{{ i }}][observations]">{{ donnees.competences[i].observations|default('') }}</textarea>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <template id="competence-template">
+                    <tr>
+                        <td><input class="form-control" name="fiche[competences][__INDEX__][referenceRf]"></td>
+                        <td><textarea class="form-control" rows="2" name="fiche[competences][__INDEX__][intitule]"></textarea></td>
+                        <td>
+                            <select class="form-select" name="fiche[competences][__INDEX__][niveau]">
+                                <option value="">Choisir un niveau</option>
+                                <option value="MAITRISE">Maîtrisé — autonomie totale</option>
+                                <option value="AUTONOMIE_PARTIELLE">Autonomie partielle — avec assistance</option>
+                                <option value="DEPENDANCE_TOTALE">Dépendance totale — non maîtrisé</option>
+                            </select>
+                        </td>
+                        <td><textarea class="form-control" rows="2" name="fiche[competences][__INDEX__][observations]"></textarea></td>
+                    </tr>
+                </template>
+
+                <button type="button" class="btn btn-outline-primary btn-sm"
+                        id="ajouter-competence">
+                    Ajouter une compétence du RF
+                </button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">
+                II. SUIVI — ÉVALUATION DES COMPÉTENCES COMPORTEMENTALES
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Critères</th>
+                                <th style="min-width:260px">Appréciation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for code, libelle in criteres %}
+                            <tr>
+                                <td>{{ libelle }}</td>
+                                <td>
+                                    <select class="form-select"
+                                            name="fiche[comportement][{{ code }}]">
+                                        <option value="">Non renseigné</option>
+                                        <option value="INSATISFAISANT"
+                                            {% if donnees.comportement[code]|default('') == 'INSATISFAISANT' %}selected{% endif %}>
+                                            Insatisfaisant
+                                        </option>
+                                        <option value="SATISFAISANT"
+                                            {% if donnees.comportement[code]|default('') == 'SATISFAISANT' %}selected{% endif %}>
+                                            Satisfaisant
+                                        </option>
+                                        <option value="TRES_SATISFAISANT"
+                                            {% if donnees.comportement[code]|default('') == 'TRES_SATISFAISANT' %}selected{% endif %}>
+                                            Très satisfaisant
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">APPRÉCIATION GÉNÉRALE</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Points forts de l'apprenti / stagiaire</label>
+                    <textarea class="form-control" rows="3"
+                              name="fiche[pointsForts]">{{ donnees.pointsForts|default('') }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Points à améliorer</label>
+                    <textarea class="form-control" rows="3"
+                              name="fiche[pointsAAmeliorer]">{{ donnees.pointsAAmeliorer|default('') }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Bilan général</label>
+                    <select class="form-select" name="fiche[bilanGeneral]">
+                        <option value="">Choisir une appréciation</option>
+                        <option value="TRES_SATISFAISANT"
+                            {% if donnees.bilanGeneral|default('') == 'TRES_SATISFAISANT' %}selected{% endif %}>
+                            Très satisfaisant
+                        </option>
+                        <option value="SATISFAISANT"
+                            {% if donnees.bilanGeneral|default('') == 'SATISFAISANT' %}selected{% endif %}>
+                            Satisfaisant
+                        </option>
+                        <option value="MOYENNEMENT_SATISFAISANT"
+                            {% if donnees.bilanGeneral|default('') == 'MOYENNEMENT_SATISFAISANT' %}selected{% endif %}>
+                            Moyennement satisfaisant
+                        </option>
+                        <option value="PAS_SATISFAISANT"
+                            {% if donnees.bilanGeneral|default('') == 'PAS_SATISFAISANT' %}selected{% endif %}>
+                            Pas satisfaisant
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Avis du Maître de stage / Tuteur</label>
+                    <textarea class="form-control" rows="3"
+                              name="fiche[avisMaitreStage]">{{ donnees.avisMaitreStage|default('') }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Fait à</label>
+                    <input class="form-control" name="fiche[lieuSignature]"
+                           value="{{ donnees.lieuSignature|default('') }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            Cette opération enregistre un brouillon. La transmission,
+            les signatures du Maître de stage et du Référent, ainsi que
+            l'archivage du document signé seront effectués dans les étapes
+            suivantes du module.
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-5">
+            <button type="submit" class="btn btn-primary">
+                Enregistrer la fiche en brouillon
+            </button>
+            <a href="{{ path('maitre_stage_index') }}"
+               class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const bouton = document.getElementById('ajouter-competence');
+    const corps = document.getElementById('competences-body');
+    const modele = document.getElementById('competence-template');
+
+    if (!bouton || !corps || !modele) {
+        return;
+    }
+
+    bouton.addEventListener('click', function () {
+        const index = corps.querySelectorAll('tr').length;
+        const html = modele.innerHTML.replaceAll('__INDEX__', String(index));
+        corps.insertAdjacentHTML('beforeend', html);
+    });
+});
+</script>
+{% endblock %}

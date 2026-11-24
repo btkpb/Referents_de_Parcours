@@ -1,0 +1,221 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/styles/login.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="login-shell">
+
+    <section class="login-presentation">
+
+        <div class="login-brand">
+            <img
+                src="{{ asset('images/logo DAIP.png') }}"
+                alt="Logo DAIP"
+                class="login-logo"
+            >
+            <div>
+                <span class="brand-small">RÉPUBLIQUE DE CÔTE D'IVOIRE</span>
+                <strong>DAIP · E2C</strong>
+                <span class="brand-subtitle">Formation et insertion professionnelle</span>
+            </div>
+        </div>
+
+        <div class="presentation-content">
+
+            <span class="presentation-tag">
+                PLATEFORME INSTITUTIONNELLE
+            </span>
+
+            <h1>
+                Construire les compétences.
+                <span>Préparer l'avenir.</span>
+            </h1>
+
+            <p class="presentation-description">
+                Bienvenue sur la plateforme de gestion du recrutement,
+                de la formation, de l'apprentissage et de l'insertion
+                professionnelle des bénéficiaires du programme E2C.
+            </p>
+
+            <div class="presentation-features">
+
+                <div class="feature-item">
+                    <span class="feature-number">01</span>
+                    <div>
+                        <strong>Recrutement</strong>
+                        <small>Inscription, sélection et admission des candidats.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-number">02</span>
+                    <div>
+                        <strong>Formation et apprentissage</strong>
+                        <small>Organisation et suivi des parcours professionnels.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-number">03</span>
+                    <div>
+                        <strong>Insertion professionnelle</strong>
+                        <small>Accompagnement vers l'emploi et suivi des bénéficiaires.</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="presentation-footer">
+            <span>COMPÉTENCE</span>
+            <span class="footer-dot"></span>
+            <span>APPRENTISSAGE</span>
+            <span class="footer-dot"></span>
+            <span>INSERTION</span>
+        </div>
+
+    </section>
+
+    <section class="login-form-section">
+
+        <div class="login-form-container">
+
+            <div class="mobile-brand">
+                <img src="{{ asset('images/logo DAIP.png') }}" alt="DAIP">
+                <span>E2C-MENAET</span>
+            </div>
+
+            <div class="form-heading">
+                <span class="form-eyebrow">ESPACE SÉCURISÉ</span>
+                <h2>Bienvenue !</h2>
+                <p>Connectez-vous pour accéder à votre espace de travail.</p>
+            </div>
+
+            {% if error is defined and error %}
+                <div class="login-alert" role="alert">
+                    <strong>Connexion impossible.</strong>
+                    Vérifiez votre adresse e-mail et votre mot de passe.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login') }}" class="login-form">
+
+                <div class="login-field">
+                    <label for="username">Adresse e-mail</label>
+
+                    <div class="input-wrapper">
+                        <span class="input-symbol" aria-hidden="true">@</span>
+
+                        <input
+                            id="username"
+                            name="_username"
+                            type="email"
+                            value="{{ last_username|default('') }}"
+                            placeholder="exemple@domaine.ci"
+                            autocomplete="username"
+                            required
+                            autofocus
+                        >
+                    </div>
+                </div>
+
+                <div class="login-field">
+                    <div class="password-label">
+                        <label for="password">Mot de passe</label>
+                        <a href="{{ path('app_forgot_password_request') }}">
+                            Mot de passe oublié ?
+                        </a>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <span class="input-symbol" aria-hidden="true">●</span>
+
+                        <input
+                            id="password"
+                            name="_password"
+                            type="password"
+                            placeholder="Votre mot de passe"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="togglePassword"
+                            aria-label="Afficher le mot de passe"
+                            aria-pressed="false"
+                        >
+                            Afficher
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('authenticate') }}"
+                >
+
+                <button type="submit" class="login-submit">
+                    <span>Se connecter</span>
+                    <span class="submit-arrow" aria-hidden="true">→</span>
+                </button>
+
+            </form>
+
+            <div class="login-separator">
+                <span>ACCÈS À LA PLATEFORME</span>
+            </div>
+
+            <div class="create-account">
+                <p>Vous ne disposez pas encore d'un compte ?</p>
+
+                <a href="{{ path('public_compte_creer') }}" class="create-account-link">
+                    Créer un compte utilisateur
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
+
+            <div class="login-security-note">
+                <span class="security-icon" aria-hidden="true">✓</span>
+                <span>Votre espace est protégé par une authentification sécurisée.</span>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const password = document.getElementById('password');
+            const toggle = document.getElementById('togglePassword');
+
+            if (password && toggle) {
+                toggle.addEventListener('click', function () {
+                    const visible = password.type === 'password';
+
+                    password.type = visible ? 'text' : 'password';
+                    toggle.textContent = visible ? 'Masquer' : 'Afficher';
+                    toggle.setAttribute('aria-pressed', String(visible));
+                    toggle.setAttribute(
+                        'aria-label',
+                        visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+                    );
+                });
+            }
+        });
+    </script>
+{% endblock %}

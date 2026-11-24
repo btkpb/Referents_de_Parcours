@@ -1,0 +1,34 @@
+﻿/vendor/
+/var/
+/.env
+/.env.*
+!/.env.example
+/public/uploads/
+/public/uploads/temp/
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+
+# Dependances et fichiers generes
+/vendor/
+/var/
+/node_modules/
+/public/build/
+
+# Configuration et secrets
+/.env
+/.env.*
+!/.env.example
+
+# Documents et televersements des candidats
+/public/uploads/
+/*.sql
+/*.sql.gz
+/**/*.sql
+/**/*.sql.gz
+
+# Sauvegardes et fichiers locaux
+*.bak
+*.dump
+*.sqlite

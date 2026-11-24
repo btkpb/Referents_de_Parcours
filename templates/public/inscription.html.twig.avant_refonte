@@ -1,0 +1,90 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription candidat - METFPA{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h3 mb-2">Inscription d'un candidat</h1>
+                    <p class="text-secondary mb-4">
+                        Préparez votre dossier de candidature.
+                    </p>
+
+                    <div class="alert alert-info">
+                        Cette maquette doit être reliée au formulaire Symfony
+                        et aux règles de la campagne de recrutement.
+                    </div>
+
+                    <form method="post" action="#">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nom</label>
+                                <input
+                                    class="form-control"
+                                    name="nom"
+                                    autocomplete="family-name"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Prénoms</label>
+                                <input
+                                    class="form-control"
+                                    name="prenoms"
+                                    autocomplete="given-name"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de naissance</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    name="date_naissance"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Téléphone</label>
+                                <input
+                                    type="tel"
+                                    class="form-control"
+                                    name="telephone"
+                                    required
+                                >
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Lieu de résidence</label>
+                                <input class="form-control" name="residence" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Métier souhaité</label>
+                                <select class="form-select" name="metier" required>
+                                    <option value="">Choisir un métier</option>
+                                    <option>Maçon</option>
+                                    <option>Menuisier-coffreur</option>
+                                    <option>Peintre</option>
+                                    <option>Carreleur</option>
+                                    <option>Staffeur-plaquiste</option>
+                                    <option>Ferrailleur</option>
+                                    <option>Ferronnier</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary mt-4"
+                            onclick="alert('Ce formulaire de démonstration doit être relié au traitement Symfony avant utilisation.')"
+                        >
+                            Vérifier le formulaire
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

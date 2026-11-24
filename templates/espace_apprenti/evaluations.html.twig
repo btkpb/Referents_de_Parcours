@@ -1,0 +1,463 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes évaluations - E2C-MENAET{% endblock %}
+
+{% block body %}
+
+<style>
+.e2c-evaluations {
+    --e2c-blue: #174f85;
+    --e2c-dark: #123657;
+    --e2c-light: #edf5fc;
+    --e2c-border: #e2eaf2;
+    color: #263b50;
+    padding-bottom: 35px;
+}
+
+.e2c-evaluations .hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(120deg, #123657, #1766a5);
+    border-radius: 20px;
+    padding: 34px;
+    color: #fff;
+    margin-bottom: 25px;
+    box-shadow: 0 12px 28px rgba(18, 54, 87, .16);
+}
+
+.e2c-evaluations .hero::after {
+    content: "";
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    border: 35px solid rgba(255,255,255,.07);
+    border-radius: 50%;
+    right: -55px;
+    top: -90px;
+}
+
+.e2c-evaluations .hero h1 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.e2c-evaluations .hero p {
+    color: rgba(255,255,255,.83);
+    margin-bottom: 0;
+    max-width: 650px;
+}
+
+.e2c-evaluations .hero-label {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+    border-radius: 30px;
+    background: rgba(255,255,255,.14);
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.e2c-evaluations .summary-card {
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--e2c-border);
+    border-radius: 15px;
+    padding: 21px;
+    box-shadow: 0 5px 18px rgba(25, 55, 85, .045);
+}
+
+.e2c-evaluations .summary-title {
+    color: #6c7e90;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.e2c-evaluations .summary-value {
+    color: var(--e2c-dark);
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.e2c-evaluations .summary-icon {
+    width: 43px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--e2c-light);
+    color: var(--e2c-blue);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.e2c-evaluations .section-card {
+    background: #fff;
+    border: 1px solid var(--e2c-border);
+    border-radius: 17px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(25, 55, 85, .045);
+}
+
+.e2c-evaluations .section-heading {
+    padding: 21px 24px;
+    border-bottom: 1px solid var(--e2c-border);
+}
+
+.e2c-evaluations .section-heading h2 {
+    font-size: 1.08rem;
+    font-weight: 750;
+    color: var(--e2c-dark);
+    margin: 0 0 5px;
+}
+
+.e2c-evaluations .section-heading p {
+    font-size: .84rem;
+    color: #75869a;
+    margin: 0;
+}
+
+.e2c-evaluations .table {
+    margin-bottom: 0;
+}
+
+.e2c-evaluations .table thead th {
+    background: #f5f8fc;
+    color: #52677d;
+    font-size: .76rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--e2c-border);
+    white-space: nowrap;
+}
+
+.e2c-evaluations .table tbody td {
+    padding: 17px 18px;
+    vertical-align: middle;
+    border-color: #edf1f5;
+    color: #344b61;
+    font-size: .9rem;
+}
+
+.e2c-evaluations .table tbody tr:hover {
+    background: #f8fbfe;
+}
+
+.e2c-evaluations .score {
+    color: var(--e2c-blue);
+    font-size: 1.05rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.e2c-evaluations .score small {
+    color: #8795a5;
+    font-size: .76rem;
+    font-weight: 500;
+}
+
+.e2c-evaluations .status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 11px;
+    border-radius: 30px;
+    font-size: .76rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.e2c-evaluations .status-favorable {
+    background: #e6f5ed;
+    color: #187344;
+}
+
+.e2c-evaluations .status-defavorable {
+    background: #fcebea;
+    color: #ae3535;
+}
+
+.e2c-evaluations .status-attente {
+    background: #fff4d9;
+    color: #91630b;
+}
+
+.e2c-evaluations .observation {
+    min-width: 190px;
+    max-width: 330px;
+    color: #65788b;
+    line-height: 1.5;
+}
+
+.e2c-evaluations .empty-state {
+    text-align: center;
+    padding: 55px 20px;
+}
+
+.e2c-evaluations .empty-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 22px;
+    background: #edf5fc;
+    color: #175d96;
+    font-size: 2rem;
+}
+
+.e2c-evaluations .empty-state h3 {
+    color: var(--e2c-dark);
+    font-size: 1.15rem;
+    font-weight: 750;
+}
+
+.e2c-evaluations .empty-state p {
+    max-width: 470px;
+    margin: 0 auto;
+    color: #718297;
+    line-height: 1.7;
+}
+
+.e2c-evaluations .info-note {
+    padding: 15px 18px;
+    background: #f1f7fc;
+    border: 1px solid #dceaf6;
+    border-radius: 12px;
+    color: #526b83;
+    font-size: .84rem;
+    line-height: 1.6;
+}
+
+.e2c-evaluations .bottom-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.e2c-evaluations .btn-e2c {
+    background: #175d96;
+    color: #fff;
+    border-radius: 9px;
+    padding: 10px 17px;
+    font-weight: 650;
+    border: 1px solid #175d96;
+}
+
+.e2c-evaluations .btn-e2c:hover {
+    background: #123f68;
+    color: #fff;
+}
+
+.e2c-evaluations .btn-e2c-outline {
+    color: #175d96;
+    border: 1px solid #c9dbea;
+    background: #fff;
+    border-radius: 9px;
+    padding: 10px 17px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.e2c-evaluations .btn-e2c-outline:hover {
+    background: #edf5fc;
+}
+
+@media (max-width: 767px) {
+    .e2c-evaluations .hero {
+        padding: 25px 21px;
+    }
+
+    .e2c-evaluations .summary-card {
+        padding: 17px;
+    }
+
+    .e2c-evaluations .section-heading {
+        padding: 18px;
+    }
+
+    .e2c-evaluations .table tbody td {
+        padding: 14px;
+    }
+}
+
+/* Titre principal : blanc */
+.e2c-evaluations .hero h1 {
+    color: #FFFFFF !important;
+}
+</style>
+
+<div class="container py-4 e2c-evaluations">
+
+    <section class="hero">
+        <span class="hero-label">E2C-MENAET · Espace apprenti</span>
+        <h1>Mes évaluations</h1>
+        <p>
+            Consultez les résultats de vos entretiens de recrutement,
+            les appréciations du jury et l'évolution de votre dossier.
+        </p>
+    </section>
+
+    {% include 'espace_apprenti/_menu.html.twig' %}
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-6 col-xl-6">
+            <div class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Évaluations enregistrées</div>
+                        <div class="summary-value">{{ evaluations|length }}</div>
+                    </div>
+                    <div class="summary-icon">01</div>
+                </div>
+                <div class="text-muted small mt-2">
+                    Nombre de résultats disponibles dans votre dossier
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-6">
+            <div class="summary-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Barème de notation</div>
+                        <div class="summary-value">40 <small class="fs-6">points</small></div>
+                    </div>
+                    <div class="summary-icon">02</div>
+                </div>
+                <div class="text-muted small mt-2">
+                    Note maximale prévue pour l'entretien physique
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <section class="section-card">
+
+        <div class="section-heading d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h2>Historique de mes évaluations</h2>
+                <p>Résultats des entretiens et avis communiqués par le jury</p>
+            </div>
+
+            <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                {{ evaluations|length }} résultat(s)
+            </span>
+        </div>
+
+        {% if evaluations is empty %}
+
+            <div class="empty-state">
+                <div class="empty-icon">▤</div>
+                <h3>Aucune évaluation disponible</h3>
+                <p>
+                    Aucun résultat d'entretien n'est actuellement enregistré
+                    dans votre dossier. Vos évaluations apparaîtront ici
+                    lorsqu'elles auront été enregistrées par le jury.
+                </p>
+            </div>
+
+        {% else %}
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Date de l'entretien</th>
+                            <th>Score obtenu</th>
+                            <th>Avis du jury</th>
+                            <th>Observations</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for evaluation in evaluations %}
+
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">
+                                    {% if evaluation.entretien and evaluation.entretien.dateHeure %}
+                                        {{ evaluation.entretien.dateHeure|date('d/m/Y') }}
+                                    {% else %}
+                                        Non précisée
+                                    {% endif %}
+                                </div>
+                                {% if evaluation.entretien and evaluation.entretien.dateHeure %}
+                                    <small class="text-muted">
+                                        {{ evaluation.entretien.dateHeure|date('H:i') }}
+                                    </small>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="score">
+                                    {{ evaluation.total|number_format(1, ',', ' ') }}
+                                    <small>/ 40</small>
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if evaluation.decision == 'FAVORABLE' %}
+                                    <span class="status status-favorable">
+                                        Avis favorable
+                                    </span>
+                                {% elseif evaluation.decision == 'DEFAVORABLE' %}
+                                    <span class="status status-defavorable">
+                                        Avis défavorable
+                                    </span>
+                                {% else %}
+                                    <span class="status status-attente">
+                                        En attente
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="observation">
+                                    {{ evaluation.observations ?: 'Aucune observation communiquée.' }}
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <div class="info-note mt-4">
+        <strong>Information importante :</strong>
+        les scores présentés correspondent aux notes attribuées par le jury
+        sur un total de 40 points. L'avis du jury est distinct de la décision
+        administrative définitive d'admission.
+    </div>
+
+    <div class="bottom-actions">
+        <a class="btn-e2c" href="{{ path('apprenti_evaluations_pedagogiques') }}">
+            Consulter mes évaluations pédagogiques
+        </a>
+
+        <a class="btn-e2c-outline" href="{{ path('apprenti_accueil') }}">
+            Retour à mon espace
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

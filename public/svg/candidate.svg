@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="titre description">
+  <title id="titre">Formation et recrutement des apprentis</title>
+  <desc id="description">Illustration de jeunes en formation professionnelle dans un atelier.</desc>
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e0f2fe"/>
+      <stop offset="1" stop-color="#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="bleu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" rx="32" fill="url(#fond)"/>
+  <circle cx="665" cy="120" r="75" fill="#fff" opacity=".55"/>
+  <circle cx="120" cy="455" r="95" fill="#fff" opacity=".4"/>
+
+  <rect x="75" y="75" width="650" height="440" rx="25" fill="#fff" opacity=".78"/>
+  <rect x="110" y="110" width="580" height="18" rx="9" fill="#dbeafe"/>
+  <rect x="110" y="110" width="220" height="18" rx="9" fill="#2563eb"/>
+
+  <rect x="130" y="180" width="220" height="210" rx="18" fill="#dbeafe"/>
+  <rect x="450" y="180" width="220" height="210" rx="18" fill="#ede9fe"/>
+
+  <rect x="160" y="220" width="160" height="12" rx="6" fill="#93c5fd"/>
+  <rect x="160" y="245" width="125" height="9" rx="4" fill="#bfdbfe"/>
+  <rect x="160" y="265" width="145" height="9" rx="4" fill="#bfdbfe"/>
+  <rect x="480" y="220" width="160" height="12" rx="6" fill="#c4b5fd"/>
+  <rect x="480" y="245" width="125" height="9" rx="4" fill="#ddd6fe"/>
+
+  <circle cx="240" cy="325" r="32" fill="#b77955"/>
+  <path d="M204 318 Q205 280 240 282 Q275 280 276 318Z" fill="#fbbf24"/>
+  <path d="M195 385 Q198 340 240 340 Q282 340 285 385Z" fill="url(#bleu)"/>
+  <path d="M210 350 L185 382 M270 350 L295 382" stroke="#b77955" stroke-width="15" stroke-linecap="round"/>
+
+  <circle cx="560" cy="325" r="32" fill="#9a6348"/>
+  <path d="M525 318 Q526 280 560 282 Q594 280 595 318Z" fill="#fbbf24"/>
+  <path d="M515 385 Q518 340 560 340 Q602 340 605 385Z" fill="#0f766e"/>
+  <path d="M530 350 L505 382 M590 350 L615 382" stroke="#9a6348" stroke-width="15" stroke-linecap="round"/>
+
+  <rect x="250" y="405" width="300" height="20" rx="8" fill="#64748b"/>
+  <path d="M275 425 L260 470 M525 425 L540 470" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+
+  <rect x="320" y="295" width="160" height="95" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+  <path d="M345 355 L375 325 L405 345 L445 310" fill="none" stroke="#2563eb" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="445" cy="310" r="7" fill="#2563eb"/>
+
+  <rect x="235" y="475" width="330" height="48" rx="24" fill="url(#bleu)"/>
+  <text x="400" y="506" font-family="Arial,sans-serif" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">APPRENDRE • SE FORMER • RÉUSSIR</text>
+</svg>

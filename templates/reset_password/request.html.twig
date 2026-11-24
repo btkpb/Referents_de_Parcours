@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mot de passe oublié | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/styles/login.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="login-shell reset-shell">
+
+    <section class="login-presentation">
+
+        <div class="login-brand">
+            <img src="{{ asset('images/logo DAIP.png') }}"
+                 alt="Logo DAIP" class="login-logo">
+            <div>
+                <span class="brand-small">RÉPUBLIQUE DE CÔTE D'IVOIRE</span>
+                <strong>DAIP · E2C</strong>
+                <span class="brand-subtitle">Formation et insertion professionnelle</span>
+            </div>
+        </div>
+
+        <div class="presentation-content">
+            <span class="presentation-tag">ASSISTANCE ET SÉCURITÉ</span>
+
+            <h1>
+                Votre espace.
+                <span>Votre sécurité.</span>
+            </h1>
+
+            <p class="presentation-description">
+                La plateforme E2C-MENAET protège votre espace personnel.
+                Retrouvez facilement l'accès à votre compte grâce à
+                notre procédure sécurisée de réinitialisation.
+            </p>
+
+            <div class="presentation-features">
+                <div class="feature-item">
+                    <span class="feature-number">01</span>
+                    <div>
+                        <strong>Protection du compte</strong>
+                        <small>Une procédure sécurisée pour protéger vos accès.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-number">02</span>
+                    <div>
+                        <strong>Lien personnel</strong>
+                        <small>Un lien de réinitialisation envoyé par e-mail.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-number">03</span>
+                    <div>
+                        <strong>Accès retrouvé</strong>
+                        <small>Définissez un nouveau mot de passe personnel.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="presentation-footer">
+            <span>CONFIDENTIALITÉ</span>
+            <span class="footer-dot"></span>
+            <span>SÉCURITÉ</span>
+            <span class="footer-dot"></span>
+            <span>FIABILITÉ</span>
+        </div>
+
+    </section>
+
+    <section class="login-form-section">
+
+        <div class="login-form-container">
+
+            <div class="form-heading">
+                <span class="form-eyebrow">RÉCUPÉRATION DE COMPTE</span>
+                <h2>Mot de passe oublié ?</h2>
+                <p>
+                    Pas d'inquiétude. Nous allons vous aider à retrouver
+                    l'accès à votre espace de travail.
+                </p>
+            </div>
+
+            {% for flash_error in app.flashes('reset_password_error') %}
+                <div class="reset-alert reset-alert-danger" role="alert">
+                    {{ flash_error }}
+                </div>
+            {% endfor %}
+
+            <div class="reset-information">
+                <span class="reset-information-icon">i</span>
+                <p>
+                    Saisissez l'adresse e-mail associée à votre compte.
+                    Si celui-ci est actif, vous recevrez un lien sécurisé
+                    pour choisir un nouveau mot de passe.
+                </p>
+            </div>
+
+            {{ form_start(requestForm, {
+                attr: {class: 'login-form reset-form'}
+            }) }}
+
+                {{ form_row(requestForm.email, {
+                    label: 'Adresse e-mail',
+                    attr: {
+                        class: 'form-control',
+                        placeholder: 'exemple@domaine.ci',
+                        autocomplete: 'email'
+                    }
+                }) }}
+
+                <button type="submit" class="login-submit reset-submit">
+                    <span>Envoyer le lien de réinitialisation</span>
+                    <span class="submit-arrow">→</span>
+                </button>
+
+            {{ form_end(requestForm) }}
+
+            <div class="login-separator">
+                <span>ACCÈS À VOTRE COMPTE</span>
+            </div>
+
+            <a href="{{ path('app_login') }}" class="reset-secondary-link">
+                <span>←</span> Retour à la connexion
+            </a>
+
+            <div class="login-security-note">
+                <span class="security-icon">✓</span>
+                <span>Vos informations restent confidentielles.</span>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

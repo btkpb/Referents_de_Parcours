@@ -1,0 +1,563 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Placement en entreprise | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+<style>
+.placement-page {
+    --placement-blue: #174b83;
+    --placement-blue-dark: #10365f;
+    --placement-blue-light: #eaf2fb;
+    --placement-gold: #e5a52b;
+    max-width: 1120px;
+    margin: 12px auto 35px;
+    color: #26364a;
+}
+
+.placement-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 35px 38px;
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(125deg, #10365f 0%, #1765a5 65%, #3986bd 100%);
+    box-shadow: 0 12px 30px rgba(16, 54, 95, .17);
+}
+
+.placement-hero::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    right: -75px;
+    top: -125px;
+    border: 35px solid rgba(255,255,255,.07);
+    border-radius: 50%;
+}
+
+.placement-brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    position: relative;
+    z-index: 1;
+}
+
+.placement-brand-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.2);
+    font-size: 23px;
+}
+
+.placement-brand small {
+    display: block;
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.placement-brand strong {
+    display: block;
+    font-size: 18px;
+    letter-spacing: .2px;
+}
+
+.placement-hero h1 {
+    color: #FFFFFF;
+    position: relative;
+    z-index: 1;
+    margin: 28px 0 7px;
+    font-size: clamp(25px, 4vw, 35px);
+    font-weight: 750;
+    letter-spacing: -.7px;
+}
+
+.placement-hero p {
+    position: relative;
+    z-index: 1;
+    max-width: 650px;
+    margin: 0;
+    color: rgba(255,255,255,.82);
+    line-height: 1.7;
+}
+
+.placement-content {
+    max-width: 940px;
+    margin: -15px auto 0;
+    position: relative;
+    z-index: 2;
+}
+
+.placement-card {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 18px;
+    box-shadow: 0 12px 35px rgba(30, 54, 80, .08);
+    overflow: hidden;
+}
+
+.placement-card-body {
+    padding: 34px;
+}
+
+.placement-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 30px;
+    background: #fff5df;
+    color: #93620c;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: .3px;
+}
+
+.placement-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e3a126;
+    box-shadow: 0 0 0 4px rgba(227,161,38,.13);
+}
+
+.placement-title {
+    color: #173e68;
+    font-size: 23px;
+    font-weight: 750;
+    margin: 20px 0 8px;
+}
+
+.placement-description {
+    color: #6b7787;
+    line-height: 1.75;
+    margin-bottom: 25px;
+}
+
+.placement-apprenti {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 19px 21px;
+    background: #f5f8fc;
+    border: 1px solid #e7edf5;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.placement-avatar {
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    display: grid;
+    place-items: center;
+    background: #e0ebf8;
+    color: #174b83;
+    border-radius: 15px;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.placement-apprenti small {
+    display: block;
+    color: #7b8795;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.placement-apprenti strong {
+    display: block;
+    color: #183e67;
+    font-size: 17px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.placement-alert {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    border: 1px solid #f0dfb8;
+    border-left: 4px solid #e3a126;
+    border-radius: 12px;
+    background: #fffbf2;
+}
+
+.placement-alert-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #fff0cd;
+    color: #9a6a10;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.placement-alert h3 {
+    margin: 0 0 5px;
+    color: #75500e;
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.placement-alert p {
+    margin: 0;
+    color: #776a50;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.placement-section-title {
+    color: #173e68;
+    font-size: 17px;
+    font-weight: 750;
+    margin: 31px 0 7px;
+}
+
+.placement-section-description {
+    color: #778393;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 19px;
+}
+
+.placement-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.placement-step {
+    padding: 19px 16px;
+    border: 1px solid #e8edf3;
+    border-radius: 13px;
+    background: #fff;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.placement-step:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(30,54,80,.07);
+}
+
+.placement-step-number {
+    width: 35px;
+    height: 35px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #eaf2fb;
+    color: #174b83;
+    font-weight: 800;
+    margin-bottom: 13px;
+}
+
+.placement-step h4 {
+    color: #244767;
+    font-size: 14px;
+    font-weight: 750;
+    margin: 0 0 7px;
+}
+
+.placement-step p {
+    color: #778393;
+    font-size: 12px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.placement-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    margin-top: 24px;
+    border-radius: 12px;
+    background: #eef5fc;
+    color: #365675;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.placement-note strong {
+    color: #174b83;
+}
+
+.placement-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #edf0f4;
+}
+
+.placement-help {
+    color: #85909d;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.placement-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 21px;
+    border-radius: 10px;
+    background: #174b83;
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 750;
+    box-shadow: 0 5px 12px rgba(23,75,131,.18);
+    transition: background .2s ease, transform .2s ease;
+}
+
+.placement-btn:hover {
+    background: #10365f;
+    transform: translateY(-2px);
+}
+
+.placement-footer {
+    padding: 17px 25px;
+    border-top: 1px solid #edf0f4;
+    background: #fafbfd;
+    color: #8793a1;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .2px;
+}
+
+@media (max-width: 768px) {
+    .placement-page {
+        margin-top: 0;
+    }
+
+    .placement-hero {
+        padding: 27px 22px;
+        border-radius: 15px;
+    }
+
+    .placement-content {
+        margin: -10px 8px 0;
+    }
+
+    .placement-card-body {
+        padding: 23px 19px;
+    }
+
+    .placement-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .placement-step {
+        display: flex;
+        gap: 13px;
+        align-items: flex-start;
+    }
+
+    .placement-step-number {
+        flex: 0 0 35px;
+        margin: 0;
+    }
+
+    .placement-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .placement-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .placement-hero h1 {
+        font-size: 24px;
+    }
+
+    .placement-apprenti {
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .placement-apprenti strong {
+        font-size: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .placement-step,
+    .placement-btn {
+        transition: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="placement-page">
+
+    <section class="placement-hero">
+        <div class="placement-brand">
+            <div class="placement-brand-icon" aria-hidden="true">E2C</div>
+            <div>
+                <small>Plateforme institutionnelle</small>
+                <strong>E2C-MENAET</strong>
+            </div>
+        </div>
+
+        <h1>Espace Maître de stage</h1>
+
+        <p>
+            Suivi professionnel, accompagnement et évaluation des apprentis
+            en entreprise.
+        </p>
+    </section>
+
+    <div class="placement-content">
+        <section class="placement-card">
+
+            <div class="placement-card-body">
+
+                <div class="placement-status" role="status">
+                    <span class="placement-status-dot"></span>
+                    ÉVALUATION TEMPORAIREMENT INDISPONIBLE
+                </div>
+
+                <h2 class="placement-title">
+                    Placement en entreprise non actif
+                </h2>
+
+                <p class="placement-description">
+                    La création d'une nouvelle fiche d'évaluation nécessite
+                    un placement professionnel actif et préalablement
+                    enregistré dans la plateforme.
+                </p>
+
+                <div class="placement-apprenti">
+                    <div class="placement-avatar" aria-hidden="true">
+                        {{ candidat.nom|default('A')|first|upper }}
+                    </div>
+
+                    <div>
+                        <small>Apprenti concerné</small>
+                        <strong>
+                            {{ candidat.nom|default('') }}
+                            {{ candidat.prenoms|default('') }}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="placement-alert" role="alert">
+                    <div class="placement-alert-icon" aria-hidden="true">!</div>
+                    <div>
+                        <h3>Aucun placement actif en entreprise</h3>
+                        <p>
+                            Cet apprenti ne possède actuellement aucune
+                            affectation active en entreprise. La fiche
+                            d'évaluation ne peut donc pas être ouverte.
+                        </p>
+                    </div>
+                </div>
+
+                <h3 class="placement-section-title">
+                    Comment régulariser cette situation ?
+                </h3>
+
+                <p class="placement-section-description">
+                    Les vérifications suivantes doivent être effectuées
+                    avant de reprendre l'évaluation.
+                </p>
+
+                <div class="placement-steps">
+
+                    <article class="placement-step">
+                        <div class="placement-step-number">01</div>
+                        <div>
+                            <h4>Vérifier l'affectation</h4>
+                            <p>
+                                Vérifier qu'une affectation de l'apprenti
+                                à une entreprise de stage a bien été
+                                enregistrée.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="placement-step">
+                        <div class="placement-step-number">02</div>
+                        <div>
+                            <h4>Contacter le responsable</h4>
+                            <p>
+                                Solliciter le Gestionnaire ou le Référent
+                                de parcours pour contrôler le dossier.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="placement-step">
+                        <div class="placement-step-number">03</div>
+                        <div>
+                            <h4>Activer le placement</h4>
+                            <p>
+                                Faire enregistrer et activer l'affectation
+                                selon la procédure de la plateforme.
+                            </p>
+                        </div>
+                    </article>
+
+                </div>
+
+                <div class="placement-note">
+                    <span aria-hidden="true">ℹ</span>
+                    <div>
+                        <strong>Important :</strong>
+                        aucune évaluation en entreprise ne peut être
+                        enregistrée tant que le placement de l'apprenti
+                        n'est pas actif. Cette page ne modifie pas son
+                        affectation.
+                    </div>
+                </div>
+
+                <div class="placement-actions">
+                    <div class="placement-help">
+                        Besoin d'assistance ?<br>
+                        Contactez le Gestionnaire ou le Référent de parcours.
+                    </div>
+
+                    <a href="{{ path('maitre_stage_index') }}"
+                       class="placement-btn">
+                        <span aria-hidden="true">←</span>
+                        Retour à mon espace
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="placement-footer">
+                E2C-MENAET · Formation technique, apprentissage et insertion
+            </div>
+
+        </section>
+    </div>
+
+</div>
+
+{% endblock %}

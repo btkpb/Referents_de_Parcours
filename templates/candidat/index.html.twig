@@ -1,0 +1,479 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des candidats | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .candidat-page {
+        --candidat-blue: #2469a8;
+        --candidat-light: #5B9BD5;
+        color: #243447;
+    }
+
+    .candidat-header {
+        background: linear-gradient(120deg, #2469a8, #5B9BD5);
+        color: #fff;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 8px 24px rgba(36, 105, 168, .16);
+    }
+
+    .candidat-header h1 {
+        color: #fff;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .candidat-header p {
+        color: rgba(255,255,255,.88);
+        margin-bottom: 0;
+    }
+
+    .candidat-header .btn {
+        font-weight: 650;
+        border-radius: 10px;
+        padding: 11px 18px;
+    }
+
+    .candidat-stat {
+        background: #fff;
+        border: 1px solid #e8eef5;
+        border-radius: 15px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 4px 16px rgba(31, 55, 80, .045);
+    }
+
+    .candidat-stat-label {
+        color: #718096;
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .candidat-stat-value {
+        font-size: 1.9rem;
+        font-weight: 750;
+        line-height: 1.2;
+        margin-top: 8px;
+        color: #243447;
+    }
+
+    .candidat-stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: #edf5fc;
+        color: #2469a8;
+    }
+
+    .candidat-panel {
+        background: #fff;
+        border: 1px solid #e8eef5;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(31, 55, 80, .05);
+        overflow: hidden;
+    }
+
+    .candidat-panel-title {
+        font-weight: 700;
+        color: #243447;
+    }
+
+    .candidat-filters {
+        background: #f8fafc;
+        padding: 18px;
+        border-bottom: 1px solid #e8eef5;
+    }
+
+    .candidat-filters .form-control,
+    .candidat-filters .form-select {
+        min-height: 43px;
+        border-color: #dce5ee;
+        border-radius: 9px;
+    }
+
+    .candidat-table {
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+
+    .candidat-table thead th {
+        background: #f1f6fb;
+        color: #53677c;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .045em;
+        font-weight: 750;
+        padding: 15px 13px;
+        white-space: nowrap;
+        border-bottom: 1px solid #e5edf5;
+    }
+
+    .candidat-table tbody td {
+        padding: 14px 13px;
+        border-color: #edf1f5;
+        color: #34465a;
+    }
+
+    .candidat-table tbody tr:hover {
+        background: #f8fbfe;
+    }
+
+    .candidat-identity {
+        font-weight: 700;
+        color: #263b50;
+    }
+
+    .candidat-number {
+        font-size: .8rem;
+        color: #718096;
+    }
+
+    .candidat-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 30px;
+        font-size: .75rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .badge-verification {
+        color: #946200;
+        background: #fff3cd;
+    }
+
+    .badge-eligible {
+        color: #176b42;
+        background: #d9f3e5;
+    }
+
+    .badge-admis {
+        color: #1557a0;
+        background: #dcecff;
+    }
+
+    .badge-refuse,
+    .badge-ineligible {
+        color: #a52d39;
+        background: #fde2e4;
+    }
+
+    .badge-default {
+        color: #53677c;
+        background: #e9eef3;
+    }
+
+    .candidat-action {
+        border-radius: 8px;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .candidat-empty {
+        padding: 48px 20px !important;
+        text-align: center;
+        color: #718096;
+    }
+
+    .candidat-pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        border-color: #e3eaf1;
+        color: #2469a8;
+    }
+
+    .candidat-pagination .active .page-link {
+        background: #2469a8;
+        border-color: #2469a8;
+        color: #fff;
+    }
+
+    @media (max-width: 767px) {
+        .candidat-header {
+            padding: 21px;
+        }
+
+        .candidat-header .btn {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .candidat-stat {
+            padding: 15px;
+        }
+
+        .candidat-stat-value {
+            font-size: 1.55rem;
+        }
+    }
+</style>
+
+<div class="container-fluid candidat-page py-3">
+
+    <div class="candidat-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="small fw-semibold mb-2 text-uppercase">
+                    E2C – METFPA | Gestion du recrutement
+                </div>
+                <h1 class="h2">Gestion des candidats</h1>
+                <p>Consultez, recherchez et suivez les dossiers des candidats inscrits.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end d-flex flex-wrap justify-content-lg-end gap-3">
+                <a href="{{ path('public_inscription') }}" class="btn btn-warning">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Ajouter un candidat
+                </a>
+{% if is_granted('ROLE_GESTIONNAIRE') %}
+      <a href="{{ path('candidat_import_emails') }}" class="btn btn-outline-light">
+        <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+        Importer les e-mails
+      </a>
+      {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="candidat-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="candidat-stat-label">Total des candidats</div>
+                        <div class="candidat-stat-value">{{ statistiques.total }}</div>
+                    </div>
+                    <div class="candidat-stat-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="candidat-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="candidat-stat-label">Dossiers à vérifier</div>
+                        <div class="candidat-stat-value">{{ statistiques.aVerifier }}</div>
+                    </div>
+                    <div class="candidat-stat-icon">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="candidat-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="candidat-stat-label">Candidats éligibles</div>
+                        <div class="candidat-stat-value">{{ statistiques.eligible }}</div>
+                    </div>
+                    <div class="candidat-stat-icon">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="candidat-panel">
+
+        <div class="p-3 p-md-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h2 class="h5 candidat-panel-title mb-1">Liste des candidats</h2>
+                <div class="small text-muted">
+                    {{ total }} résultat(s) correspondant à votre recherche
+                </div>
+            </div>
+            <span class="badge text-bg-light border">
+                {{ candidats|length }} affiché(s) sur cette page
+            </span>
+        </div>
+
+        <form method="get" action="{{ path('candidat_index') }}" class="candidat-filters">
+            <div class="row g-2 align-items-end">
+
+                <div class="col-12 col-lg-5">
+                    <label for="recherche-candidat" class="form-label small fw-semibold">
+                        Recherche
+                    </label>
+                    <input
+                        type="search"
+                        id="recherche-candidat"
+                        name="q"
+                        value="{{ recherche }}"
+                        class="form-control"
+                        placeholder="Numéro, nom, prénoms, téléphone, métier..."
+                    >
+                </div>
+
+                <div class="col-12 col-md-5 col-lg-3">
+                    <label for="statut-candidat" class="form-label small fw-semibold">
+                        Statut du dossier
+                    </label>
+                    <select id="statut-candidat" name="statut" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="A_VERIFIER" {{ statutFiltre == 'A_VERIFIER' ? 'selected' : '' }}>
+                            À vérifier
+                        </option>
+                        <option value="ELIGIBLE" {{ statutFiltre == 'ELIGIBLE' ? 'selected' : '' }}>
+                            Éligible
+                        </option>
+                        {% if statutFiltre not in ['','A_VERIFIER','ELIGIBLE'] %}
+                            <option value="{{ statutFiltre }}" selected>{{ statutFiltre }}</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-7 col-lg-2">
+                    <label for="metier-candidat" class="form-label small fw-semibold">
+                        Métier
+                    </label>
+                    <select id="metier-candidat" name="metier" class="form-select">
+                        <option value="">Tous les métiers</option>
+                        {% for m in metiers %}
+                            <option value="{{ m }}" {{ metierFiltre == m ? 'selected' : '' }}>
+                                {{ m }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-6 col-lg-1 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                        <span class="d-lg-none">Filtrer</span>
+                    </button>
+                </div>
+
+                <div class="col-6 col-lg-1 d-grid">
+                    <a href="{{ path('candidat_index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <span class="d-lg-none">Réinitialiser</span>
+                    </a>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table candidat-table">
+                <thead>
+                    <tr>
+                        <th>Référence</th>
+                        <th>Identité du candidat</th>
+                        <th>Âge</th>
+                        <th>Métier</th>
+                        <th>Téléphone</th>
+                        <th>Nationalité</th>
+                        <th>Statut</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for c in candidats %}
+                        <tr>
+                            <td>
+                                <span class="candidat-number">{{ c.numero }}</span>
+                            </td>
+                            <td>
+                                <div class="candidat-identity">{{ c.nom }} {{ c.prenoms }}</div>
+                            </td>
+                            <td>{{ c.age is not null ? c.age ~ ' ans' : '—' }}</td>
+                            <td>{{ c.metier ?: 'Non renseigné' }}</td>
+                            <td>{{ c.telephone ?: '—' }}</td>
+                            <td>{{ c.nationalite ?: '—' }}</td>
+                            <td>
+                                {% set statut = c.statut %}
+                                {% set classe = 'badge-default' %}
+                                {% set libelle = statut %}
+
+                                {% if statut == 'A_VERIFIER' %}
+                                    {% set classe = 'badge-verification' %}
+                                    {% set libelle = 'À vérifier' %}
+                                {% elseif statut == 'ELIGIBLE' %}
+                                    {% set classe = 'badge-eligible' %}
+                                    {% set libelle = 'Éligible' %}
+                                {% elseif statut == 'ADMIS' %}
+                                    {% set classe = 'badge-admis' %}
+                                {% elseif statut in ['REFUSE', 'INELIGIBLE'] %}
+                                    {% set classe = 'badge-refuse' %}
+                                {% endif %}
+
+                                <span class="candidat-badge {{ classe }}">{{ libelle }}</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ path('candidat_show', {id: c.id}) }}"
+                                   class="btn btn-sm btn-outline-primary candidat-action">
+                                    <i class="bi bi-folder2-open me-1"></i>
+                                    Dossier
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="candidat-empty">
+                                <i class="bi bi-search fs-2 d-block mb-3"></i>
+                                <div class="fw-semibold mb-1">Aucun candidat trouvé</div>
+                                <div class="small">Modifiez vos critères de recherche ou réinitialisez les filtres.</div>
+                                <a href="{{ path('candidat_index') }}" class="btn btn-sm btn-outline-primary mt-3">
+                                    Réinitialiser les filtres
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if nombrePages > 1 %}
+            <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="small text-muted">
+                    Page {{ page }} sur {{ nombrePages }}
+                </div>
+
+                <nav aria-label="Pagination des candidats">
+                    <ul class="pagination candidat-pagination mb-0">
+                        {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="{{ path('candidat_index', {q: recherche, statut: statutFiltre, metier: metierFiltre, page: page - 1}) }}">
+                                    Précédent
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for p in 1..nombrePages %}
+                            <li class="page-item {{ p == page ? 'active' : '' }}">
+                                <a class="page-link"
+                                   href="{{ path('candidat_index', {q: recherche, statut: statutFiltre, metier: metierFiltre, page: p}) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page < nombrePages %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="{{ path('candidat_index', {q: recherche, statut: statutFiltre, metier: metierFiltre, page: page + 1}) }}">
+                                    Suivant
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

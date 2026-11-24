@@ -1,0 +1,573 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Décisions d'admission - E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+<style>
+.adm-header {
+    background: linear-gradient(120deg, #164b78, #287db8);
+    color: white;
+    border-radius: 14px;
+    padding: 25px;
+}
+.adm-card {
+    border: 0;
+    border-radius: 13px;
+    box-shadow: 0 3px 14px rgba(0,0,0,.07);
+}
+.adm-card .card-header {
+    background: #f4f7fb;
+    font-weight: 700;
+}
+.adm-score {
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+.adm-section {
+    color: #164b78;
+    font-weight: 700;
+}
+.adm-table th {
+    white-space: nowrap;
+    font-size: .85rem;
+}
+.adm-table td {
+    vertical-align: middle;
+}
+.adm-detail {
+    background: #f7f9fc;
+    border-radius: 9px;
+    padding: 13px;
+}
+.adm-status {
+    font-size: .75rem;
+}
+.adm-actions {
+    min-width: 220px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+
+    <div class="adm-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h1 class="h3 fw-bold mb-2" style="color: #FFFFFF !important;">
+                    Gestion des décisions d'admission
+                </h1>
+                <p class="mb-0" style="color: #FFFFFF !important;">
+                    Analyse des évaluations, aptitude médicale et quotas par métier.
+                </p>
+            </div>
+
+            <div class="text-end">
+                <div class="badge bg-light text-primary fs-6 mb-2">
+                    Gestionnaire
+                </div>
+                <div class="small">
+                    Seuil minimal : {{ seuilAdmission }}/40
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('info') %}
+        <div class="alert alert-info alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# Indicateurs #}
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-lg-3">
+            <div class="card adm-card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Dossiers examinés</div>
+                    <div class="adm-score text-primary">
+                        {{ dossiers|length }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card adm-card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Seuil de réussite</div>
+                    <div class="adm-score text-success">
+                        {{ seuilAdmission }}/40
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card adm-card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Décisions possibles</div>
+                    <div class="adm-score text-info">
+                        Validation / Arbitrage
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card adm-card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Critères obligatoires</div>
+                    <div class="adm-score text-warning">3</div>
+                    <small class="text-muted">Note, aptitude, quota</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# Liste des candidats #}
+    <div class="card adm-card mb-4">
+
+        <div class="card-header py-3 d-flex justify-content-between flex-wrap gap-2">
+            <span>
+                <i class="bi bi-clipboard-check me-2"></i>
+                Dossiers de candidature
+            </span>
+            <span class="badge bg-primary">
+                {{ dossiers|length }} dossier(s)
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            {% for dossier in dossiers %}
+
+                {% set candidat = dossier.candidat %}
+                {% set analyse = dossier.analyse %}
+                {% set admission = dossier.admission %}
+                {% set quota = analyse.quota %}
+
+                <div class="border rounded-3 p-3 mb-4">
+
+                    {# Identité #}
+                    <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
+
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">
+                                {{ candidat.nom }} {{ candidat.prenoms }}
+                            </h2>
+
+                            <div class="text-muted small">
+                                N° : {{ candidat.numero }}
+                            </div>
+
+                            <div class="mt-2">
+                                <span class="badge bg-primary">
+                                    {{ candidat.metier }}
+                                </span>
+
+                                <span class="badge bg-secondary">
+                                    {{ candidat.sexe }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-md-end">
+                            <div class="small text-muted">Date de l'entretien</div>
+                            <strong>
+                                {{ dossier.entretien.dateHeure
+                                    ? dossier.entretien.dateHeure|date('d/m/Y H:i')
+                                    : 'Non renseignée' }}
+                            </strong>
+                            <div class="small text-muted mt-1">
+                                {{ analyse.nombreJurys }} jury(s) désigné(s)
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    {# Résultats des évaluations #}
+                    <h3 class="h6 adm-section mb-3">
+                        1. Résultats des évaluations
+                    </h3>
+
+                    <div class="row g-3 mb-3">
+
+                        <div class="col-md-3">
+                            <div class="adm-detail h-100">
+                                <div class="small text-muted">Moyenne obtenue</div>
+
+                                <div class="adm-score
+                                    {% if analyse.scoreMoyen is not null and analyse.scoreMoyen >= seuilAdmission %}
+                                        text-success
+                                    {% else %}
+                                        text-danger
+                                    {% endif %}">
+                                    {{ analyse.scoreMoyen is not null
+                                        ? analyse.scoreMoyen|number_format(2, ',', ' ') ~ '/40'
+                                        : 'Non calculée' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="adm-detail h-100">
+                                <div class="small text-muted">Évaluations terminées</div>
+                                <strong>
+                                    {{ analyse.nombreEvaluations }}
+                                    / {{ analyse.nombreJurys }}
+                                </strong>
+                                <div class="mt-2">
+                                    {% if analyse.complet %}
+                                        <span class="badge bg-success">Complet</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Incomplet</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="adm-detail h-100">
+                                <div class="small text-muted">Avis collectif</div>
+                                {% if analyse.avis == 'FAVORABLE' %}
+                                    <span class="badge bg-success mt-2">Favorable</span>
+                                {% elseif analyse.avis == 'DEFAVORABLE' %}
+                                    <span class="badge bg-danger mt-2">Défavorable</span>
+                                {% elseif analyse.avis == 'CONTRADICTOIRE' %}
+                                    <span class="badge bg-warning text-dark mt-2">Contradictoire</span>
+                                {% else %}
+                                    <span class="badge bg-secondary mt-2">En attente</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="adm-detail h-100">
+                                <div class="small text-muted">Seuil réglementaire</div>
+                                <strong>{{ seuilAdmission }}/40</strong>
+                                <div class="mt-2">
+                                    {% if analyse.scoreMoyen is not null and analyse.scoreMoyen >= seuilAdmission %}
+                                        <span class="badge bg-success">Atteint</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Non atteint</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {# Visite médicale #}
+                    <h3 class="h6 adm-section mb-3">
+                        2. Vérification médicale
+                    </h3>
+
+                    <div class="adm-detail mb-3">
+                        <div class="row g-2">
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Dernière visite</div>
+                                {% if analyse.derniereVisite %}
+                                    <strong>
+                                        {{ analyse.derniereVisite.dateHeure
+                                            ? analyse.derniereVisite.dateHeure|date('d/m/Y H:i')
+                                            : 'Date non renseignée' }}
+                                    </strong>
+                                {% else %}
+                                    <span class="text-danger">Aucune visite effectuée</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Aptitude retenue</div>
+
+                                {% if analyse.aptitude == 'APTE' %}
+                                    <span class="badge bg-success">APTE</span>
+                                {% elseif analyse.aptitude == 'INAPTE' %}
+                                    <span class="badge bg-danger">INAPTE</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        {{ analyse.aptitude }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Règle appliquée</div>
+                                <strong>Dernière visite uniquement</strong>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {# Quotas #}
+                    <h3 class="h6 adm-section mb-3">
+                        3. Vérification du quota métier
+                    </h3>
+
+                    <div class="adm-detail mb-3">
+                        <div class="row g-2">
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Métier du quota</div>
+                                <strong>
+                                    {{ quota.catalogue ?? candidat.metier }}
+                                </strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Places autorisées</div>
+                                <strong>{{ quota.quota }}</strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="small text-muted">Candidats déjà admis</div>
+                                <strong>{{ quota.admis }}</strong>
+                                <div class="mt-1">
+                                    {% if quota.disponible %}
+                                        <span class="badge bg-success">Place disponible</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Quota indisponible</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {# Décision existante #}
+                    {% if admission %}
+                        <div class="alert
+                            {% if admission.decision == 'ADMIS' %}
+                                alert-success
+                            {% elseif admission.decision == 'REFUSE' %}
+                                alert-danger
+                            {% else %}
+                                alert-warning
+                            {% endif %}">
+
+                            <strong>Décision enregistrée :</strong>
+                            {{ admission.decision|replace({'_': ' '}) }}
+
+                            {% if admission.codeAdmission %}
+                                <div class="mt-1">
+                                    Code d'admission :
+                                    <strong>{{ admission.codeAdmission }}</strong>
+                                </div>
+                            {% endif %}
+
+                            {% if admission.dateAdmission %}
+                                <div class="small mt-1">
+                                    Date :
+                                    {{ admission.dateAdmission|date('d/m/Y H:i') }}
+                                </div>
+                            {% endif %}
+
+                            {% if admission.avisJury == 'CONTRADICTOIRE' %}
+                                <div class="small mt-1">
+                                    Arbitrage :
+                                    {{ admission.arbitrageGestionnaire }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# Conditions de décision #}
+                    {% set scoreOK = analyse.scoreMoyen is not null and analyse.scoreMoyen >= seuilAdmission %}
+                    {% set medicalOK = analyse.aptitude == 'APTE' %}
+                    {% set quotaOK = quota.disponible %}
+
+                    <h3 class="h6 adm-section mb-3">
+                        4. Décision du gestionnaire
+                    </h3>
+
+                    {% if not analyse.complet %}
+                        <div class="alert alert-warning">
+                            Décision impossible : toutes les évaluations des jurys doivent être terminées.
+                        </div>
+
+                    {% elseif analyse.avis == 'EN_ATTENTE' %}
+                        <div class="alert alert-warning">
+                            Les évaluations ne permettent pas encore de déterminer un avis collectif.
+                        </div>
+
+                    {% else %}
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <span class="badge {{ scoreOK ? 'bg-success' : 'bg-danger' }}">
+                                    {{ scoreOK ? 'Note conforme' : 'Note insuffisante' }}
+                                </span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <span class="badge {{ medicalOK ? 'bg-success' : 'bg-danger' }}">
+                                    {{ medicalOK ? 'Aptitude conforme' : 'Aptitude non conforme' }}
+                                </span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <span class="badge {{ quotaOK ? 'bg-success' : 'bg-danger' }}">
+                                    {{ quotaOK ? 'Quota disponible' : 'Quota indisponible' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <form method="post"
+                              action="{{ path('recruitment_admission_traiter', {id: candidat.id}) }}"
+                              onsubmit="return confirm('Confirmez-vous le traitement de cette décision d’admission ?');">
+
+                            <input type="hidden"
+                                   name="_token"
+                                   value="{{ csrf_token('admission_decision_' ~ candidat.id) }}">
+
+                            {% if analyse.avis == 'CONTRADICTOIRE' %}
+
+                                <div class="alert alert-warning">
+                                    <strong>Arbitrage obligatoire :</strong>
+                                    les membres du jury ont exprimé des avis contradictoires.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Décision d'arbitrage
+                                    </label>
+
+                                    <select name="decision"
+                                            class="form-select"
+                                            required>
+                                        <option value="">Choisir une décision</option>
+                                        <option value="ARBITRAGE_FAVORABLE">
+                                            Arbitrage favorable
+                                        </option>
+                                        <option value="ARBITRAGE_DEFAVORABLE">
+                                            Arbitrage défavorable
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Motif et observations de l'arbitrage
+                                    </label>
+
+                                    <textarea name="observations"
+                                              class="form-control"
+                                              rows="3"
+                                              maxlength="5000"
+                                              placeholder="Justifier la décision du gestionnaire..."></textarea>
+                                </div>
+
+                            {% else %}
+
+                                <input type="hidden" name="decision" value="TRAITER">
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Avis des jurys
+                                    </label>
+
+                                    <div>
+                                        {% if analyse.avis == 'FAVORABLE' %}
+                                            <span class="badge bg-success">Avis favorable</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Avis défavorable</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                            {% endif %}
+
+                            <button type="submit"
+                                    class="btn {{ analyse.avis == 'CONTRADICTOIRE' ? 'btn-warning' : 'btn-primary' }}">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {{ analyse.avis == 'CONTRADICTOIRE'
+                                    ? 'Enregistrer l’arbitrage'
+                                    : 'Traiter la décision' }}
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+                    <h3 class="h5 mt-3">Aucun dossier à traiter</h3>
+                    <p class="text-muted mb-0">
+                        Aucun entretien enregistré pour le moment.
+                    </p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+        <a href="{{ path('dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Retour au tableau de bord
+        </a>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                onclick="window.print()">
+            <i class="bi bi-printer me-1"></i>
+            Imprimer les dossiers
+        </button>
+    </div>
+
+</div>
+
+<style>
+@media print {
+    nav, .btn, form, .adm-header {
+        display: none !important;
+    }
+    body {
+        background: white !important;
+    }
+    .adm-card {
+        box-shadow: none !important;
+    }
+    .border.rounded-3 {
+        break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

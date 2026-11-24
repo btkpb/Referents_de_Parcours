@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidature enregistrée{% endblock %}
+
+{% block body %}
+
+<div class="row justify-content-center">
+    <div class="col-xl-9">
+
+        <div class="card shadow border-0">
+
+            <div class="card-header p-4 bg-success text-white">
+                <h2 class="mb-0">
+                    ✓ Candidature enregistrée avec succès
+                </h2>
+            </div>
+
+            <div class="card-body p-5">
+
+                <div class="text-center mb-4">
+                    <div class="display-1 text-success">✓</div>
+
+                    <h1 class="fw-bold">
+                        Félicitations !
+                    </h1>
+
+                    <p class="lead">
+                        Votre candidature a été enregistrée avec succès.
+                    </p>
+                </div>
+
+                <div class="alert alert-primary text-center">
+                    <div class="small text-uppercase fw-bold">
+                        Votre numéro de candidature
+                    </div>
+
+                    <div class="display-6 fw-bold">
+                        {{ candidat.numero }}
+                    </div>
+
+                    <div class="mt-2">
+                        Conservez précieusement ce numéro.
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-4">
+                    Récapitulatif
+                </h5>
+
+                <div class="row g-3 mt-2">
+
+                    <div class="col-md-6">
+                        <strong>Nom et prénoms</strong>
+                        <div>
+                            {{ candidat.nom }} {{ candidat.prenoms }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Téléphone</strong>
+                        <div>
+                            {{ candidat.telephone }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Métier demandé</strong>
+                        <div>
+                            {{ candidat.metier }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Nationalité</strong>
+                        <div>
+                            {{ candidat.nationalite }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Statut initial</strong>
+                        <div>
+                            {% if candidat.statut == 'ELIGIBLE' %}
+                                <span class="badge bg-success fs-6">
+                                    Éligible
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark fs-6">
+                                    À vérifier
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Date d'enregistrement</strong>
+                        <div>
+                            {{ "now"|date("d/m/Y H:i") }}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="alert alert-info mt-5">
+                    <strong>Important :</strong>
+                    votre candidature sera maintenant traitée par
+                    l'équipe de recrutement. Conservez votre numéro de
+                    candidature pour tout suivi ultérieur.
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="window.print()">
+                        🖨 Imprimer
+                    </button>
+
+                    <a href="{{ path('public_inscription') }}"
+                       class="btn btn-warning">
+                        Nouvelle inscription
+                    </a>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,550 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Répertoire des difficultés - E2C MENAET{% endblock %}
+
+{% block body %}
+<div class="e2c-directory">
+
+    <section class="directory-hero mb-4">
+        <div class="directory-hero-content">
+            <span class="directory-eyebrow">ACCOMPAGNEMENT ET VIGILANCE</span>
+            <h1>Répertoire des difficultés</h1>
+            <p>Suivi des bénéficiaires présentant des freins sociaux ou pédagogiques pendant leur parcours.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="{{ path('followup_index') }}" class="btn btn-light fw-semibold">
+                    <span aria-hidden="true">←</span> Retour au suivi
+                </a>
+                <button type="button" class="btn btn-outline-light" onclick="window.print()">
+                    Imprimer / Exporter en PDF
+                </button>
+            </div>
+        </div>
+        <div class="directory-hero-icon" aria-hidden="true">◎</div>
+    </section>
+
+    <section class="row g-3 mb-4 directory-indicators">
+        <div class="col-12 col-md-4">
+            <div class="directory-stat">
+                <span class="stat-label">Situations recensées</span>
+                <strong id="statTotal">{{ lignes|length }}</strong>
+                <span class="stat-note">Entretiens avec difficulté ou abandon signalé</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="directory-stat">
+                <span class="stat-label">Métiers suivis</span>
+                <strong>{{ recapitulatif|length }}</strong>
+                <span class="stat-note">Métiers ayant des entretiens d'accueil ou de mi-parcours</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="directory-stat">
+                <span class="stat-label">Abandons signalés</span>
+                <strong id="statAbandons">0</strong>
+                <span class="stat-note">Situations déclarées avec abandon</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="directory-panel mb-4">
+        <div class="directory-panel-heading">
+            <div>
+                <span class="directory-section-label">VUE D'ENSEMBLE</span>
+                <h2>Répartition des bénéficiaires par métier</h2>
+                <p>Effectifs distincts ayant bénéficié d'un entretien d'accueil et d'un entretien à mi-parcours.</p>
+            </div>
+            <span class="directory-heading-icon" aria-hidden="true">▤</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table directory-summary-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Métier</th>
+                        <th class="text-center">À l'entrée</th>
+                        <th class="text-center">À mi-parcours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for stat in recapitulatif %}
+                    <tr>
+                        <td class="fw-semibold">{{ stat.metier }}</td>
+                        <td class="text-center"><span class="directory-number">{{ stat.entree }}</span></td>
+                        <td class="text-center"><span class="directory-number">{{ stat.miParcours }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">
+                            Aucune donnée d'entretien d'accueil ou de mi-parcours.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="directory-panel">
+        <div class="directory-panel-heading directory-list-heading">
+            <div>
+                <span class="directory-section-label">SUIVI INDIVIDUEL</span>
+                <h2>Situations nécessitant une attention particulière</h2>
+                <p>Recherchez et filtrez les situations enregistrées par les référents de parcours.</p>
+            </div>
+            <span class="directory-result-count"><strong id="resultCount">{{ lignes|length }}</strong> résultat(s)</span>
+        </div>
+
+        <div class="directory-filters">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="filtreBeneficiaire">Bénéficiaire</label>
+                    <input id="filtreBeneficiaire" class="form-control" type="search" placeholder="Nom ou prénoms">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="filtreMetier">Métier</label>
+                    <input id="filtreMetier" class="form-control" type="search" placeholder="Rechercher un métier">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="filtreReferent">Référent</label>
+                    <input id="filtreReferent" class="form-control" type="search" placeholder="Nom ou contact">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="filtreFrein">Frein ou difficulté</label>
+                    <input id="filtreFrein" class="form-control" type="search" placeholder="Mot-clé">
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                <span class="directory-filter-help">Les filtres peuvent être combinés.</span>
+                <button type="button" id="reinitialiserFiltres" class="btn btn-sm btn-outline-secondary">
+                    Réinitialiser les filtres
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive directory-table-wrap">
+            <table class="table directory-table align-middle mb-0" id="tableFreins">
+                <thead>
+                    <tr>
+                        <th>Bénéficiaire / métier</th>
+                        <th>Référent / contact</th>
+                        <th>Freins sociaux et pédagogiques</th>
+                        <th>Abandon</th>
+                        <th>Étape / date</th>
+                        <th>Effectifs du métier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for ligne in lignes %}
+                    <tr
+                        data-beneficiaire="{{ ligne.beneficiaire|default('')|lower }}"
+                        data-metier="{{ ligne.metier|default('')|lower }}"
+                        data-referent="{{ ligne.referent|default('')|lower }}"
+                        data-frein="{{ ligne.freins|default('')|lower }}"
+                        data-abandon="{{ ligne.abandon|default('')|upper }}"
+                    >
+                        <td>
+                            <strong class="directory-beneficiary">{{ ligne.beneficiaire ?: 'Bénéficiaire non renseigné' }}</strong>
+                            <span class="directory-subline">{{ ligne.metier }}</span>
+                        </td>
+                        <td>
+                            <span>{{ ligne.referent ?: 'Non renseigné' }}</span>
+                            <span class="directory-subline">{{ ligne.contact ?: 'Contact non renseigné' }}</span>
+                        </td>
+                        <td>
+                            <div class="directory-frein-text">{{ ligne.freins ?: 'À préciser' }}</div>
+                        </td>
+                        <td>
+                            {% if ligne.abandon == 'OUI' %}
+                                <span class="directory-status directory-status-danger">Oui</span>
+                            {% elseif ligne.abandon == 'NON' %}
+                                <span class="directory-status directory-status-success">Non</span>
+                            {% else %}
+                                <span class="directory-status directory-status-neutral">À préciser</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="directory-stage">
+                                {{ ligne.type == 'MI_PARCOURS' ? 'Mi-parcours' : 'Sortie' }}
+                            </span>
+                            <span class="directory-subline">{{ ligne.date ? ligne.date|date('d/m/Y') : '—' }}</span>
+                        </td>
+                        <td>
+                            <div class="directory-counts">
+                                <span title="À l'entrée">E. {{ ligne.entreeCount }}</span>
+                                <span title="À mi-parcours">M. {{ ligne.miCount }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr id="ligneVide">
+                        <td colspan="6" class="text-center py-5">
+                            <strong>Aucune situation recensée</strong>
+                            <p class="text-muted mb-0 mt-1">Les difficultés apparaîtront ici lorsqu'elles seront renseignées dans les entretiens.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr id="aucunResultat" hidden>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        Aucune situation ne correspond aux critères de recherche.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="directory-footer">
+            <span>Les données proviennent des entretiens enregistrés dans le suivi de parcours.</span>
+            <span>Dernière actualisation : affichage des données enregistrées</span>
+        </div>
+    </section>
+
+    <p class="directory-confidentiality mt-3">
+        <span aria-hidden="true">🔒</span>
+        Informations destinées au suivi pédagogique et socio-professionnel des bénéficiaires.
+    </p>
+</div>
+
+<style>
+.e2c-directory {
+    --dir-navy: #142b4a;
+    --dir-blue: #245b91;
+    --dir-gold: #d5a642;
+    --dir-muted: #718096;
+    --dir-border: #e5eaf0;
+    color: #243449;
+}
+.e2c-directory .directory-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 34px 38px;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(120deg, #142b4a 0%, #1d4772 68%, #28618d 100%);
+    box-shadow: 0 12px 30px rgba(20,43,74,.14);
+}
+.e2c-directory .directory-hero-content { position: relative; z-index: 1; }
+.e2c-directory .directory-eyebrow,
+.e2c-directory .directory-section-label {
+    display: inline-block;
+    color: var(--dir-gold);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .13em;
+    margin-bottom: 9px;
+}
+.e2c-directory .directory-hero h1 {
+    color: #fff;
+    font-size: clamp(1.65rem, 3vw, 2.2rem);
+    font-weight: 800;
+    margin: 0 0 9px;
+}
+.e2c-directory .directory-hero p {
+    max-width: 720px;
+    color: rgba(255,255,255,.82);
+    margin: 0;
+}
+.e2c-directory .directory-hero .btn-outline-light:hover {
+    color: var(--dir-navy);
+}
+.e2c-directory .directory-hero-icon {
+    color: rgba(255,255,255,.12);
+    font-size: 7rem;
+    line-height: 1;
+    padding-right: 15px;
+}
+.e2c-directory .directory-stat,
+.e2c-directory .directory-panel {
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--dir-border);
+    border-radius: 15px;
+    box-shadow: 0 5px 18px rgba(24,46,75,.045);
+}
+.e2c-directory .directory-stat {
+    padding: 20px 22px;
+    border-top: 3px solid var(--dir-gold);
+}
+.e2c-directory .stat-label,
+.e2c-directory .stat-note {
+    display: block;
+}
+.e2c-directory .stat-label {
+    color: #65758a;
+    font-size: .84rem;
+    font-weight: 700;
+}
+.e2c-directory .directory-stat strong {
+    display: block;
+    color: var(--dir-navy);
+    font-size: 2rem;
+    line-height: 1.35;
+    font-weight: 800;
+}
+.e2c-directory .stat-note {
+    color: var(--dir-muted);
+    font-size: .76rem;
+}
+.e2c-directory .directory-panel { overflow: hidden; }
+.e2c-directory .directory-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--dir-border);
+}
+.e2c-directory .directory-panel-heading h2 {
+    color: var(--dir-navy);
+    font-size: 1.12rem;
+    font-weight: 800;
+    margin: 0 0 5px;
+}
+.e2c-directory .directory-panel-heading p {
+    color: var(--dir-muted);
+    font-size: .84rem;
+    margin: 0;
+}
+.e2c-directory .directory-heading-icon {
+    color: var(--dir-blue);
+    font-size: 2rem;
+}
+.e2c-directory .directory-summary-table thead th,
+.e2c-directory .directory-table thead th {
+    padding: 14px 16px;
+    background: #f1f5f9;
+    color: #34465c;
+    border-bottom: 1px solid var(--dir-border);
+    font-size: .76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+    white-space: nowrap;
+}
+.e2c-directory .directory-summary-table tbody td {
+    padding: 13px 16px;
+    border-color: #edf1f5;
+}
+.e2c-directory .directory-number {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 34px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #edf4fb;
+    color: var(--dir-blue);
+    font-weight: 800;
+}
+.e2c-directory .directory-filters {
+    padding: 20px 24px;
+    background: #fbfcfe;
+    border-bottom: 1px solid var(--dir-border);
+}
+.e2c-directory .directory-filters label {
+    display: block;
+    margin-bottom: 6px;
+    color: #34465c;
+    font-size: .8rem;
+    font-weight: 700;
+}
+.e2c-directory .directory-filters .form-control {
+    min-height: 43px;
+    border-color: #dce4ed;
+    border-radius: 9px;
+    font-size: .88rem;
+}
+.e2c-directory .directory-filters .form-control:focus {
+    border-color: #6d99c5;
+    box-shadow: 0 0 0 .2rem rgba(36,91,145,.12);
+}
+.e2c-directory .directory-filter-help {
+    color: var(--dir-muted);
+    font-size: .78rem;
+}
+.e2c-directory .directory-result-count {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: #edf4fb;
+    color: var(--dir-blue);
+    font-size: .8rem;
+}
+.e2c-directory .directory-table { min-width: 900px; }
+.e2c-directory .directory-table tbody td {
+    padding: 15px 16px;
+    border-color: #edf1f5;
+    font-size: .84rem;
+    vertical-align: top;
+}
+.e2c-directory .directory-table tbody tr:hover { background: #f8fbff; }
+.e2c-directory .directory-beneficiary {
+    display: block;
+    color: var(--dir-navy);
+    font-weight: 800;
+}
+.e2c-directory .directory-subline {
+    display: block;
+    margin-top: 5px;
+    color: var(--dir-muted);
+    font-size: .76rem;
+}
+.e2c-directory .directory-frein-text {
+    min-width: 190px;
+    max-width: 350px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+.e2c-directory .directory-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: .73rem;
+    font-weight: 800;
+}
+.e2c-directory .directory-status-danger { background: #fff0ef; color: #b33c35; }
+.e2c-directory .directory-status-success { background: #eaf6ef; color: #247348; }
+.e2c-directory .directory-status-neutral { background: #f0f2f5; color: #64748b; }
+.e2c-directory .directory-stage {
+    display: inline-block;
+    color: var(--dir-blue);
+    font-weight: 800;
+}
+.e2c-directory .directory-counts {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #53677e;
+    font-size: .76rem;
+    font-weight: 700;
+}
+.e2c-directory .directory-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 20px;
+    background: #fbfcfe;
+    color: var(--dir-muted);
+    font-size: .75rem;
+}
+.e2c-directory .directory-confidentiality {
+    color: #68788d;
+    font-size: .78rem;
+}
+@media (max-width: 767.98px) {
+    .e2c-directory .directory-hero { padding: 25px 21px; }
+    .e2c-directory .directory-hero-icon { display: none; }
+    .e2c-directory .directory-panel-heading { padding: 18px; }
+    .e2c-directory .directory-filters { padding: 17px; }
+    .e2c-directory .directory-list-heading { align-items: flex-start; flex-direction: column; }
+}
+@media print {
+    @page { size: landscape; margin: 12mm; }
+    body { background: #fff !important; }
+    .e2c-directory .directory-hero {
+        color: #142b4a !important;
+        background: #fff !important;
+        border: 1px solid #142b4a;
+        box-shadow: none;
+        padding: 15px;
+    }
+    .e2c-directory .directory-hero h1,
+    .e2c-directory .directory-hero p { color: #142b4a !important; }
+    .e2c-directory .directory-hero .btn,
+    .e2c-directory .directory-filters,
+    .e2c-directory .directory-confidentiality { display: none !important; }
+    .e2c-directory .directory-stat,
+    .e2c-directory .directory-panel { box-shadow: none; break-inside: avoid; }
+    .e2c-directory .directory-table { min-width: 0; }
+    .e2c-directory .directory-table thead th,
+    .e2c-directory .directory-summary-table thead th {
+        color: #142b4a !important;
+        background: #edf1f5 !important;
+        print-color-adjust: exact;
+    }
+    .e2c-directory .directory-table tbody tr[hidden] { display: none !important; }
+}
+</style>
+
+<script>
+(function () {
+    'use strict';
+
+    const table = document.getElementById('tableFreins');
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const lignes = Array.from(tbody.querySelectorAll('tr[data-beneficiaire]'));
+
+    const champs = {
+        beneficiaire: document.getElementById('filtreBeneficiaire'),
+        metier: document.getElementById('filtreMetier'),
+        referent: document.getElementById('filtreReferent'),
+        frein: document.getElementById('filtreFrein')
+    };
+
+    const resultat = document.getElementById('resultCount');
+    const aucunResultat = document.getElementById('aucunResultat');
+    const total = document.getElementById('statTotal');
+    const abandons = document.getElementById('statAbandons');
+    const boutonReset = document.getElementById('reinitialiserFiltres');
+
+    function normaliser(texte) {
+        return (texte || '')
+            .toLocaleLowerCase('fr')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+    }
+
+    function appliquerFiltres() {
+        const criteres = {};
+        Object.keys(champs).forEach(function (cle) {
+            criteres[cle] = normaliser(champs[cle].value);
+        });
+
+        let visibles = 0;
+        let abandonSignales = 0;
+
+        lignes.forEach(function (ligne) {
+            const correspond =
+                normaliser(ligne.dataset.beneficiaire).includes(criteres.beneficiaire) &&
+                normaliser(ligne.dataset.metier).includes(criteres.metier) &&
+                normaliser(ligne.dataset.referent).includes(criteres.referent) &&
+                normaliser(ligne.dataset.frein).includes(criteres.frein);
+
+            ligne.hidden = !correspond;
+
+            if (correspond) {
+                visibles++;
+                if (ligne.dataset.abandon === 'OUI') abandonSignales++;
+            }
+        });
+
+        if (aucunResultat) aucunResultat.hidden = visibles !== 0;
+        if (resultat) resultat.textContent = visibles;
+        if (total) total.textContent = visibles;
+        if (abandons) abandons.textContent = abandonSignales;
+    }
+
+    Object.values(champs).forEach(function (champ) {
+        if (champ) champ.addEventListener('input', appliquerFiltres);
+    });
+
+    if (boutonReset) {
+        boutonReset.addEventListener('click', function () {
+            Object.values(champs).forEach(function (champ) {
+                if (champ) champ.value = '';
+            });
+            appliquerFiltres();
+        });
+    }
+
+    appliquerFiltres();
+})();
+</script>
+{% endblock %}

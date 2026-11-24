@@ -1,0 +1,649 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des entreprises d'accueil{% endblock %}
+
+{% block body %}
+<style>
+    .entreprises-page {
+        --daip-blue: #174c83;
+        --daip-blue-dark: #10375f;
+        --daip-light: #edf4fb;
+        color: #26374a;
+    }
+
+    .entreprises-page .page-header {
+        background: linear-gradient(120deg, #123c68, #2468a5);
+        border-radius: 18px;
+        padding: 30px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(20, 61, 102, .16);
+    }
+
+    .entreprises-page .page-header::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border: 35px solid rgba(255,255,255,.07);
+        border-radius: 50%;
+        right: -65px;
+        top: -110px;
+    }
+
+    .entreprises-page .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .entreprises-page .page-header p {
+        color: rgba(255,255,255,.78);
+        margin-bottom: 0;
+    }
+
+    .entreprises-page .btn-new {
+        background: #fff;
+        color: var(--daip-blue);
+        border: 0;
+        border-radius: 9px;
+        font-weight: 700;
+        padding: 11px 18px;
+        position: relative;
+        z-index: 1;
+        transition: .2s ease;
+    }
+
+    .entreprises-page .btn-new:hover {
+        background: #eaf2fa;
+        transform: translateY(-2px);
+    }
+
+    .entreprises-page .stat-card {
+        background: #fff;
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        padding: 19px;
+        height: 100%;
+        box-shadow: 0 3px 12px rgba(25, 50, 75, .045);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .entreprises-page .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(25, 50, 75, .09);
+    }
+
+    .entreprises-page .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+
+    .entreprises-page .icon-blue { background: #e9f2fc; color: #2163a0; }
+    .entreprises-page .icon-green { background: #e6f6ed; color: #198754; }
+    .entreprises-page .icon-gray { background: #eef0f3; color: #66717d; }
+    .entreprises-page .icon-violet { background: #f0eaff; color: #7250b5; }
+
+    .entreprises-page .stat-label {
+        font-size: .83rem;
+        color: #778493;
+        font-weight: 600;
+    }
+
+    .entreprises-page .stat-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #243b53;
+        line-height: 1.2;
+        margin-top: 5px;
+    }
+
+    .entreprises-page .panel {
+        background: #fff;
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        box-shadow: 0 3px 12px rgba(25, 50, 75, .045);
+        overflow: hidden;
+    }
+
+    .entreprises-page .panel-heading {
+        padding: 19px 22px;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .entreprises-page .panel-heading h5 {
+        color: #263f59;
+        font-size: 1rem;
+        font-weight: 750;
+        margin: 0;
+    }
+
+    .entreprises-page .form-label {
+        color: #4c5d70;
+        font-size: .83rem;
+        font-weight: 650;
+        margin-bottom: 7px;
+    }
+
+    .entreprises-page .form-control,
+    .entreprises-page .form-select {
+        border: 1px solid #dce4ed;
+        border-radius: 8px;
+        min-height: 43px;
+        font-size: .9rem;
+    }
+
+    .entreprises-page .form-control:focus,
+    .entreprises-page .form-select:focus {
+        border-color: #5592ca;
+        box-shadow: 0 0 0 .2rem rgba(40, 112, 180, .12);
+    }
+
+    .entreprises-page .btn-filter {
+        min-height: 43px;
+        background: var(--daip-blue);
+        border-color: var(--daip-blue);
+        border-radius: 8px;
+        font-weight: 650;
+    }
+
+    .entreprises-page .btn-filter:hover {
+        background: var(--daip-blue-dark);
+    }
+
+    .entreprises-page .btn-reset {
+        min-height: 43px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .entreprises-page .table {
+        font-size: .89rem;
+    }
+
+    .entreprises-page .table thead th {
+        background: #f5f8fc;
+        color: #607185;
+        font-size: .75rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .045em;
+        padding: 15px 17px;
+        border-bottom: 1px solid #e7edf3;
+        white-space: nowrap;
+    }
+
+    .entreprises-page .table tbody td {
+        padding: 16px 17px;
+        border-color: #edf1f5;
+        vertical-align: middle;
+    }
+
+    .entreprises-page .table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .entreprises-page .table tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    .entreprises-page .company-name {
+        color: #244664;
+        font-weight: 750;
+    }
+
+    .entreprises-page .company-subtitle {
+        color: #8592a0;
+        font-size: .78rem;
+        margin-top: 4px;
+    }
+
+    .entreprises-page .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 30px;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .entreprises-page .status-active {
+        background: #e5f6ec;
+        color: #167346;
+    }
+
+    .entreprises-page .status-inactive {
+        background: #eef0f3;
+        color: #66717d;
+    }
+
+    .entreprises-page .action-btn {
+        border-radius: 7px;
+        font-size: .78rem;
+        font-weight: 650;
+        padding: 6px 10px;
+    }
+
+    .entreprises-page .empty-state {
+        padding: 55px 20px;
+        text-align: center;
+    }
+
+    .entreprises-page .empty-state .empty-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 18px;
+        background: #edf4fb;
+        color: #4779a9;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+
+    .entreprises-page .pagination .page-link {
+        color: var(--daip-blue);
+        border-radius: 7px;
+        margin: 0 3px;
+        border-color: #e5ebf2;
+        font-size: .85rem;
+    }
+
+    .entreprises-page .pagination .page-item.active .page-link {
+        background: var(--daip-blue);
+        border-color: var(--daip-blue);
+        color: #fff;
+    }
+
+    .entreprises-page .result-count {
+        background: #edf4fb;
+        color: #285d8e;
+        border-radius: 20px;
+        padding: 5px 10px;
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 767.98px) {
+        .entreprises-page .page-header {
+            padding: 23px 19px;
+        }
+
+        .entreprises-page .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .entreprises-page .btn-new {
+            width: 100%;
+        }
+
+        .entreprises-page .stat-card {
+            padding: 15px;
+        }
+
+        .entreprises-page .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .entreprises-page .panel-heading {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 entreprises-page">
+
+    {# En-tête #}
+    <div class="page-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 position-relative">
+            <div>
+                <div class="small fw-semibold mb-2 text-white-50">
+                    DAIP / GESTION ADMINISTRATIVE
+                </div>
+                <h1 style="color: #ffffff !important;"><i class="bi bi-buildings me-2"></i>
+                    Entreprises d'accueil
+                </h1>
+                <p>Annuaire et gestion des structures accueillant les apprentis</p>
+            </div>
+
+            <a href="{{ path('admin_entreprises_new') }}" class="btn btn-new">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle entreprise
+            </a>
+        </div>
+    </div>
+
+    {# Notifications #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
+
+    {# Indicateurs #}
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon icon-blue">
+                        <i class="bi bi-buildings"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Total entreprises</div>
+                        <div class="stat-number">{{ statistiques.total }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon icon-green">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Entreprises actives</div>
+                        <div class="stat-number">{{ statistiques.actives }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon icon-gray">
+                        <i class="bi bi-pause-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Entreprises inactives</div>
+                        <div class="stat-number">{{ statistiques.inactives }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon icon-violet">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Résultats affichés</div>
+                        <div class="stat-number">{{ total }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# Recherche et filtres #}
+    <div class="panel mb-4">
+        <div class="panel-heading">
+            <h5><i class="bi bi-funnel me-2 text-primary"></i>Recherche et filtres</h5>
+        </div>
+
+        <div class="p-3 p-md-4">
+            <form method="get" action="{{ path('admin_entreprises_index') }}">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-lg-7">
+                        <label for="recherche-entreprise" class="form-label">
+                            Rechercher une entreprise
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input
+                                id="recherche-entreprise"
+                                type="search"
+                                name="q"
+                                class="form-control border-start-0"
+                                value="{{ recherche }}"
+                                placeholder="Raison sociale, sigle, ville ou secteur..."
+                            >
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <label for="statut-entreprise" class="form-label">Statut de l'entreprise</label>
+                        <select id="statut-entreprise" name="statut" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="ACTIVE" {{ statutFiltre == 'ACTIVE' ? 'selected' : '' }}>
+                                Active
+                            </option>
+                            <option value="INACTIVE" {{ statutFiltre == 'INACTIVE' ? 'selected' : '' }}>
+                                Inactive
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-filter flex-grow-1">
+                            <i class="bi bi-search me-1"></i> Filtrer
+                        </button>
+                        <a
+                            href="{{ path('admin_entreprises_index') }}"
+                            class="btn btn-outline-secondary btn-reset"
+                            title="Réinitialiser les filtres"
+                            aria-label="Réinitialiser les filtres"
+                        >
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Annuaire #}
+    <div class="panel">
+
+        <div class="panel-heading d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5><i class="bi bi-journal-text me-2 text-primary"></i>Répertoire des entreprises</h5>
+                <div class="small text-muted mt-1">
+                    Structures partenaires de formation et d'apprentissage
+                </div>
+            </div>
+            <span class="result-count">
+                {{ total }} résultat(s)
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>Secteur d'activité</th>
+                        <th>Localisation</th>
+                        <th>Coordonnées</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for entreprise in entreprises %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="stat-icon icon-blue" style="width:38px;height:38px;font-size:1rem;">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div>
+                                    <div class="company-name">{{ entreprise.raisonSociale }}</div>
+                                    {% if entreprise.sigle %}
+                                        <div class="company-subtitle">{{ entreprise.sigle }}</div>
+                                    {% else %}
+                                        <div class="company-subtitle">Entreprise partenaire</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if entreprise.secteurActivite %}
+                                {{ entreprise.secteurActivite }}
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <i class="bi bi-geo-alt text-muted me-1"></i>
+                            {{ entreprise.ville ?: 'Non renseignée' }}
+                        </td>
+
+                        <td>
+                            {% if entreprise.telephone %}
+                                <div><i class="bi bi-telephone text-muted me-1"></i>{{ entreprise.telephone }}</div>
+                            {% else %}
+                                <div class="text-muted">Téléphone non renseigné</div>
+                            {% endif %}
+
+                            {% if entreprise.email %}
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-envelope me-1"></i>{{ entreprise.email }}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if entreprise.statut == 'ACTIVE' %}
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-circle-fill" style="font-size:6px;"></i>
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-inactive">
+                                    <i class="bi bi-circle-fill" style="font-size:6px;"></i>
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end text-nowrap">
+                            <div class="d-inline-flex gap-1">
+                                <a
+                                    href="{{ path('admin_entreprises_show', {id: entreprise.id}) }}"
+                                    class="btn btn-sm btn-outline-primary action-btn"
+                                    title="Consulter l'entreprise"
+                                >
+                                    <i class="bi bi-eye me-1"></i>Voir
+                                </a>
+                                <a
+                                    href="{{ path('admin_entreprises_edit', {id: entreprise.id}) }}"
+                                    class="btn btn-sm btn-outline-secondary action-btn"
+                                    title="Modifier l'entreprise"
+                                >
+                                    <i class="bi bi-pencil-square me-1"></i>Modifier
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-buildings"></i>
+                                </div>
+                                <h5 class="fw-bold text-secondary">Aucune entreprise trouvée</h5>
+                                <p class="text-muted mb-3">
+                                    {% if recherche or statutFiltre %}
+                                        Aucun résultat ne correspond à vos critères de recherche.
+                                    {% else %}
+                                        L'annuaire ne contient pas encore d'entreprise d'accueil.
+                                    {% endif %}
+                                </p>
+                                {% if recherche or statutFiltre %}
+                                    <a href="{{ path('admin_entreprises_index') }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                        Effacer les filtres
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('admin_entreprises_new') }}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Ajouter une entreprise
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Pagination #}
+        {% if nombrePages > 1 %}
+            <div class="p-3 border-top">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <small class="text-muted">
+                        Page {{ page }} sur {{ nombrePages }}
+                    </small>
+
+                    <nav aria-label="Pagination des entreprises">
+                        <ul class="pagination mb-0">
+
+                            <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
+                                <a class="page-link"
+                                   href="{{ path('admin_entreprises_index', {q: recherche, statut: statutFiltre, page: page - 1}) }}"
+                                   aria-label="Page précédente">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            {% for numero in 1..nombrePages %}
+                                <li class="page-item {{ numero == page ? 'active' : '' }}">
+                                    <a class="page-link"
+                                       href="{{ path('admin_entreprises_index', {q: recherche, statut: statutFiltre, page: numero}) }}">
+                                        {{ numero }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            <li class="page-item {{ page >= nombrePages ? 'disabled' : '' }}">
+                                <a class="page-link"
+                                   href="{{ path('admin_entreprises_index', {q: recherche, statut: statutFiltre, page: page + 1}) }}"
+                                   aria-label="Page suivante">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <div class="text-muted small mt-3">
+        <i class="bi bi-shield-check me-1"></i>
+        Annuaire administratif des entreprises d'accueil — Plateforme E2C-MENAET.
+    </div>
+
+</div>
+{% endblock %}
+

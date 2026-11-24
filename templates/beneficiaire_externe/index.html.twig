@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Intégrations externes | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .integration-page { color: #243447; }
+    .integration-header {
+        background: linear-gradient(120deg, #2469a8, #5B9BD5);
+        color: #fff; border-radius: 18px; padding: 28px;
+        box-shadow: 0 8px 24px rgba(36,105,168,.16);
+    }
+    .integration-header h1 { color: #fff; font-weight: 750; }
+    .integration-header p { color: rgba(255,255,255,.9); margin-bottom: 0; }
+    .integration-header .btn { border-radius: 10px; font-weight: 650; padding: 11px 18px; }
+    .integration-stat {
+        background: #fff; border: 1px solid #e8eef5; border-radius: 15px;
+        padding: 20px; height: 100%; box-shadow: 0 4px 16px rgba(31,55,80,.045);
+    }
+    .integration-stat-label { color: #718096; font-size: .88rem; font-weight: 600; }
+    .integration-stat-value { font-size: 1.9rem; font-weight: 750; margin-top: 8px; }
+    .integration-panel {
+        background: #fff; border: 1px solid #e8eef5; border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(31,55,80,.05); overflow: hidden;
+    }
+    .integration-panel-title { font-weight: 700; color: #243447; }
+    .integration-filters {
+        background: #f8fafc; padding: 18px; border-bottom: 1px solid #e8eef5;
+    }
+    .integration-filters .form-control { min-height: 43px; border-radius: 9px; }
+    .integration-table { margin-bottom: 0; vertical-align: middle; }
+    .integration-table thead th {
+        background: #f1f6fb; color: #53677c; font-size: .76rem;
+        text-transform: uppercase; letter-spacing: .045em; font-weight: 750;
+        padding: 15px 13px; white-space: nowrap;
+    }
+    .integration-table tbody td { padding: 14px 13px; border-color: #edf1f5; }
+    .integration-table tbody tr:hover { background: #f8fbfe; }
+    .integration-empty { padding: 48px 20px !important; text-align: center; color: #718096; }
+    .integration-tag {
+        display: inline-block; padding: 6px 10px; border-radius: 30px;
+        font-size: .75rem; font-weight: 700; background: #e9f2fb; color: #2469a8;
+    }
+</style>
+
+<div class="integration-page">
+    <div class="integration-header mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+            <div>
+                <h1 class="h3 mb-2">Intégration des bénéficiaires externes</h1>
+                <p>Importation des listes transmises par les partenaires et préparation à la validation administrative.</p>
+            </div>
+            <a href="{{ path('integration_externe_nouveau') }}" class="btn btn-light">
+                + Nouveau lot d'importation
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="integration-stat">
+                <div class="integration-stat-label">Lots importés</div>
+                <div class="integration-stat-value">{{ nombreLots }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="integration-stat">
+                <div class="integration-stat-label">Bénéficiaires enregistrés</div>
+                <div class="integration-stat-value">{{ totalBeneficiaires }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="integration-stat">
+                <div class="integration-stat-label">En attente de validation</div>
+                <div class="integration-stat-value text-warning">{{ enAttente }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="integration-panel">
+        <div class="p-3 p-md-4 border-bottom">
+            <h2 class="h5 integration-panel-title mb-0">Historique des lots d'importation</h2>
+        </div>
+
+        <form method="get" class="integration-filters">
+            <div class="row g-2">
+                <div class="col-md-9">
+                    <input
+                        type="search"
+                        name="q"
+                        class="form-control"
+                        value="{{ recherche }}"
+                        placeholder="Rechercher par programme, partenaire ou référence..."
+                    >
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button class="btn btn-primary" type="submit">Rechercher</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table integration-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Programme</th>
+                        <th>Partenaire</th>
+                        <th>Référence</th>
+                        <th>Fichier source</th>
+                        <th>Importateur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for lot in lots %}
+                    <tr>
+                        <td class="text-nowrap">{{ lot.dateImport|date('d/m/Y H:i') }}</td>
+                        <td class="fw-semibold">{{ lot.programme }}</td>
+                        <td>{{ lot.partenaire }}</td>
+                        <td>
+                            {% if lot.referenceLot %}
+                                <span class="integration-tag">{{ lot.referenceLot }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ lot.fichierOriginal }}</td>
+                        <td>{{ lot.importePar.email|default('—') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="integration-empty">
+                            <div class="fw-semibold mb-2">Aucun lot d'importation enregistré</div>
+                            <div class="small mb-3">Créez un premier lot pour importer les bénéficiaires transmis par un partenaire.</div>
+                            <a href="{{ path('integration_externe_nouveau') }}" class="btn btn-primary btn-sm">
+                                Créer un lot
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 border-top small text-muted">
+            Les bénéficiaires importés restent en attente de validation. Aucun dossier candidat ni admission n'est créé à cette étape.
+        </div>
+    </div>
+</div>
+{% endblock %}

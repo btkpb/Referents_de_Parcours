@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des convocations | E2C-MENAET{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <div class="text-uppercase small fw-bold text-primary mb-1">
+                MENAET - DAIP · Recrutement
+            </div>
+            <h1 class="h3 fw-bold mb-1">Historique des convocations</h1>
+            <p class="text-muted mb-0">
+                Les 100 dernières tentatives d’envoi enregistrées.
+            </p>
+        </div>
+
+        <a href="{{ path('recruitment_interviews') }}"
+           class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Retour aux entretiens
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date de tentative</th>
+                        <th>Candidat</th>
+                        <th>Numéro</th>
+                        <th>Entretien</th>
+                        <th>Destinataire</th>
+                        <th>Canal</th>
+                        <th>Statut</th>
+                        <th>Date d’envoi</th>
+                        <th>Erreur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for envoi in envois %}
+                    <tr>
+                        <td class="text-nowrap">
+                            {{ envoi.dateTentative|date('d/m/Y H:i:s') }}
+                        </td>
+                        <td>
+                            {% if envoi.candidat %}
+                                {{ envoi.candidat.nom }}
+                                {{ envoi.candidat.prenoms }}
+                            {% else %}
+                                <span class="text-muted">Candidat indisponible</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ envoi.candidat ? envoi.candidat.numero : '—' }}
+                        </td>
+                        <td>
+                            {% if envoi.entretien %}
+                                #{{ envoi.entretien.id }}
+                                <div class="small text-muted">
+                                    {{ envoi.entretien.dateHeure
+                                        ? envoi.entretien.dateHeure|date('d/m/Y H:i')
+                                        : 'Date non définie' }}
+                                </div>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ envoi.destinataire ?: '—' }}</td>
+                        <td>{{ envoi.canal }}</td>
+                        <td>
+                            {% if envoi.statut == 'ENVOYE' %}
+                                <span class="badge text-bg-success">Envoyé</span>
+                            {% elseif envoi.statut == 'SANS_EMAIL' %}
+                                <span class="badge text-bg-warning">Sans e-mail</span>
+                            {% elseif envoi.statut == 'ECHEC' %}
+                                <span class="badge text-bg-danger">Échec</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">
+                                    {{ envoi.statut }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            {{ envoi.dateEnvoi
+                                ? envoi.dateEnvoi|date('d/m/Y H:i:s')
+                                : '—' }}
+                        </td>
+                        <td>
+                            {% if envoi.erreur %}
+                                <span title="{{ envoi.erreur }}">
+                                    {{ envoi.erreur|length > 100
+                                        ? envoi.erreur|slice(0, 100) ~ '…'
+                                        : envoi.erreur }}
+                                </span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            Aucune tentative de convocation enregistrée.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-white text-muted small">
+            {{ envois|length }} tentative(s) affichée(s).
+        </div>
+    </div>
+</div>
+{% endblock %}

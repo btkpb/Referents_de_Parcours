@@ -1,0 +1,97 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des campagnes - E2C{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Gestion des campagnes de recrutement</h1>
+            <p class="text-muted mb-0">CrÃ©ation, activation, clÃ´ture et suivi des campagnes.</p>
+        </div>
+        <a href="{{ path('admin_campagnes_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Nouvelle campagne
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if campagnes is empty %}
+                <div class="alert alert-info mb-0">
+                    Aucune campagne enregistrÃ©e.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Campagne</th>
+                                <th>PÃ©riode</th>
+                                <th>Ã‚ges</th>
+                                <th>Quota global</th>
+                                <th>Quotas mÃ©tiers</th>
+                                <th>Candidatures</th>
+                                <th>Statut</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for campagne in campagnes %}
+                            <tr>
+                                <td class="fw-semibold">{{ campagne.nom }}</td>
+                                <td>
+                                    {{ campagne.dateDebut|date('d/m/Y') }}
+                                    <span class="text-muted">au</span>
+                                    {{ campagne.dateFin|date('d/m/Y') }}
+                                </td>
+                                <td>{{ campagne.ageMin }} Ã  {{ campagne.ageMax }} ans</td>
+                                <td>{{ campagne.quotaGlobal is null ? 'Non dÃ©fini' : campagne.quotaGlobal }}</td>
+                                <td>{{ campagne.total_quotas }}</td>
+                                <td><span class="badge bg-secondary">{{ campagne.nombre_candidats }}</span></td>
+                                <td>
+                                    {% if campagne.active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex flex-wrap justify-content-end gap-1">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           href="{{ path('admin_campagnes_edit', {id: campagne.id}) }}">
+                                            Modifier
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-dark"
+                                           href="{{ path('admin_campagnes_quotas', {id: campagne.id}) }}">
+                                            Quotas
+                                        </a>
+                                        {% if not campagne.active %}
+                                            <form method="post" action="{{ path('admin_campagnes_activate', {id: campagne.id}) }}"
+                                                  onsubmit="return confirm('Activer cette campagne et dÃ©sactiver toute autre campagne active ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('activer_campagne_' ~ campagne.id) }}">
+                                                <button class="btn btn-sm btn-success" type="submit">Activer</button>
+                                            </form>
+                                        {% else %}
+                                            <form method="post" action="{{ path('admin_campagnes_close', {id: campagne.id}) }}"
+                                                  onsubmit="return confirm('ClÃ´turer cette campagne ? Les candidatures seront conservÃ©es.');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cloturer_campagne_' ~ campagne.id) }}">
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">ClÃ´turer</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+        <strong>Important :</strong> une seule campagne peut Ãªtre active Ã  la fois.
+        La clÃ´ture dâ€™une campagne ne supprime ni ses candidats ni son historique.
+    </div>
+</div>
+{% endblock %}

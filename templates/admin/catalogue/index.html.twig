@@ -1,0 +1,639 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration du catalogue | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .catalogue-page {
+            --cat-blue: #245b91;
+            --cat-light: #5B9BD5;
+            --cat-ink: #24364b;
+            --cat-muted: #718096;
+            color: var(--cat-ink);
+        }
+
+        .catalogue-hero {
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+            border-radius: 18px;
+            color: #fff;
+            background: linear-gradient(120deg, #194875 0%, #245b91 52%, #5B9BD5 100%);
+            box-shadow: 0 10px 28px rgba(28, 76, 120, .18);
+        }
+
+        .catalogue-hero h1 {
+            color: #fff;
+            font-weight: 750;
+            letter-spacing: -.4px;
+        }
+
+        .catalogue-hero p {
+            color: rgba(255,255,255,.86);
+        }
+
+        .catalogue-hero .hero-label {
+            display: inline-block;
+            padding: .35rem .75rem;
+            margin-bottom: .8rem;
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .7px;
+            text-transform: uppercase;
+        }
+
+        .catalogue-hero .btn {
+            font-weight: 600;
+        }
+
+        .catalogue-stat {
+            height: 100%;
+            padding: 1.2rem 1.35rem;
+            border: 1px solid #e8eef5;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 0 5px 18px rgba(35, 65, 95, .055);
+        }
+
+        .catalogue-stat .stat-label {
+            color: var(--cat-muted);
+            font-size: .85rem;
+            font-weight: 600;
+        }
+
+        .catalogue-stat .stat-value {
+            display: block;
+            margin-top: .3rem;
+            color: var(--cat-blue);
+            font-size: 2rem;
+            font-weight: 750;
+            line-height: 1.2;
+        }
+
+        .catalogue-stat .stat-detail {
+            color: var(--cat-muted);
+            font-size: .78rem;
+        }
+
+        .catalogue-section {
+            overflow: hidden;
+            border: 1px solid #e7edf4;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 6px 22px rgba(35, 65, 95, .055);
+        }
+
+        .catalogue-section-header {
+            padding: 1.2rem 1.4rem;
+            color: #fff;
+            background: linear-gradient(110deg, #245b91, #397db5);
+        }
+
+        .catalogue-section-header h2 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.12rem;
+            font-weight: 700;
+        }
+
+        .catalogue-section-header p {
+            margin: .25rem 0 0;
+            color: rgba(255,255,255,.82);
+            font-size: .82rem;
+        }
+
+        .catalogue-section-body {
+            padding: 1.25rem;
+        }
+
+        .catalogue-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .catalogue-search {
+            position: relative;
+            flex: 1 1 250px;
+            max-width: 430px;
+        }
+
+        .catalogue-search input {
+            min-height: 43px;
+            padding-left: 2.5rem;
+            border-color: #dce5ef;
+            border-radius: 10px;
+        }
+
+        .catalogue-search .search-symbol {
+            position: absolute;
+            top: 50%;
+            left: .9rem;
+            color: #8192a5;
+            transform: translateY(-50%);
+        }
+
+        .catalogue-filter {
+            min-width: 155px;
+            min-height: 43px;
+            border-color: #dce5ef;
+            border-radius: 10px;
+        }
+
+        .catalogue-table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .catalogue-table thead th {
+            padding: .9rem .8rem;
+            border-bottom: 1px solid #dfe7f0;
+            background: #f3f7fb;
+            color: #42566d;
+            font-size: .76rem;
+            font-weight: 750;
+            letter-spacing: .45px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .catalogue-table tbody td {
+            padding: .9rem .8rem;
+            border-color: #edf1f5;
+            color: #435469;
+            font-size: .9rem;
+        }
+
+        .catalogue-table tbody tr:hover {
+            background: #f7faff;
+        }
+
+        .catalogue-item-name {
+            color: #244d76;
+            font-weight: 700;
+        }
+
+        .catalogue-description {
+            display: block;
+            max-width: 280px;
+            overflow: hidden;
+            color: #718096;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .catalogue-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .38rem .7rem;
+            border-radius: 30px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .catalogue-status::before {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            content: "";
+        }
+
+        .catalogue-status.active {
+            color: #167447;
+            background: #e6f5ed;
+        }
+
+        .catalogue-status.inactive {
+            color: #667085;
+            background: #eef1f4;
+        }
+
+        .catalogue-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            justify-content: flex-end;
+        }
+
+        .catalogue-actions .btn {
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .catalogue-notice {
+            display: flex;
+            gap: .8rem;
+            align-items: flex-start;
+            padding: 1rem 1.2rem;
+            border: 1px solid #cfe2f5;
+            border-radius: 12px;
+            color: #315d83;
+            background: #eff7ff;
+            font-size: .88rem;
+        }
+
+        .catalogue-empty {
+            padding: 2.5rem 1rem;
+            color: #718096;
+            text-align: center;
+        }
+
+        .catalogue-empty strong {
+            display: block;
+            margin-bottom: .35rem;
+            color: #40566e;
+        }
+
+        .catalogue-count {
+            color: #718096;
+            font-size: .8rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .catalogue-hero {
+                padding: 1.4rem;
+            }
+
+            .catalogue-section-body {
+                padding: .85rem;
+            }
+
+            .catalogue-toolbar {
+                align-items: stretch;
+            }
+
+            .catalogue-search {
+                max-width: none;
+            }
+
+            .catalogue-filter {
+                width: 100%;
+            }
+
+            .catalogue-actions {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+
+<div class="container-fluid catalogue-page py-4 px-3 px-lg-4">
+
+    <header class="catalogue-hero mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+            <div>
+                <span class="hero-label">Administration E2C-MENAET</span>
+                <h1 class="h2 mb-2">Gestion du catalogue</h1>
+                <p class="mb-0">
+                    Pilotez les métiers de formation et les établissements partenaires
+                    de votre dispositif.
+                </p>
+            </div>
+            <a class="btn btn-light px-4 py-2"
+               href="{{ path('dashboard') }}">
+                ← Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="catalogue-stat">
+                <span class="stat-label">Établissements enregistrés</span>
+                <span class="stat-value">{{ etablissements|length }}</span>
+                <span class="stat-detail">{{ etablissements|filter(e => e.actif == 1)|length }} établissement(s) actif(s)</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="catalogue-stat">
+                <span class="stat-label">Métiers référencés</span>
+                <span class="stat-value">{{ metiers|length }}</span>
+                <span class="stat-detail">{{ metiers|filter(m => m.actif == 1)|length }} métier(s) actif(s)</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="catalogue-stat">
+                <span class="stat-label">Établissements désactivés</span>
+                <span class="stat-value">{{ etablissements|length - (etablissements|filter(e => e.actif == 1)|length) }}</span>
+                <span class="stat-detail">Historique conservé</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="catalogue-stat">
+                <span class="stat-label">Métiers désactivés</span>
+                <span class="stat-value">{{ metiers|length - (metiers|filter(m => m.actif == 1)|length) }}</span>
+                <span class="stat-detail">Réactivation possible</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="catalogue-notice mb-4">
+        <span aria-hidden="true">ℹ</span>
+        <div>
+            <strong>Gestion de l'historique :</strong>
+            le retrait d'un élément le désactive du catalogue public sans supprimer
+            son historique. Pour le réactiver, utilisez « Modifier » puis cochez
+            « Actif dans le catalogue public ».
+        </div>
+    </div>
+
+    {# ETABLISSEMENTS #}
+    <section class="catalogue-section mb-4">
+        <div class="catalogue-section-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h2>Établissements de formation</h2>
+                <p>Gestion des structures et partenaires de formation.</p>
+            </div>
+            <a class="btn btn-light btn-sm px-3"
+               href="{{ path('admin_catalogue_etablissement_new') }}">
+                + Ajouter un établissement
+            </a>
+        </div>
+
+        <div class="catalogue-section-body">
+            <div class="catalogue-toolbar">
+                <div class="catalogue-search">
+                    <span class="search-symbol" aria-hidden="true">⌕</span>
+                    <input type="search"
+                           class="form-control catalogue-filter-search"
+                           data-table="table-etablissements"
+                           placeholder="Rechercher un établissement, une ville..."
+                           aria-label="Rechercher un établissement">
+                </div>
+                <select class="form-select catalogue-filter"
+                        data-filter-table="table-etablissements"
+                        aria-label="Filtrer les établissements">
+                    <option value="all">Tous les états</option>
+                    <option value="1">Actifs uniquement</option>
+                    <option value="0">Désactivés uniquement</option>
+                </select>
+                <span class="catalogue-count" id="count-etablissements">
+                    {{ etablissements|length }} élément(s)
+                </span>
+            </div>
+
+            {% if etablissements is empty %}
+                <div class="catalogue-empty">
+                    <strong>Aucun établissement enregistré</strong>
+                    Commencez par ajouter votre premier établissement.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover catalogue-table" id="table-etablissements">
+                        <thead>
+                            <tr>
+                                <th>Établissement</th>
+                                <th>Ville</th>
+                                <th>Description</th>
+                                <th>État</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in etablissements %}
+                                <tr data-status="{{ e.actif }}"
+                                    data-search="{{ (e.nom ~ ' ' ~ e.ville ~ ' ' ~ (e.description|default('')))|lower }}">
+                                    <td><span class="catalogue-item-name">{{ e.nom }}</span></td>
+                                    <td>{{ e.ville }}</td>
+                                    <td>
+                                        <span class="catalogue-description"
+                                              title="{{ e.description|default('') }}">
+                                            {{ e.description|default('—')|slice(0, 110) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if e.actif == 1 %}
+                                            <span class="catalogue-status active">Actif</span>
+                                        {% else %}
+                                            <span class="catalogue-status inactive">Désactivé</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="catalogue-actions">
+                                            <a class="btn btn-sm btn-outline-primary"
+                                               href="{{ path('admin_catalogue_etablissement_edit', {id: e.id}) }}">
+                                                Modifier
+                                            </a>
+                                            {% if e.actif == 1 %}
+                                                <form method="post"
+                                                      action="{{ path('admin_catalogue_etablissement_delete', {id: e.id}) }}"
+                                                      onsubmit="return confirm('Retirer cet établissement du catalogue public ?');">
+                                                    <input type="hidden" name="_token"
+                                                           value="{{ csrf_token('supprimer_etablissement_' ~ e.id) }}">
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                        Désactiver
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="catalogue-empty d-none" id="empty-etablissements">
+                    <strong>Aucun résultat</strong>
+                    Modifiez votre recherche ou votre filtre.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    {# METIERS #}
+    <section class="catalogue-section mb-4">
+        <div class="catalogue-section-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h2>Métiers de formation</h2>
+                <p>Gestion des métiers proposés dans le cadre du dispositif.</p>
+            </div>
+            <a class="btn btn-light btn-sm px-3"
+               href="{{ path('admin_catalogue_metier_new') }}">
+                + Ajouter un métier
+            </a>
+        </div>
+
+        <div class="catalogue-section-body">
+            <div class="catalogue-toolbar">
+                <div class="catalogue-search">
+                    <span class="search-symbol" aria-hidden="true">⌕</span>
+                    <input type="search"
+                           class="form-control catalogue-filter-search"
+                           data-table="table-metiers"
+                           placeholder="Rechercher un métier, un secteur..."
+                           aria-label="Rechercher un métier">
+                </div>
+                <select class="form-select catalogue-filter"
+                        data-filter-table="table-metiers"
+                        aria-label="Filtrer les métiers">
+                    <option value="all">Tous les états</option>
+                    <option value="1">Actifs uniquement</option>
+                    <option value="0">Désactivés uniquement</option>
+                </select>
+                <span class="catalogue-count" id="count-metiers">
+                    {{ metiers|length }} élément(s)
+                </span>
+            </div>
+
+            {% if metiers is empty %}
+                <div class="catalogue-empty">
+                    <strong>Aucun métier enregistré</strong>
+                    Commencez par ajouter votre premier métier.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover catalogue-table" id="table-metiers">
+                        <thead>
+                            <tr>
+                                <th>Métier</th>
+                                <th>Secteur</th>
+                                <th>Description</th>
+                                <th>État</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in metiers %}
+                                <tr data-status="{{ m.actif }}"
+                                    data-search="{{ (m.nom ~ ' ' ~ m.secteur ~ ' ' ~ (m.description|default('')))|lower }}">
+                                    <td><span class="catalogue-item-name">{{ m.nom }}</span></td>
+                                    <td>{{ m.secteur }}</td>
+                                    <td>
+                                        <span class="catalogue-description"
+                                              title="{{ m.description|default('') }}">
+                                            {{ m.description|default('—')|slice(0, 110) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if m.actif == 1 %}
+                                            <span class="catalogue-status active">Actif</span>
+                                        {% else %}
+                                            <span class="catalogue-status inactive">Désactivé</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="catalogue-actions">
+                                            <a class="btn btn-sm btn-outline-primary"
+                                               href="{{ path('admin_catalogue_metier_edit', {id: m.id}) }}">
+                                                Modifier
+                                            </a>
+                                            {% if m.actif == 1 %}
+                                                <form method="post"
+                                                      action="{{ path('admin_catalogue_metier_delete', {id: m.id}) }}"
+                                                      onsubmit="return confirm('Retirer ce métier du catalogue public ?');">
+                                                    <input type="hidden" name="_token"
+                                                           value="{{ csrf_token('supprimer_metier_' ~ m.id) }}">
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                        Désactiver
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="catalogue-empty d-none" id="empty-metiers">
+                    <strong>Aucun résultat</strong>
+                    Modifiez votre recherche ou votre filtre.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function normaliser(texte) {
+        return (texte || '')
+            .toLocaleLowerCase('fr')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function filtrer(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+
+        const section = table.closest('.catalogue-section');
+        const recherche = section.querySelector(
+            '.catalogue-filter-search[data-table="' + tableId + '"]'
+        );
+        const filtre = section.querySelector(
+            '.catalogue-filter[data-filter-table="' + tableId + '"]'
+        );
+        const lignes = Array.from(table.querySelectorAll('tbody tr'));
+        const terme = normaliser(recherche ? recherche.value.trim() : '');
+        const etat = filtre ? filtre.value : 'all';
+        let visibles = 0;
+
+        lignes.forEach(function (ligne) {
+            const texte = normaliser(ligne.dataset.search || '');
+            const statut = ligne.dataset.status || '';
+            const correspondRecherche = texte.includes(terme);
+            const correspondEtat = etat === 'all' || statut === etat;
+            const afficher = correspondRecherche && correspondEtat;
+
+            ligne.hidden = !afficher;
+            if (afficher) visibles++;
+        });
+
+        const compteur = document.getElementById(
+            tableId === 'table-etablissements'
+                ? 'count-etablissements'
+                : 'count-metiers'
+        );
+        if (compteur) {
+            compteur.textContent = visibles + ' résultat(s) sur ' + lignes.length;
+        }
+
+        const messageVide = document.getElementById(
+            tableId === 'table-etablissements'
+                ? 'empty-etablissements'
+                : 'empty-metiers'
+        );
+        if (messageVide) {
+            messageVide.classList.toggle('d-none', visibles !== 0);
+        }
+
+        table.classList.toggle('d-none', visibles === 0);
+    }
+
+    document.querySelectorAll('.catalogue-filter-search').forEach(function (champ) {
+        champ.addEventListener('input', function () {
+            filtrer(champ.dataset.table);
+        });
+    });
+
+    document.querySelectorAll('.catalogue-filter').forEach(function (selecteur) {
+        selecteur.addEventListener('change', function () {
+            filtrer(selecteur.dataset.filterTable);
+        });
+    });
+});
+</script>
+{% endblock %}

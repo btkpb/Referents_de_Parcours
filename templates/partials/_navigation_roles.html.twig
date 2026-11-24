@@ -1,0 +1,70 @@
+{% if app.user %}
+<nav class="border-bottom bg-light" aria-label="Navigation selon le profil">
+    <div class="container-fluid px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+        <span class="small fw-bold text-secondary me-1">NAVIGATION</span>
+
+        <a class="btn btn-sm btn-outline-secondary" href="{{ path('dashboard') }}">Tableau de bord</a>
+
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_configuration_email_index') }}">Configuration des e-mails</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_configuration_email_index') }}">Configuration des e-mails</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_GESTIONNAIRE') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Entretiens et suivis</a>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_profil') }}">Mon profil</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_rendez_vous') }}">Mes rendez-vous</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_parcours') }}">Mon parcours</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_evaluations') }}">Mes evaluations</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_accompagnement') }}">Mon accompagnement</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_notifications') }}">Notifications</a>
+        {% endif %}
+
+        <a class="btn btn-sm btn-outline-dark ms-auto" href="{{ path('app_logout') }}">Deconnexion</a>
+    </div>
+</nav>
+{% endif %}

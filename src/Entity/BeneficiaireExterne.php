@@ -1,0 +1,466 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'beneficiaire_externe')]
+#[ORM\Index(name: 'IDX_BENEF_EXT_LOT', columns: ['lot_import_id'])]
+#[ORM\Index(name: 'IDX_BENEF_EXT_STATUT', columns: ['statut_validation'])]
+#[ORM\Index(name: 'IDX_BENEF_EXT_PIECE', columns: ['type_piece', 'numero_piece_identite'])]
+class BeneficiaireExterne
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 100)]
+    private string $nom = '';
+
+    #[ORM\Column(length: 160)]
+    private string $prenoms = '';
+
+    #[ORM\Column(length: 10)]
+    private string $sexe = '';
+
+    #[ORM\Column(name: 'date_naissance', type: 'date')]
+    private ?\DateTimeInterface $dateNaissance = null;
+
+    #[ORM\Column(length: 30)]
+    private string $telephone = '';
+
+    #[ORM\Column(name: 'telephone_secondaire', length: 30, nullable: true)]
+    private ?string $telephoneSecondaire = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(name: 'lieu_naissance', length: 160, nullable: true)]
+    private ?string $lieuNaissance = null;
+
+    #[ORM\Column(name: 'lieu_residence', length: 160, nullable: true)]
+    private ?string $lieuResidence = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $nationalite = null;
+
+    #[ORM\Column(name: 'type_piece', length: 40, nullable: true)]
+    private ?string $typePiece = null;
+
+    #[ORM\Column(name: 'numero_piece_identite', length: 100, nullable: true)]
+    private ?string $numeroPieceIdentite = null;
+
+    #[ORM\Column(length: 80)]
+    private string $metier = '';
+
+    #[ORM\Column(name: 'niveau_etude', length: 80, nullable: true)]
+    private ?string $niveauEtude = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $diplome = null;
+
+    #[ORM\Column(name: 'ancien_metier', length: 80, nullable: true)]
+    private ?string $ancienMetier = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $disponibilite = null;
+
+    #[ORM\Column(name: 'disponible_le', type: 'date', nullable: true)]
+    private ?\DateTimeInterface $disponibleLe = null;
+
+    #[ORM\Column(name: 'contact_urgence_nom', length: 120, nullable: true)]
+    private ?string $contactUrgenceNom = null;
+
+    #[ORM\Column(name: 'contact_urgence_tel', length: 30, nullable: true)]
+    private ?string $contactUrgenceTel = null;
+
+    #[ORM\Column(name: 'contact_urgence_lien', length: 120, nullable: true)]
+    private ?string $contactUrgenceLien = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $experience = null;
+    #[ORM\Column(name: 'reference_beneficiaire', length: 120, nullable: true)]
+    private ?string $referenceBeneficiaire = null;
+
+    #[ORM\Column(name: 'numero_ligne', nullable: true)]
+    private ?int $numeroLigne = null;
+
+    #[ORM\Column(name: 'statut_validation', length: 30)]
+    private string $statutValidation = 'EN_ATTENTE_VALIDATION';
+
+    #[ORM\Column(name: 'observations_validation', type: 'text', nullable: true)]
+    private ?string $observationsValidation = null;
+
+    #[ORM\ManyToOne(targetEntity: ImportBeneficiaireLot::class)]
+    #[ORM\JoinColumn(name: 'lot_import_id', referencedColumnName: 'id', nullable: false, onDelete: 'RESTRICT')]
+    private ?ImportBeneficiaireLot $lotImport = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'valide_par_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $validePar = null;
+
+    #[ORM\Column(name: 'date_validation', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $dateValidation = null;
+
+    #[ORM\OneToOne(targetEntity: Candidat::class)]
+    #[ORM\JoinColumn(name: 'candidat_id', referencedColumnName: 'id', unique: true, nullable: true, onDelete: 'RESTRICT')]
+    private ?Candidat $candidat = null;
+
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): self
+    {
+        $this->nom = trim($nom);
+        return $this;
+    }
+
+    public function getPrenoms(): string
+    {
+        return $this->prenoms;
+    }
+
+    public function setPrenoms(string $prenoms): self
+    {
+        $this->prenoms = trim($prenoms);
+        return $this;
+    }
+
+    public function getSexe(): string
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(string $sexe): self
+    {
+        $this->sexe = trim($sexe);
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(?\DateTimeInterface $dateNaissance): self
+    {
+        $this->dateNaissance = $dateNaissance;
+        return $this;
+    }
+
+    public function getTelephone(): string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(string $telephone): self
+    {
+        $this->telephone = trim($telephone);
+        return $this;
+    }
+
+    public function getTelephoneSecondaire(): ?string
+    {
+        return $this->telephoneSecondaire;
+    }
+
+    public function setTelephoneSecondaire(?string $telephoneSecondaire): self
+    {
+        $this->telephoneSecondaire = $this->nullableTrim($telephoneSecondaire);
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $this->nullableTrim($email);
+        return $this;
+    }
+
+    public function getLieuNaissance(): ?string
+    {
+        return $this->lieuNaissance;
+    }
+
+    public function setLieuNaissance(?string $lieuNaissance): self
+    {
+        $this->lieuNaissance = $this->nullableTrim($lieuNaissance);
+        return $this;
+    }
+
+    public function getLieuResidence(): ?string
+    {
+        return $this->lieuResidence;
+    }
+
+    public function setLieuResidence(?string $lieuResidence): self
+    {
+        $this->lieuResidence = $this->nullableTrim($lieuResidence);
+        return $this;
+    }
+
+    public function getNationalite(): ?string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(?string $nationalite): self
+    {
+        $this->nationalite = $this->nullableTrim($nationalite);
+        return $this;
+    }
+
+    public function getTypePiece(): ?string
+    {
+        return $this->typePiece;
+    }
+
+    public function setTypePiece(?string $typePiece): self
+    {
+        $this->typePiece = $this->nullableTrim($typePiece);
+        return $this;
+    }
+
+    public function getNumeroPieceIdentite(): ?string
+    {
+        return $this->numeroPieceIdentite;
+    }
+
+    public function setNumeroPieceIdentite(?string $numeroPieceIdentite): self
+    {
+        $this->numeroPieceIdentite = $this->nullableTrim($numeroPieceIdentite);
+        return $this;
+    }
+
+    public function getMetier(): string
+    {
+        return $this->metier;
+    }
+
+    public function setMetier(string $metier): self
+    {
+        $this->metier = trim($metier);
+        return $this;
+    }
+
+    public function getNiveauEtude(): ?string
+    {
+        return $this->niveauEtude;
+    }
+
+    public function setNiveauEtude(?string $niveauEtude): self
+    {
+        $this->niveauEtude = $this->nullableTrim($niveauEtude);
+        return $this;
+    }
+
+    public function getDiplome(): ?string
+    {
+        return $this->diplome;
+    }
+
+    public function setDiplome(?string $diplome): self
+    {
+        $this->diplome = $this->nullableTrim($diplome);
+        return $this;
+    }
+
+    public function getAncienMetier(): ?string
+    {
+        return $this->ancienMetier;
+    }
+
+    public function setAncienMetier(?string $ancienMetier): self
+    {
+        $this->ancienMetier = $this->nullableTrim($ancienMetier);
+        return $this;
+    }
+
+    public function getDisponibilite(): ?string
+    {
+        return $this->disponibilite;
+    }
+
+    public function setDisponibilite(?string $disponibilite): self
+    {
+        $this->disponibilite = $this->nullableTrim($disponibilite);
+        return $this;
+    }
+
+    public function getDisponibleLe(): ?\DateTimeInterface
+    {
+        return $this->disponibleLe;
+    }
+
+    public function setDisponibleLe(?\DateTimeInterface $disponibleLe): self
+    {
+        $this->disponibleLe = $disponibleLe;
+        return $this;
+    }
+
+    public function getContactUrgenceNom(): ?string
+    {
+        return $this->contactUrgenceNom;
+    }
+
+    public function setContactUrgenceNom(?string $contactUrgenceNom): self
+    {
+        $this->contactUrgenceNom = $this->nullableTrim($contactUrgenceNom);
+        return $this;
+    }
+
+    public function getContactUrgenceTel(): ?string
+    {
+        return $this->contactUrgenceTel;
+    }
+
+    public function setContactUrgenceTel(?string $contactUrgenceTel): self
+    {
+        $this->contactUrgenceTel = $this->nullableTrim($contactUrgenceTel);
+        return $this;
+    }
+
+    public function getContactUrgenceLien(): ?string
+    {
+        return $this->contactUrgenceLien;
+    }
+
+    public function setContactUrgenceLien(?string $contactUrgenceLien): self
+    {
+        $this->contactUrgenceLien = $this->nullableTrim($contactUrgenceLien);
+        return $this;
+    }
+
+    public function getExperience(): ?string
+    {
+        return $this->experience;
+    }
+
+    public function setExperience(?string $experience): self
+    {
+        $this->experience = $this->nullableTrim($experience);
+        return $this;
+    }
+    public function getReferenceBeneficiaire(): ?string
+    {
+        return $this->referenceBeneficiaire;
+    }
+
+    public function setReferenceBeneficiaire(?string $referenceBeneficiaire): self
+    {
+        $this->referenceBeneficiaire = $this->nullableTrim($referenceBeneficiaire);
+        return $this;
+    }
+
+    public function getNumeroLigne(): ?int
+    {
+        return $this->numeroLigne;
+    }
+
+    public function setNumeroLigne(?int $numeroLigne): self
+    {
+        $this->numeroLigne = $numeroLigne;
+        return $this;
+    }
+
+    public function getStatutValidation(): string
+    {
+        return $this->statutValidation;
+    }
+
+    public function setStatutValidation(string $statutValidation): self
+    {
+        $this->statutValidation = trim($statutValidation);
+        return $this;
+    }
+
+    public function getObservationsValidation(): ?string
+    {
+        return $this->observationsValidation;
+    }
+
+    public function setObservationsValidation(?string $observationsValidation): self
+    {
+        $this->observationsValidation = $observationsValidation;
+        return $this;
+    }
+
+    public function getLotImport(): ?ImportBeneficiaireLot
+    {
+        return $this->lotImport;
+    }
+
+    public function setLotImport(?ImportBeneficiaireLot $lotImport): self
+    {
+        $this->lotImport = $lotImport;
+        return $this;
+    }
+
+    public function getValidePar(): ?User
+    {
+        return $this->validePar;
+    }
+
+    public function setValidePar(?User $validePar): self
+    {
+        $this->validePar = $validePar;
+        return $this;
+    }
+
+    public function getDateValidation(): ?\DateTimeImmutable
+    {
+        return $this->dateValidation;
+    }
+
+    public function setDateValidation(?\DateTimeImmutable $dateValidation): self
+    {
+        $this->dateValidation = $dateValidation;
+        return $this;
+    }
+
+    public function getCandidat(): ?Candidat
+    {
+        return $this->candidat;
+    }
+
+    public function setCandidat(?Candidat $candidat): self
+    {
+        $this->candidat = $candidat;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    private function nullableTrim(?string $value): ?string
+    {
+        return $value !== null && trim($value) !== ''
+            ? trim($value)
+            : null;
+    }
+}

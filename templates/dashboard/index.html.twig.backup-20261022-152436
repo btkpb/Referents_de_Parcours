@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}{% block body %}<div class="d-flex justify-content-between align-items-center mb-4"><div><h1>Tableau de bord</h1><p class="text-muted">Pilotage du recrutement et de l'accompagnement psycho-social.</p></div></div><div class="row g-3">{% for k,v in stats %}<div class="col-md-3"><div class="card metric shadow-sm"><div class="card-body"><div class="text-muted text-uppercase small">{{k}}</div><div class="display-6 fw-bold">{{v}}</div></div></div></div>{% endfor %}</div><div class="row mt-4 g-3"><div class="col-lg-8"><div class="card shadow-sm"><div class="card-body"><h5>Parcours métier</h5><div class="progress my-3" style="height:18px"><div class="progress-bar" style="width:72%">Recrutement</div></div><div class="progress my-3" style="height:18px"><div class="progress-bar bg-warning text-dark" style="width:54%">Visites médicales</div></div><div class="progress my-3" style="height:18px"><div class="progress-bar bg-success" style="width:38%">Suivi</div></div></div></div></div><div class="col-lg-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5>Accès rapides</h5>
+
+            {% if is_granted('ROLE_GESTIONNAIRE') %}
+                <a class="btn btn-primary w-100 mb-2"
+                   href="{{ path('public_inscription') }}">
+                    Nouvelle inscription
+                </a>
+                <a class="btn btn-outline-primary w-100 mb-2"
+                   href="{{ path('candidat_index') }}">
+                    Consulter les candidatures
+                </a>
+            {% endif %}
+
+            {% if is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY') %}
+                <a class="btn btn-outline-primary w-100 mb-2"
+                   href="{{ path('recruitment_interviews') }}">
+                    Gérer les entretiens
+                </a>
+            {% endif %}
+
+            {% if is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL') %}
+                <a class="btn btn-outline-primary w-100 mb-2"
+                   href="{{ path('medical_index') }}">
+                    Visites médicales
+                </a>
+            {% endif %}
+
+            {% if is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') %}
+                <a class="btn btn-outline-primary w-100 mb-2"
+                   href="{{ path('followup_index') }}">
+                    Ouvrir le suivi
+                </a>
+                <a class="btn btn-outline-primary w-100"
+                   href="{{ path('annuaire') }}">
+                    Annuaire des apprentis
+                </a>
+            {% endif %}
+
+            {% if not is_granted('ROLE_GESTIONNAIRE')
+                and not is_granted('ROLE_JURY')
+                and not is_granted('ROLE_MEDICAL')
+                and not is_granted('ROLE_REFERENT') %}
+                <p class="text-muted small mb-0">
+                    Aucun accès rapide n'est disponible pour votre rôle.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div></div>{% endblock %}

@@ -1,0 +1,79 @@
+{% set routeActive = app.request.attributes.get('_route') %}
+
+<nav class="nav nav-pills flex-wrap gap-2 mb-4 apprenti-menu"
+     aria-label="Menu espace apprenti">
+
+    <a class="nav-link {{ routeActive == 'apprenti_accueil' ? 'active' : '' }}"
+       href="{{ path('apprenti_accueil') }}"
+       {% if routeActive == 'apprenti_accueil' %}aria-current="page"{% endif %}>
+        Tableau de bord
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_profil' ? 'active' : '' }}"
+       href="{{ path('apprenti_profil') }}"
+       {% if routeActive == 'apprenti_profil' %}aria-current="page"{% endif %}>
+        Mon profil
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_rendez_vous' ? 'active' : '' }}"
+       href="{{ path('apprenti_rendez_vous') }}"
+       {% if routeActive == 'apprenti_rendez_vous' %}aria-current="page"{% endif %}>
+        Mes rendez-vous
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_parcours' ? 'active' : '' }}"
+       href="{{ path('apprenti_parcours') }}"
+       {% if routeActive == 'apprenti_parcours' %}aria-current="page"{% endif %}>
+        Mon parcours
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_evaluations' ? 'active' : '' }}"
+       href="{{ path('apprenti_evaluations') }}"
+       {% if routeActive == 'apprenti_evaluations' %}aria-current="page"{% endif %}>
+        Mes évaluations
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_accompagnement' ? 'active' : '' }}"
+       href="{{ path('apprenti_accompagnement') }}"
+       {% if routeActive == 'apprenti_accompagnement' %}aria-current="page"{% endif %}>
+        Mon accompagnement
+    </a>
+
+    <a class="nav-link {{ routeActive == 'apprenti_notifications' ? 'active' : '' }}"
+       href="{{ path('apprenti_notifications') }}"
+       {% if routeActive == 'apprenti_notifications' %}aria-current="page"{% endif %}>
+        Mes notifications
+        {% if notificationsNonLues|default(0) > 0 %}
+            <span class="badge rounded-pill bg-danger ms-1">
+                {{ notificationsNonLues }}
+            </span>
+        {% endif %}
+    </a>
+
+</nav>
+
+<style>
+    .apprenti-menu {
+        background: #fff;
+        border: 1px solid #e3edf7;
+        border-radius: 14px;
+        padding: 10px;
+        box-shadow: 0 3px 14px rgba(31,67,105,.04);
+    }
+    .apprenti-menu .nav-link {
+        color: #36516d;
+        font-weight: 600;
+        font-size: .9rem;
+        border-radius: 9px;
+        padding: 9px 14px;
+        transition: background .2s ease, color .2s ease;
+    }
+    .apprenti-menu .nav-link:hover {
+        background: #eaf4ff;
+        color: #145da0;
+    }
+    .apprenti-menu .nav-link.active {
+        background: #145da0;
+        color: #fff;
+    }
+</style>

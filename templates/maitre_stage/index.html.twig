@@ -1,0 +1,719 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace Maître de stage | E2C-MENAET{% endblock %}
+
+{% block body %}
+
+<style>
+.ms-dashboard {
+    --ms-blue: #174a78;
+    --ms-blue-dark: #103557;
+    --ms-light: #edf4fa;
+    --ms-border: #e4eaf0;
+    --ms-text: #25364a;
+    color: var(--ms-text);
+    padding-bottom: 2rem;
+}
+
+.ms-dashboard .ms-hero {
+    background: linear-gradient(120deg, #103557 0%, #174a78 55%, #397eac 100%);
+    color: white;
+    border-radius: 18px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(16, 53, 87, .17);
+}
+
+.ms-dashboard .ms-hero::after {
+    content: "";
+    position: absolute;
+    width: 270px;
+    height: 270px;
+    right: -90px;
+    top: -115px;
+    border: 35px solid rgba(255,255,255,.08);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.ms-dashboard .ms-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.ms-dashboard .ms-kicker {
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.76);
+}
+
+.ms-dashboard .ms-hero h1 {
+    font-size: clamp(1.55rem, 3vw, 2.2rem);
+    font-weight: 750;
+    margin: .45rem 0;
+    color: white;
+}
+
+.ms-dashboard .ms-hero p {
+    color: rgba(255,255,255,.83);
+    max-width: 650px;
+    margin-bottom: 0;
+}
+
+.ms-dashboard .ms-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.24);
+    padding: .48rem .85rem;
+    border-radius: 30px;
+    font-size: .84rem;
+    margin-top: 1rem;
+}
+
+.ms-dashboard .ms-stat-card {
+    background: #fff;
+    border: 1px solid var(--ms-border);
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    box-shadow: 0 4px 15px rgba(20, 45, 70, .035);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.ms-dashboard .ms-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 22px rgba(20, 45, 70, .08);
+}
+
+.ms-dashboard .ms-stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ms-dashboard .ms-stat-label {
+    color: #68788b;
+    font-size: .86rem;
+    font-weight: 600;
+}
+
+.ms-dashboard .ms-stat-number {
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 750;
+    margin-top: .65rem;
+    color: var(--ms-blue-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.ms-dashboard .ms-stat-icon {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    background: var(--ms-light);
+    color: var(--ms-blue);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.ms-dashboard .ms-section-card {
+    background: white;
+    border: 1px solid var(--ms-border);
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(20, 45, 70, .035);
+    overflow: hidden;
+}
+
+.ms-dashboard .ms-section-heading {
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--ms-border);
+}
+
+.ms-dashboard .ms-section-heading h2 {
+    color: var(--ms-blue-dark);
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ms-dashboard .ms-section-heading p {
+    font-size: .84rem;
+    color: #758397;
+    margin: .35rem 0 0;
+}
+
+.ms-dashboard .ms-filter {
+    background: #f7f9fc;
+    border-bottom: 1px solid var(--ms-border);
+    padding: 17px 22px;
+}
+
+.ms-dashboard .form-control,
+.ms-dashboard .form-select {
+    min-height: 43px;
+    border-color: #dce4ed;
+    border-radius: 9px;
+    font-size: .9rem;
+}
+
+.ms-dashboard .form-control:focus,
+.ms-dashboard .form-select:focus {
+    border-color: #6795bc;
+    box-shadow: 0 0 0 .2rem rgba(51, 117, 168, .12);
+}
+
+.ms-dashboard .btn-ms-primary {
+    background: var(--ms-blue);
+    border-color: var(--ms-blue);
+    color: white;
+    border-radius: 9px;
+    font-weight: 650;
+    padding: .65rem 1rem;
+}
+
+.ms-dashboard .btn-ms-primary:hover {
+    background: var(--ms-blue-dark);
+    border-color: var(--ms-blue-dark);
+    color: white;
+}
+
+.ms-dashboard .btn-ms-light {
+    color: var(--ms-blue);
+    border: 1px solid #cbd9e6;
+    background: white;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.ms-dashboard .ms-table {
+    margin: 0;
+    min-width: 850px;
+}
+
+.ms-dashboard .ms-table thead th {
+    background: #f3f6fa;
+    color: #63748a;
+    font-size: .73rem;
+    text-transform: uppercase;
+    letter-spacing: .055em;
+    font-weight: 750;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--ms-border);
+    white-space: nowrap;
+}
+
+.ms-dashboard .ms-table tbody td {
+    padding: 16px 18px;
+    border-color: #edf1f5;
+    vertical-align: middle;
+    font-size: .88rem;
+}
+
+.ms-dashboard .ms-table tbody tr:hover {
+    background: #f8fbfe;
+}
+
+.ms-dashboard .ms-person {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 195px;
+}
+
+.ms-dashboard .ms-avatar {
+    flex: 0 0 39px;
+    width: 39px;
+    height: 39px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--ms-blue);
+    background: #eaf2f9;
+    font-weight: 750;
+}
+
+.ms-dashboard .ms-person-name {
+    color: #25364a;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.ms-dashboard .ms-person-number {
+    color: #8290a0;
+    font-size: .76rem;
+    margin-top: 3px;
+}
+
+.ms-dashboard .ms-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 30px;
+    padding: 6px 10px;
+    font-size: .76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ms-dashboard .ms-status-active {
+    color: #18734a;
+    background: #e8f6ee;
+}
+
+.ms-dashboard .ms-status-history {
+    color: #657386;
+    background: #eef1f5;
+}
+
+.ms-dashboard .ms-action {
+    white-space: nowrap;
+    font-size: .8rem;
+    font-weight: 650;
+    border-radius: 8px;
+}
+
+.ms-dashboard .ms-empty {
+    text-align: center;
+    padding: 55px 20px;
+}
+
+.ms-dashboard .ms-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    margin: 0 auto 16px;
+    background: #edf4fa;
+    color: var(--ms-blue);
+    font-size: 1.8rem;
+}
+
+.ms-dashboard .ms-empty h3 {
+    color: var(--ms-blue-dark);
+    font-weight: 700;
+    font-size: 1.08rem;
+}
+
+.ms-dashboard .ms-note {
+    background: #edf4fa;
+    border: 1px solid #d8e6f2;
+    border-radius: 12px;
+    padding: 15px 18px;
+    color: #375773;
+    font-size: .87rem;
+}
+
+.ms-dashboard .ms-pagination .page-link {
+    border-color: var(--ms-border);
+    color: var(--ms-blue);
+    min-width: 37px;
+    text-align: center;
+}
+
+.ms-dashboard .ms-pagination .active .page-link {
+    background: var(--ms-blue);
+    border-color: var(--ms-blue);
+    color: white;
+}
+
+.ms-dashboard .ms-pagination .disabled .page-link {
+    color: #aab4bf;
+}
+
+@media (max-width: 767.98px) {
+    .ms-dashboard .ms-hero {
+        padding: 23px 20px;
+        border-radius: 14px;
+    }
+
+    .ms-dashboard .ms-stat-card {
+        padding: 16px;
+    }
+
+    .ms-dashboard .ms-stat-number {
+        font-size: 1.65rem;
+    }
+
+    .ms-dashboard .ms-filter {
+        padding: 15px;
+    }
+
+    .ms-dashboard .ms-section-heading {
+        padding: 17px 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ms-dashboard * {
+        transition: none !important;
+    }
+}
+
+/* Identité utilisateur et bascule entre les deux présentations */
+.ms-dashboard .ms-profile {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ms-dashboard .switch-design {
+    display: inline-block;
+    padding: 11px 15px;
+    border: 1px solid rgba(255,255,255,.6);
+    border-radius: 10px;
+    color: white;
+    background: rgba(255,255,255,.12);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: .85rem;
+    transition: background .2s ease, color .2s ease;
+}
+
+.ms-dashboard .switch-design:hover {
+    background: white;
+    color: var(--ms-blue-dark);
+}
+</style>
+
+<div class="container-fluid py-4 ms-dashboard">
+
+    {# EN-TETE #}
+    <section class="ms-hero mb-4">
+        <div class="ms-hero-content">
+            <div class="ms-kicker">Plateforme E2C-MENAET • Suivi en entreprise</div>
+
+            <h1>Espace Maître de stage</h1>
+
+            <p>
+                Pilotez le suivi de vos apprentis, consultez leurs affectations
+                et préparez leurs fiches officielles d'évaluation en entreprise.
+            </p>
+
+            <div class="ms-profile">
+    <span aria-hidden="true">●</span>
+    <span>Espace : {{ profilEspace }} · {{ utilisateurNomComplet|upper }}</span>
+
+    <a href="{{ path('maitre_stage_index', app.request.query.all|merge({'affichage':'classique'})) }}"
+       class="switch-design">
+        ↶ Utiliser le design classique
+    </a>
+</div>
+        </div>
+    </section>
+
+    {# INDICATEURS #}
+    <section class="row g-3 mb-4" aria-label="Indicateurs de suivi">
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="ms-stat-card">
+                <div class="ms-stat-top">
+                    <span class="ms-stat-label">Total des dossiers suivis</span>
+                    <span class="ms-stat-icon" aria-hidden="true">▤</span>
+                </div>
+                <div class="ms-stat-number">{{ totalAffectations }}</div>
+                <div class="text-muted small mt-2">Affectations dans votre périmètre</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="ms-stat-card">
+                <div class="ms-stat-top">
+                    <span class="ms-stat-label">Affectations actives</span>
+                    <span class="ms-stat-icon" aria-hidden="true">✓</span>
+                </div>
+                <div class="ms-stat-number">{{ affectationsActives }}</div>
+                <div class="text-muted small mt-2">Apprentis actuellement affectés</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="ms-stat-card">
+                <div class="ms-stat-top">
+                    <span class="ms-stat-label">Historique</span>
+                    <span class="ms-stat-icon" aria-hidden="true">↻</span>
+                </div>
+                <div class="ms-stat-number">{{ affectationsHistoriques }}</div>
+                <div class="text-muted small mt-2">Affectations terminées ou clôturées</div>
+            </div>
+        </div>
+
+    </section>
+
+    {# LISTE DES APPRENTIS #}
+    <section class="ms-section-card mb-4">
+
+        <div class="ms-section-heading d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2>Répertoire des apprentis</h2>
+                <p>
+                    Consultez les affectations et accédez aux fiches de suivi autorisées.
+                </p>
+            </div>
+
+            <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                {{ totalResultats }} résultat(s)
+            </span>
+        </div>
+
+        {# FILTRES SERVEUR #}
+        <form method="get"
+              action="{{ path('maitre_stage_index') }}"
+              class="ms-filter">
+
+            <div class="row g-2 align-items-end">
+
+                <div class="col-12 col-lg-6">
+                    <label for="ms-search" class="form-label small fw-semibold">
+                        Rechercher un apprenti
+                    </label>
+                    <input
+                        type="search"
+                        id="ms-search"
+                        name="q"
+                        class="form-control"
+                        placeholder="Nom, prénoms, numéro ou métier..."
+                        value="{{ recherche }}"
+                        maxlength="80">
+                </div>
+
+                <div class="col-12 col-sm-7 col-lg-3">
+                    <label for="ms-etat" class="form-label small fw-semibold">
+                        Situation de l'affectation
+                    </label>
+                    <select id="ms-etat" name="etat" class="form-select">
+                        <option value="tous" {% if etat == 'tous' %}selected{% endif %}>
+                            Toutes les affectations
+                        </option>
+                        <option value="actives" {% if etat == 'actives' %}selected{% endif %}>
+                            Affectations actives
+                        </option>
+                        <option value="historique" {% if etat == 'historique' %}selected{% endif %}>
+                            Historique
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-sm-5 col-lg-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-ms-primary flex-grow-1">
+                        Rechercher
+                    </button>
+                    <a href="{{ path('maitre_stage_index') }}"
+                       class="btn btn-ms-light px-3"
+                       title="Effacer les filtres"
+                       aria-label="Effacer les filtres">
+                        ↺
+                    </a>
+                </div>
+
+            </div>
+        </form>
+
+        {# TABLEAU #}
+        {% if lignes is not empty %}
+
+            <div class="table-responsive">
+                <table class="table ms-table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th scope="col">Apprenti</th>
+                            <th scope="col">Métier</th>
+                            <th scope="col">Début d'affectation</th>
+                            <th scope="col">Fin d'affectation</th>
+                            <th scope="col">Situation</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for ligne in lignes %}
+
+                        {% set candidat = ligne.candidat %}
+                        {% set affectation = ligne.affectation %}
+                        {% set nom = candidat.nom|default('') %}
+                        {% set prenoms = candidat.prenoms|default('') %}
+
+                        <tr>
+                            <td>
+                                <div class="ms-person">
+                                    <div class="ms-avatar" aria-hidden="true">
+                                        {{ nom|slice(0, 1)|upper }}{{ prenoms|slice(0, 1)|upper }}
+                                    </div>
+
+                                    <div>
+                                        <div class="ms-person-name">
+                                            {{ nom }} {{ prenoms }}
+                                        </div>
+                                        <div class="ms-person-number">
+                                            {{ candidat.numero|default('Numéro non renseigné') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="fw-semibold">
+                                    {{ candidat.metier|default('Non renseigné') }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ affectation.dateDebut
+                                    ? affectation.dateDebut|date('d/m/Y')
+                                    : '—' }}
+                            </td>
+
+                            <td>
+                                {{ affectation.dateFin
+                                    ? affectation.dateFin|date('d/m/Y')
+                                    : '—' }}
+                            </td>
+
+                            <td>
+                                {% if ligne.active %}
+                                    <span class="ms-status ms-status-active">
+                                        <span aria-hidden="true">●</span>
+                                        En cours
+                                    </span>
+                                {% else %}
+                                    <span class="ms-status ms-status-history">
+                                        <span aria-hidden="true">●</span>
+                                        Historique
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                {% if profilEspace == 'Maître de stage' and ligne.active %}
+                                    <a
+                                        class="btn btn-sm btn-ms-primary ms-action"
+                                        href="{{ path(
+                                            'maitre_stage_evaluation_nouvelle',
+                                            {id: candidat.id}
+                                        ) }}">
+                                        Nouvelle fiche
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">Consultation</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# PAGINATION #}
+            {% if totalPages > 1 %}
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 px-3 px-md-4 py-3 border-top">
+
+                    <div class="small text-muted">
+                        Page {{ pageCourante }} sur {{ totalPages }}
+                        · {{ totalResultats }} résultat(s)
+                    </div>
+
+                    <nav aria-label="Pagination des apprentis">
+                        <ul class="pagination pagination-sm ms-pagination mb-0">
+
+                            <li class="page-item {% if pageCourante <= 1 %}disabled{% endif %}">
+                                <a class="page-link"
+                                   href="{{ path('maitre_stage_index', {
+                                       page: pageCourante - 1,
+                                       q: recherche,
+                                       etat: etat
+                                   }) }}"
+                                   aria-label="Page précédente">
+                                    &laquo;
+                                </a>
+                            </li>
+
+                            {% for numeroPage in range(1, totalPages) %}
+                                {% if numeroPage <= 3
+                                    or numeroPage > totalPages - 3
+                                    or (numeroPage >= pageCourante - 1
+                                        and numeroPage <= pageCourante + 1) %}
+
+                                    <li class="page-item {% if numeroPage == pageCourante %}active{% endif %}">
+                                        <a class="page-link"
+                                           href="{{ path('maitre_stage_index', {
+                                               page: numeroPage,
+                                               q: recherche,
+                                               etat: etat
+                                           }) }}">
+                                            {{ numeroPage }}
+                                        </a>
+                                    </li>
+
+                                {% elseif numeroPage == 4 or numeroPage == totalPages - 3 %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            <li class="page-item {% if pageCourante >= totalPages %}disabled{% endif %}">
+                                <a class="page-link"
+                                   href="{{ path('maitre_stage_index', {
+                                       page: pageCourante + 1,
+                                       q: recherche,
+                                       etat: etat
+                                   }) }}"
+                                   aria-label="Page suivante">
+                                    &raquo;
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+
+        {% else %}
+
+            <div class="ms-empty">
+                <div class="ms-empty-icon" aria-hidden="true">⌕</div>
+
+                {% if recherche != '' or etat != 'tous' %}
+                    <h3>Aucun résultat ne correspond à votre recherche</h3>
+                    <p class="text-muted mb-3">
+                        Modifiez vos critères ou réinitialisez les filtres.
+                    </p>
+                    <a href="{{ path('maitre_stage_index') }}"
+                       class="btn btn-ms-light">
+                        Réinitialiser la recherche
+                    </a>
+                {% else %}
+                    <h3>Aucune affectation disponible</h3>
+                    <p class="text-muted mb-0">
+                        Aucun apprenti ne figure actuellement dans votre périmètre
+                        d'affectation.
+                    </p>
+                {% endif %}
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    {# INFORMATION INSTITUTIONNELLE #}
+    <div class="ms-note">
+        <strong>Référentiel de formation et qualité du suivi.</strong>
+        Les compétences techniques doivent être évaluées à partir du
+        Référentiel de Formation correspondant au métier de l'apprenti.
+        Les évaluations antérieures et les affectations terminées doivent
+        rester conservées pour assurer la traçabilité du parcours.
+    </div>
+
+</div>
+{% endblock %}

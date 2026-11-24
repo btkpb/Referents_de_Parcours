@@ -1,0 +1,419 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Candidat;
+use App\Entity\Campagne;
+use App\Service\CandidatService;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Routing\Attribute\Route;
+
+class PublicController extends AbstractController
+{
+    private const SESSION_KEY = 'candidature_en_cours';
+
+    #[Route('/inscription', name: 'public_inscription', methods: ['GET', 'POST'])]
+    public function inscription(Request $request): Response
+    {
+        $session = $request->getSession();
+
+        if ($request->isMethod('POST')) {
+    file_put_contents(
+        $this->getParameter('kernel.project_dir') . '/var/post-debug.txt',
+        json_encode([
+            'content_type' => $request->headers->get('content-type'),
+            'content_length' => $request->headers->get('content-length'),
+            'request_keys' => array_keys($request->request->all()),
+            'candidat_keys' => array_keys(
+                $request->request->all('candidat')
+            ),
+            'php_post_keys' => array_keys($_POST),
+            'php_post_candidat_keys' => array_keys(
+                $_POST['candidat'] ?? []
+            ),
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+    );
+
+    try {
+            try {
+                $data = $request->request->all('candidat');
+
+                if (empty($data)) {
+                    throw new \RuntimeException(
+                        'Aucune donnée de candidature n’a été reçue.'
+                    );
+                }
+
+                $required = [
+                    'nom' => 'Le nom est obligatoire.',
+                    'prenoms' => 'Les prénoms sont obligatoires.',
+                    'sexe' => 'Le sexe est obligatoire.',
+                    'dateNaissance' => 'La date de naissance est obligatoire.',
+                    'nationalite' => 'La nationalité est obligatoire.',
+                    'telephone' => 'Le téléphone est obligatoire.',
+                    'pieceIdentite' => 'Le type de pièce d’identité est obligatoire.',
+                    'niveau' => 'Le niveau est obligatoire.',
+                    'diplome' => 'Le diplôme est obligatoire.',
+                    'metier' => 'Le métier demandé est obligatoire.',
+                    'disponibilite' => 'La disponibilité est obligatoire.',
+                ];
+
+                foreach ($required as $field => $message) {
+                    if (
+                        !isset($data[$field]) ||
+                        trim((string) $data[$field]) === ''
+                    ) {
+                        throw new \RuntimeException($message);
+                    }
+                }
+
+                // Nettoyage des données
+                foreach ($data as $key => $value) {
+                    if (is_string($value)) {
+                        $data[$key] = trim($value);
+                    }
+                }
+
+                // Vérification de la date
+                $dateNaissance = \DateTime::createFromFormat(
+                    'Y-m-d',
+                    (string) $data['dateNaissance']
+                );
+
+                if (!$dateNaissance || $dateNaissance->format('Y-m-d') !== $data['dateNaissance']) {
+                    throw new \RuntimeException(
+                        'La date de naissance est invalide.'
+                    );
+                }
+
+                // Récupération des fichiers
+                $files = $request->files->all('candidat');
+
+                $tempDir = $this->getParameter('kernel.project_dir')
+                    . '/public/uploads/temp';
+
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0775, true);
+                }
+
+                $documents = $session->get(self::SESSION_KEY . '_documents', []);
+
+                foreach ([
+                    'pieceIdentiteFichier',
+                    'diplomeFichier'
+                ] as $field) {
+                    $uploadedFile = $files[$field] ?? null;
+
+                    if (!$uploadedFile instanceof UploadedFile) {
+                        continue;
+                    }
+
+                    if (!$uploadedFile->isValid()) {
+                        throw new \RuntimeException(
+                            'Le fichier "' . $field . '" n’a pas pu être téléchargé.'
+                        );
+                    }
+
+                    if ($uploadedFile->getSize() > 10 * 1024 * 1024) {
+                        throw new \RuntimeException(
+                            'Le fichier "' . $field . '" dépasse la taille maximale de 10 Mo.'
+                        );
+                    }
+
+                    $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+                    $extension = strtolower(
+                        $uploadedFile->guessExtension() ?: ''
+                    );
+
+                    if (!in_array($extension, $allowedExtensions, true)) {
+                        throw new \RuntimeException(
+                            'Le fichier "' . $field . '" doit être au format PDF, JPG, JPEG ou PNG.'
+                        );
+                    }
+
+                    $filename = uniqid('candidature_', true) . '.' . $extension;
+
+                    $uploadedFile->move($tempDir, $filename);
+
+                    // Supprimer l'ancien fichier temporaire si nécessaire
+                    if (
+                        isset($documents[$field]) &&
+                        is_file($tempDir . '/' . $documents[$field])
+                    ) {
+                        @unlink($tempDir . '/' . $documents[$field]);
+                    }
+
+                    $documents[$field] = $filename;
+                }
+
+                // Stockage temporaire en session
+                $session->set(self::SESSION_KEY, $data);
+                $session->set(self::SESSION_KEY . '_documents', $documents);
+
+                return $this->redirectToRoute('public_inscription_recap');
+
+            } catch (\Throwable $e) {
+                $this->addFlash(
+                    'danger',
+                    'Votre candidature n’a pas pu être préparée.'
+                );
+
+                $this->addFlash(
+                    'warning',
+                    $e->getMessage()
+                );
+
+                $session->set(self::SESSION_KEY, $data ?? []);
+
+                return $this->render('public/inscription.html.twig', [
+                    'data' => $data ?? [],
+                ]);
+            }
+        }
+
+        $data = $session->get(self::SESSION_KEY, []);
+
+        return $this->render('public/inscription.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+    #[Route(
+        '/inscription/recapitulatif',
+        name: 'public_inscription_recap',
+        methods: ['GET']
+    )]
+    public function recapitulatif(Request $request): Response
+    {
+        $session = $request->getSession();
+
+        $data = $session->get(self::SESSION_KEY);
+
+        if (!$data) {
+            $this->addFlash(
+                'warning',
+                'Aucune candidature en cours de confirmation.'
+            );
+
+            return $this->redirectToRoute('public_inscription');
+        }
+
+        $documents = $session->get(
+            self::SESSION_KEY . '_documents',
+            []
+        );
+
+        return $this->render('public/recapitulatif.html.twig', [
+            'data' => $data,
+            'documents' => $documents,
+        ]);
+    }
+
+    #[Route(
+        '/inscription/confirmer',
+        name: 'public_inscription_confirmer',
+        methods: ['POST']
+    )]
+    public function confirmer(
+        Request $request,
+        EntityManagerInterface $em,
+        CandidatService $svc,
+        LoggerInterface $logger
+    ): Response {
+        $session = $request->getSession();
+
+        $data = $session->get(self::SESSION_KEY);
+
+        if (!$data) {
+            $this->addFlash(
+                'danger',
+                'Aucune candidature à confirmer.'
+            );
+
+            return $this->redirectToRoute('public_inscription');
+        }
+
+        $documents = $session->get(
+            self::SESSION_KEY . '_documents',
+            []
+        );
+
+        try {
+            $candidat = new Candidat();
+
+            // Données texte
+            $fields = [
+                'nom',
+                'prenoms',
+                'sexe',
+                'lieuNaissance',
+                'lieuResidence',
+                'nationalite',
+                'telephone',
+                'telephoneAlt',
+                'pieceIdentite',
+                'niveau',
+                'diplome',
+                'metier',
+                'ancienMetier',
+                'disponibilite',
+                'contactUrgenceNom',
+                'contactUrgenceTel',
+                'contactUrgenceLien',
+                'experience',
+            ];
+
+            foreach ($fields as $field) {
+                if (array_key_exists($field, $data)) {
+                    $method = 'set' . ucfirst($field);
+
+                    if (!method_exists($candidat, $method)) {
+                        throw new \RuntimeException(
+                            'La méthode ' . $method . '() est absente de l’entité Candidat.'
+                        );
+                    }
+
+                    $value = $data[$field];
+
+                    if ($value === '') {
+                        $value = null;
+                    }
+
+                    $candidat->$method($value);
+                }
+            }
+
+            // Date de naissance
+            if (!empty($data['dateNaissance'])) {
+                $date = \DateTime::createFromFormat(
+                    'Y-m-d',
+                    $data['dateNaissance']
+                );
+
+                if (!$date) {
+                    throw new \RuntimeException(
+                        'La date de naissance est invalide.'
+                    );
+                }
+
+                $candidat->setDateNaissance($date);
+            }
+
+            // Documents
+            $tempDir = $this->getParameter('kernel.project_dir')
+                . '/public/uploads/temp';
+
+            $finalDir = $this->getParameter('kernel.project_dir')
+                . '/public/uploads';
+
+            if (!is_dir($finalDir)) {
+                mkdir($finalDir, 0775, true);
+            }
+
+            foreach ([
+                'pieceIdentiteFichier',
+                'diplomeFichier'
+            ] as $field) {
+                if (empty($documents[$field])) {
+                    continue;
+                }
+
+                $tempFile = $tempDir . '/' . $documents[$field];
+
+                if (!is_file($tempFile)) {
+                    throw new \RuntimeException(
+                        'Le document associé à "' . $field . '" est introuvable.'
+                    );
+                }
+
+                $finalFilename = uniqid('doc_', true) . '_' . basename(
+                    $documents[$field]
+                );
+
+                rename(
+                    $tempFile,
+                    $finalDir . '/' . $finalFilename
+                );
+
+                $setter = 'set' . ucfirst($field);
+
+                if (!method_exists($candidat, $setter)) {
+                    throw new \RuntimeException(
+                        'La méthode ' . $setter . '() est absente de l’entité Candidat.'
+                    );
+                }
+
+                $candidat->$setter($finalFilename);
+            }
+
+            // Éligibilité
+            $eligibilite = $svc->estEligible($candidat);
+
+            if (!is_array($eligibilite)) {
+                throw new \RuntimeException(
+                    'Le service d’éligibilité a retourné une réponse invalide.'
+                );
+            }
+
+            $candidat->setStatut(
+                !empty($eligibilite['eligible'])
+                    ? 'ELIGIBLE'
+                    : 'A_VERIFIER'
+            );
+
+            // Campagne active
+            $campagne = $em
+                ->getRepository(Campagne::class)
+                ->findOneBy(['active' => true]);
+
+            if (!$campagne) {
+                throw new \RuntimeException(
+                    'Aucune campagne de recrutement active n’est configurée.'
+                );
+            }
+
+            $candidat->setCampagne($campagne);
+
+            // Enregistrement définitif
+            $em->persist($candidat);
+            $em->flush();
+
+            // Nettoyage session
+            $session->remove(self::SESSION_KEY);
+            $session->remove(self::SESSION_KEY . '_documents');
+
+            return $this->render('public/success.html.twig', [
+                'candidat' => $candidat,
+                'eligibilite' => $eligibilite,
+            ]);
+
+        } catch (\Throwable $e) {
+
+            $logger->error(
+                'Erreur lors de la confirmation de candidature.',
+                [
+                    'exception' => $e,
+                ]
+            );
+
+            $this->addFlash(
+                'danger',
+                'La candidature n’a pas pu être enregistrée.'
+            );
+
+            $this->addFlash(
+                'warning',
+                'Motif : ' . $e->getMessage()
+            );
+
+            return $this->redirectToRoute(
+                'public_inscription_recap'
+            );
+        }
+    }
+}

@@ -1,0 +1,1892 @@
+﻿
+========== .\src\Controller\AdminUserController.php ==========
+<?php
+
+namespace App\Controller;
+
+use App\Entity\User;
+use App\Entity\Candidat;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[Route('/admin/utilisateurs', name: 'admin_users_')]
+#[IsGranted('ROLE_ADMIN')]
+class AdminUserController extends AbstractController
+{
+    private const PROFILES = [
+        'gestionnaire' => 'ROLE_GESTIONNAIRE',
+        'jury' => 'ROLE_JURY',
+        'referent' => 'ROLE_REFERENT',
+        'medical' => 'ROLE_MEDICAL',
+        'formateur' => 'ROLE_FORMATEUR',
+        'apprenti' => 'ROLE_APPRENTI',
+        'administrateur' => 'ROLE_ADMINISTRATEUR',
+        'super_admin' => 'ROLE_SUPER_ADMIN',
+    ];
+
+    private const LABELS = [
+        'gestionnaire' => 'Gestionnaire',
+        'jury' => 'Membre du jury',
+        'referent' => 'RÃ©fÃ©rent de parcours',
+        'medical' => 'Personnel mÃ©dical',
+        'formateur' => 'Formateur',
+        'apprenti' => 'Apprenti',
+        'administrateur' => 'Administrateur',
+        'super_admin' => 'Super administrateur',
+    ];
+
+    private function profilesAutorises(): array
+    {
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            return self::LABELS;
+        }
+
+        return array_intersect_key(self::LABELS, array_flip([
+            'gestionnaire', 'jury', 'referent', 'medical',
+            'formateur', 'apprenti',
+        ]));
+    }
+
+    private function verifierGestionCible(User $cible): void
+    {
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            return;
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $cible->getRoles(), true)
+            || in_array('ROLE_ADMINISTRATEUR', $cible->getRoles(), true)
+            || in_array('ROLE_ADMIN', $cible->getRoles(), true)) {
+            throw $this->createAccessDeniedException(
+                'Seul le super administrateur peut gÃ©rer ce compte.'
+            );
+        }
+    }
+
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em, Request $request): Response
+    {
+        $recherche = trim((string) $request->query->get('q', ''));
+        $utilisateurs = $em->getRepository(User::class)->findBy([], ['nom' => 'ASC']);
+
+        if ($recherche !== '') {
+            $terme = mb_strtolower($recherche);
+            $utilisateurs = array_values(array_filter(
+                $utilisateurs,
+                static fn (User $u): bool =>
+                    str_contains(mb_strtolower($u->getNom()), $terme)
+                    || str_contains(mb_strtolower($u->getPrenoms()), $terme)
+                    || str_contains(mb_strtolower($u->getEmail()), $terme)
+                    || str_contains(mb_strtolower($u->getProfil()), $terme)
+            ));
+        }
+
+        return $this->render('admin_user/index.html.twig', [
+            'utilisateurs' => $utilisateurs,
+            'recherche' => $recherche,
+            'superAdmin' => $this->isGranted('ROLE_SUPER_ADMIN'),
+        ]);
+    }
+
+    #[Route('/demandes', name: 'demandes', methods: ['GET'])]
+    public function demandes(EntityManagerInterface $em): Response
+    {
+        $demandes = $em->getRepository(User::class)->findBy(
+            ['profil' => 'demandeur', 'active' => false],
+            ['id' => 'DESC']
+        );
+
+        return $this->render('admin_user/demandes.html.twig', [
+            'demandes' => $demandes,
+            'profils' => $this->profilesAutorises(),
+            'candidats' => $this->candidatsDisponibles($em),
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/approuver', name: 'approve', methods: ['POST'])]
+    public function approuver(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'approve_user_'.$user->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+        }
+
+        if ($user->getProfil() !== 'demandeur' || $user->isActive()) {
+            $this->addFlash('danger', 'Cette demande a dÃ©jÃ  Ã©tÃ© traitÃ©e ou ne peut pas Ãªtre approuvÃ©e.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $profil = (string) $request->request->get('profil', '');
+
+        if (!array_key_exists($profil, $this->profilesAutorises())) {
+            $this->addFlash('danger', 'Profil non autorisÃ©.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $candidat = null;
+
+        if ($profil === 'apprenti') {
+            $candidatId = trim((string) $request->request->get('candidat_id', ''));
+
+            if ($candidatId === '' || !ctype_digit($candidatId)) {
+                $this->addFlash('danger', 'SÃ©lectionnez un candidat valide pour ce compte apprenti.');
+                return $this->redirectToRoute('admin_users_demandes');
+            }
+
+            $candidat = $em->getRepository(Candidat::class)->find((int) $candidatId);
+
+            if (!$candidat || !$this->candidatEstDisponible($em, $candidat, $user)) {
+                $this->addFlash('danger', 'Le candidat est introuvable ou dÃ©jÃ  associÃ© Ã  un autre compte.');
+                return $this->redirectToRoute('admin_users_demandes');
+            }
+        }
+
+        $user
+            ->setProfil($profil)
+            ->setRoles([self::PROFILES[$profil]])
+            ->setCandidat($candidat)
+            ->setActive(true);
+
+        $em->flush();
+
+        $this->addFlash('success', 'Le compte a Ã©tÃ© approuvÃ© et activÃ© avec le profil '.$this->profilesAutorises()[$profil].'.');
+
+        return $this->redirectToRoute('admin_users_demandes');
+    }
+
+    #[Route('/{id<\d+>}/refuser', name: 'refuse', methods: ['POST'])]
+    public function refuser(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'refuse_user_'.$user->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+        }
+
+        if ($user->getProfil() !== 'demandeur' || $user->isActive()) {
+            $this->addFlash('danger', 'Cette demande a dÃ©jÃ  Ã©tÃ© traitÃ©e ou ne peut pas Ãªtre refusÃ©e.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $user
+            ->setProfil('refuse')
+            ->setRoles([])
+            ->setCandidat(null)
+            ->setActive(false);
+
+        $em->flush();
+
+        $this->addFlash('success', 'La demande a Ã©tÃ© refusÃ©e. Le compte est conservÃ© et reste dÃ©sactivÃ©.');
+
+        return $this->redirectToRoute('admin_users_demandes');
+    }
+    #[Route('/nouveau', name: 'new', methods: ['GET', 'POST'])]
+    public function nouveau(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $user = new User();
+        $erreurs = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('user_create', (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+            }
+
+            $email = mb_strtolower(trim((string) $request->request->get('email', '')));
+            $nom = trim((string) $request->request->get('nom', ''));
+            $prenoms = trim((string) $request->request->get('prenoms', ''));
+            $profil = (string) $request->request->get('profil', '');
+            $password = (string) $request->request->get('password', '');
+            $confirmation = (string) $request->request->get('confirmation_password', '');
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $erreurs[] = 'Adresse e-mail invalide.';
+            } elseif ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
+                $erreurs[] = 'Cette adresse e-mail est dÃƒÂ©jÃƒÂ  utilisÃƒÂ©e.';
+            }
+
+            if ($nom === '' || $prenoms === '') {
+                $erreurs[] = 'Le nom et les prÃ©noms sont obligatoires.';
+            }
+
+            if (!array_key_exists($profil, $this->profilesAutorises())) {
+                $erreurs[] = 'Vous ne pouvez pas attribuer ce profil.';
+            }
+
+            if (strlen($password) < 12) {
+                $erreurs[] = 'Le mot de passe doit contenir au moins 12 caractÃƒÂ¨res.';
+            }
+            if ($password !== $confirmation) {
+                $erreurs[] = 'Les deux mots de passe ne sont pas identiques.';
+            }
+
+                        $candidatIdBrut = trim((string) $request->request->get('candidat_id', ''));
+                        $candidatChoisi = null;
+            
+                        if ($profil === 'apprenti') {
+                            if ($candidatIdBrut === '') {
+                                $erreurs[] = 'SÃ©lectionnez le candidat associÃ© au compte apprenti.';
+                            } elseif (!ctype_digit($candidatIdBrut) || (int) $candidatIdBrut < 1) {
+                                $erreurs[] = 'Le candidat sÃ©lectionnÃ© est invalide.';
+                            } else {
+                                $candidatChoisi = $em->getRepository(Candidat::class)->find((int) $candidatIdBrut);
+            
+                                if (!$candidatChoisi) {
+                                    $erreurs[] = 'Le candidat sÃ©lectionnÃ© est introuvable.';
+                                } elseif (!$this->candidatEstDisponible($em, $candidatChoisi, $user)) {
+                                    $erreurs[] = 'Ce candidat est dÃ©jÃ  associÃ© Ã  un autre compte.';
+                                    $candidatChoisi = null;
+                                }
+                            }
+                        }
+            
+                        $user->setCandidat($profil === 'apprenti' ? $candidatChoisi : null);
+                        if (!$erreurs) {
+                $user->setEmail($email);
+                $user->setNom($nom);
+                $user->setPrenoms($prenoms);
+                $user->setProfil($profil);
+                $user->setRoles([self::PROFILES[$profil]]);
+                $user->setActive(true);
+                $user->setPassword($hasher->hashPassword($user, $password));
+
+                $em->persist($user);
+                $em->flush();
+
+                $this->addFlash('success', 'Le compte utilisateur a Ã©tÃ© crÃ©Ã©.');
+                return $this->redirectToRoute('admin_users_index');
+            }
+
+            $user->setEmail($email);
+            $user->setNom($nom);
+            $user->setPrenoms($prenoms);
+            $user->setProfil($profil);
+        }
+
+        return $this->render('admin_user/form.html.twig', [
+            'utilisateur' => $user,
+            'profils' => $this->profilesAutorises(),
+            'erreurs' => $erreurs,
+            'candidats' => $this->candidatsDisponibles($em, $user),
+            'edition' => false,
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/modifier', name: 'edit', methods: ['GET', 'POST'])]
+    public function modifier(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $this->verifierGestionCible($user);
+        $erreurs = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('user_edit_'.$user->getId(), (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+            }
+
+            $email = mb_strtolower(trim((string) $request->request->get('email', '')));
+            $nom = trim((string) $request->request->get('nom', ''));
+            $prenoms = trim((string) $request->request->get('prenoms', ''));
+            $profil = (string) $request->request->get('profil', '');
+            $password = (string) $request->request->get('password', '');
+            $confirmation = (string) $request->request->get('confirmation_password', '');
+
+            $doublon = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $erreurs[] = 'Adresse e-mail invalide.';
+            } elseif ($doublon && $doublon->getId() !== $user->getId()) {
+                $erreurs[] = 'Cette adresse e-mail est dÃƒÂ©jÃƒÂ  utilisÃƒÂ©e.';
+            }
+
+            if ($nom === '' || $prenoms === '') {
+                $erreurs[] = 'Le nom et les prÃ©noms sont obligatoires.';
+            }
+
+            if (!array_key_exists($profil, $this->profilesAutorises())) {
+                $erreurs[] = 'Vous ne pouvez pas attribuer ce profil.';
+            }
+
+            if ($password !== '' && strlen($password) < 12) {
+                $erreurs[] = 'Le nouveau mot de passe doit contenir au moins 12 caractÃƒÂ¨res.';
+            }
+            if ($password !== $confirmation) {
+                $erreurs[] = 'Les deux mots de passe ne sont pas identiques.';
+            }
+
+                        $candidatIdBrut = trim((string) $request->request->get('candidat_id', ''));
+                        $candidatChoisi = null;
+            
+                        if ($profil === 'apprenti') {
+                            if ($candidatIdBrut === '') {
+                                $erreurs[] = 'SÃ©lectionnez le candidat associÃ© au compte apprenti.';
+                            } elseif (!ctype_digit($candidatIdBrut) || (int) $candidatIdBrut < 1) {
+                                $erreurs[] = 'Le candidat sÃ©lectionnÃ© est invalide.';
+                            } else {
+                                $candidatChoisi = $em->getRepository(Candidat::class)->find((int) $candidatIdBrut);
+            
+                                if (!$candidatChoisi) {
+                                    $erreurs[] = 'Le candidat sÃ©lectionnÃ© est introuvable.';
+                                } elseif (!$this->candidatEstDisponible($em, $candidatChoisi, $user)) {
+                                    $erreurs[] = 'Ce candidat est dÃ©jÃ  associÃ© Ã  un autre compte.';
+                                    $candidatChoisi = null;
+                                }
+                            }
+                        }
+            
+                        $user->setCandidat($profil === 'apprenti' ? $candidatChoisi : null);
+                        if (!$erreurs) {
+                $user->setEmail($email);
+                $user->setNom($nom);
+                $user->setPrenoms($prenoms);
+                $user->setProfil($profil);
+                $user->setRoles([self::PROFILES[$profil]]);
+
+                if ($password !== '') {
+                    $user->setPassword($hasher->hashPassword($user, $password));
+                }
+
+                $em->flush();
+                $this->addFlash('success', 'Le compte utilisateur a Ã©tÃ© modifiÃ©.');
+
+                return $this->redirectToRoute('admin_users_index');
+            }
+
+            $user->setEmail($email);
+            $user->setNom($nom);
+            $user->setPrenoms($prenoms);
+            $user->setProfil($profil);
+        }
+
+        return $this->render('admin_user/form.html.twig', [
+            'utilisateur' => $user,
+            'profils' => $this->profilesAutorises(),
+            'erreurs' => $erreurs,
+            'candidats' => $this->candidatsDisponibles($em, $user),
+            'edition' => true,
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/statut', name: 'status', methods: ['POST'])]
+    public function statut(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->verifierGestionCible($user);
+
+        if (!$this->isCsrfTokenValid('user_status_'.$user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+        }
+
+        if ($this->getUser() instanceof User
+            && $this->getUser()->getId() === $user->getId()
+            && $user->isActive()) {
+            $this->addFlash('danger', 'Vous ne pouvez pas dÃ©sactiver votre propre compte.');
+            return $this->redirectToRoute('admin_users_index');
+        }
+
+        if ($user->isActive() && in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)) {
+            $superAdminsActifs = array_filter(
+                $em->getRepository(User::class)->findAll(),
+                static fn (User $u): bool =>
+                    $u->isActive() && in_array('ROLE_SUPER_ADMIN', $u->getRoles(), true)
+            );
+
+            if (count($superAdminsActifs) <= 1) {
+                $this->addFlash('danger', 'Impossible de dÃ©sactiver le dernier super administrateur actif.');
+                return $this->redirectToRoute('admin_users_index');
+            }
+        }
+
+        $user->setActive(!$user->isActive());
+        $em->flush();
+
+        $this->addFlash('success', 'Le statut du compte a Ã©tÃ© mis Ã  jour.');
+        return $this->redirectToRoute('admin_users_index');
+    }
+
+    /**
+     * VÃ©rifie qu'un candidat n'est pas dÃ©jÃ  liÃ© Ã  un autre compte utilisateur.
+     */
+    private function candidatEstDisponible(
+        EntityManagerInterface $em,
+        Candidat $candidat,
+        ?User $utilisateur = null
+    ): bool {
+        foreach ($em->getRepository(User::class)->findAll() as $compte) {
+            if ($utilisateur !== null && $compte->getId() === $utilisateur->getId()) {
+                continue;
+            }
+
+            $candidatLie = $compte->getCandidat();
+
+            if ($candidatLie !== null && $candidatLie->getId() === $candidat->getId()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Liste les candidats libres, en conservant celui dÃ©jÃ  liÃ© au compte modifiÃ©.
+     */
+    private function candidatsDisponibles(
+        EntityManagerInterface $em,
+        ?User $utilisateur = null
+    ): array {
+        $candidats = $em->getRepository(Candidat::class)->findAll();
+
+        $candidats = array_values(array_filter(
+            $candidats,
+            fn (Candidat $candidat): bool =>
+                $this->candidatEstDisponible($em, $candidat, $utilisateur)
+        ));
+
+        usort(
+            $candidats,
+            fn (Candidat $a, Candidat $b): int => strcmp($a->getNumero(), $b->getNumero())
+        );
+
+        return $candidats;
+    }
+}
+
+
+========== .\templates\admin_user\index.html.twig ==========
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - E2C-MENAET{% endblock %}
+
+{% block body %}
+{% set total = utilisateurs|length %}
+{% set actifs = 0 %}
+{% set inactifs = 0 %}
+
+{% for u in utilisateurs %}
+    {% if u.active %}
+        {% set actifs = actifs + 1 %}
+    {% else %}
+        {% set inactifs = inactifs + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% set profils = {
+    'medical': 'Personnel mÃ©dical',
+    'referent': 'RÃ©fÃ©rent de parcours',
+    'referent_parcours': 'RÃ©fÃ©rent de parcours',
+    'gestionnaire': 'Gestionnaire',
+    'jury': 'Membre du jury',
+    'formateur': 'Formateur',
+    'apprenti': 'Apprenti',
+    'administrateur': 'Administrateur',
+    'super_admin': 'Super administrateur',
+    'demandeur': 'Demandeur',
+    'refuse': 'Demande refusÃ©e'
+} %}
+
+<style>
+.users-page {
+    padding: 28px 0 45px;
+}
+.users-header {
+    background: linear-gradient(120deg, #12395f, #174675 58%, #5B9BD5);
+    color: #fff;
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 24px rgba(18,57,95,.16);
+}
+.users-header h1 {
+    color: #fff;
+    font-weight: 750;
+    margin-bottom: 8px;
+}
+.users-header p {
+    color: rgba(255,255,255,.86);
+    margin: 0;
+}
+.users-header .btn {
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 15px;
+}
+.users-stat {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    box-shadow: 0 4px 14px rgba(30,55,80,.045);
+}
+.users-stat-label {
+    color: #6b7785;
+    font-size: .88rem;
+    font-weight: 600;
+}
+.users-stat-number {
+    color: #173e63;
+    font-size: 1.9rem;
+    font-weight: 750;
+    margin-top: 5px;
+}
+.users-stat-icon {
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+.users-panel {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(30,55,80,.05);
+    overflow: hidden;
+}
+.users-panel-heading {
+    padding: 20px 22px;
+    border-bottom: 1px solid #edf0f4;
+}
+.users-panel-heading h2 {
+    color: #173e63;
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin: 0;
+}
+.users-search {
+    background: #f6f8fb;
+    border: 1px solid #e3e9f0;
+    border-radius: 11px;
+    padding: 9px 12px;
+}
+.users-search .form-control {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+.users-table {
+    margin: 0;
+    min-width: 760px;
+}
+.users-table thead th {
+    background: #f3f6fa;
+    color: #536579;
+    font-size: .77rem;
+    text-transform: uppercase;
+    letter-spacing: .045em;
+    padding: 15px 17px;
+    white-space: nowrap;
+}
+.users-table tbody td {
+    padding: 15px 17px;
+    border-color: #edf0f4;
+    vertical-align: middle;
+}
+.users-table tbody tr:hover {
+    background: #f8fbff;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e7f1fb;
+    color: #174675;
+    font-weight: 750;
+    margin-right: 10px;
+}
+.user-name {
+    color: #203b56;
+    font-weight: 700;
+}
+.user-email {
+    color: #718096;
+    font-size: .84rem;
+}
+.user-profile {
+    display: inline-block;
+    background: #edf4fb;
+    color: #24527c;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 650;
+}
+.user-status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 700;
+}
+.user-status.active {
+    color: #147a46;
+    background: #e5f6ed;
+}
+.user-status.inactive {
+    color: #687586;
+    background: #edf0f3;
+}
+.user-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.user-actions .btn {
+    border-radius: 8px;
+    font-size: .82rem;
+}
+.users-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #718096;
+}
+.users-empty i {
+    display: block;
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+    color: #9aafc3;
+}
+@media(max-width:767px) {
+    .users-page { padding-top: 15px; }
+    .users-header { padding: 22px 18px; }
+    .users-header .btn { width: 100%; }
+    .users-panel-heading { padding: 16px; }
+}
+</style>
+
+<div class="container users-page">
+
+    <div class="users-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+            <div>
+                <div class="small text-uppercase fw-bold mb-2" style="letter-spacing: .12em; color:#d8eaff;">
+                    Administration de la plateforme
+                </div>
+                <h1 class="h3">Gestion des utilisateurs</h1>
+                <p>GÃ©rez les comptes, les profils et les accÃ¨s Ã  la plateforme E2C-MENAET.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-warning" href="{{ path('admin_users_demandes') }}">
+                    <i class="bi bi-person-plus me-1"></i> Demandes de comptes
+                </a>
+                <a class="btn btn-light text-primary" href="{{ path('admin_users_new') }}">
+                    <i class="bi bi-plus-circle me-1"></i> Nouvel utilisateur
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'success' ? 'success' : 'info') }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes affichÃ©s</div>
+                        <div class="users-stat-number">{{ total }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e7f1fb;color:#245b8d;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes actifs</div>
+                        <div class="users-stat-number">{{ actifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e5f6ed;color:#198754;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes dÃ©sactivÃ©s</div>
+                        <div class="users-stat-number">{{ inactifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#edf0f3;color:#687586;">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="users-panel">
+        <div class="users-panel-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h2><i class="bi bi-person-lines-fill me-2"></i>Annuaire des utilisateurs</h2>
+                    <div class="text-muted small mt-1">Consultez et gÃ©rez les comptes enregistrÃ©s.</div>
+                </div>
+                <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                    {{ total }} rÃ©sultat(s)
+                </span>
+            </div>
+
+            <form method="get" action="{{ path('admin_users_index') }}" class="row g-2">
+                <div class="col-12 col-md">
+                    <div class="users-search d-flex align-items-center">
+                        <i class="bi bi-search text-secondary ms-1"></i>
+                        <input
+                            class="form-control"
+                            type="search"
+                            name="q"
+                            value="{{ recherche }}"
+                            placeholder="Nom, prÃ©nom, adresse e-mail ou profil..."
+                            aria-label="Rechercher un utilisateur"
+                        >
+                    </div>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search me-1"></i> Rechercher
+                    </button>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> RÃ©initialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table users-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Profil</th>
+                        <th>Statut du compte</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for utilisateur in utilisateurs %}
+                    {% set nomComplet = (utilisateur.nom ~ ' ' ~ utilisateur.prenoms)|trim %}
+                    {% set initiales = (utilisateur.nom|default('U')|slice(0, 1) ~ utilisateur.prenoms|default('')|slice(0, 1))|upper %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar">{{ initiales }}</span>
+                                <div>
+                                    <div class="user-name">{{ nomComplet }}</div>
+                                    <div class="user-email">{{ utilisateur.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="user-profile">
+                                {{ profils[utilisateur.profil]|default(utilisateur.profil|replace({'_':' '})|title) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if utilisateur.active %}
+                                <span class="user-status active">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Actif
+                                </span>
+                            {% else %}
+                                <span class="user-status inactive">
+                                    <i class="bi bi-pause-circle-fill me-1"></i> DÃ©sactivÃ©
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="user-actions">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ path('admin_users_edit', {id: utilisateur.id}) }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Modifier
+                                </a>
+
+                                <form method="post"
+                                      action="{{ path('admin_users_status', {id: utilisateur.id}) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('{{ utilisateur.active ? 'DÃ©sactiver ce compte ?' : 'Activer ce compte ?' }}');">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('user_status_' ~ utilisateur.id) }}">
+
+                                    {% if utilisateur.active %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="bi bi-person-x me-1"></i> DÃ©sactiver
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="bi bi-person-check me-1"></i> Activer
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="users-empty">
+                                <i class="bi bi-people"></i>
+                                <strong class="d-block text-dark mb-1">Aucun utilisateur trouvÃ©</strong>
+                                <span>Modifiez votre recherche ou rÃ©initialisez les filtres.</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-3 border-top d-flex flex-wrap justify-content-between gap-2">
+            <span class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ total }} compte(s) affichÃ©(s)
+            </span>
+            <span class="text-muted small">E2C-MENAET Â· Administration des accÃ¨s</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+========== .\templates\partials\_navigation_roles.html.twig ==========
+{% if app.user %}
+<nav class="border-bottom bg-light" aria-label="Navigation selon le profil">
+    <div class="container-fluid px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+        <span class="small fw-bold text-secondary me-1">NAVIGATION</span>
+
+        <a class="btn btn-sm btn-outline-secondary" href="{{ path('dashboard') }}">Tableau de bord</a>
+
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_GESTIONNAIRE') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Entretiens et suivis</a>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_profil') }}">Mon profil</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_rendez_vous') }}">Mes rendez-vous</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_parcours') }}">Mon parcours</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_evaluations') }}">Mes evaluations</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_accompagnement') }}">Mon accompagnement</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_notifications') }}">Notifications</a>
+        {% endif %}
+
+        <a class="btn btn-sm btn-outline-dark ms-auto" href="{{ path('app_logout') }}">Deconnexion</a>
+    </div>
+</nav>
+{% endif %}
+
+========== .\templates\partials\_acces_rapides_roles.html.twig ==========
+{% if app.user %}
+{% set profilRapide = 'Espace utilisateur' %}
+
+{% if is_granted('ROLE_SUPER_ADMIN') %}
+    {% set profilRapide = 'Super administrateur' %}
+{% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+    {% set profilRapide = 'Administrateur' %}
+{% elseif is_granted('ROLE_ADMIN') %}
+    {% set profilRapide = 'Administrateur operationnel' %}
+{% elseif is_granted('ROLE_GESTIONNAIRE') %}
+    {% set profilRapide = 'Gestionnaire' %}
+{% elseif is_granted('ROLE_JURY') %}
+    {% set profilRapide = 'Membre du jury' %}
+{% elseif is_granted('ROLE_MEDICAL') %}
+    {% set profilRapide = 'Personnel medical' %}
+{% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+    {% set profilRapide = 'Referent de parcours' %}
+{% elseif is_granted('ROLE_FORMATEUR') %}
+    {% set profilRapide = 'Formateur / maitre de stage' %}
+{% elseif is_granted('ROLE_APPRENTI') %}
+    {% set profilRapide = 'Apprenti' %}
+{% endif %}
+
+<section class="container-fluid px-3 px-lg-4 mt-4 mb-4" id="acces-rapides-par-role">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Acces rapides</h2>
+            <p class="text-muted mb-0">Raccourcis adaptes a votre profil : {{ profilRapide }}.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% if is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_users_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Gestion des utilisateurs</h3>
+                        <p class="text-muted small mb-0">Comptes et habilitations autorisees.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Administrer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Consulter les dossiers de recrutement autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter le planning et les evaluations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les visites selon les habilitations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Acceder au module de suivi existant.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_ADMIN') or is_granted('ROLE_GESTIONNAIRE') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Rechercher et consulter un candidat.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter les entretiens planifies.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les dossiers medicaux autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les apprentis admis.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Gerer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes entretiens</h3>
+                        <p class="text-muted small mb-0">Acceder au module des entretiens.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Enregistrer et consulter les visites autorisees.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Retrouver les apprentis a accompagner.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens et suivis</h3>
+                        <p class="text-muted small mb-0">Renseigner les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Rechercher un apprenti.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis accessibles.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_profil') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon profil</h3>
+                        <p class="text-muted small mb-0">Consulter mes informations personnelles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_rendez_vous') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes rendez-vous</h3>
+                        <p class="text-muted small mb-0">Consulter mes prochains rendez-vous.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_parcours') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon parcours</h3>
+                        <p class="text-muted small mb-0">Suivre les etapes de mon parcours.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_evaluations') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes evaluations</h3>
+                        <p class="text-muted small mb-0">Consulter mes evaluations disponibles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_accompagnement') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon accompagnement</h3>
+                        <p class="text-muted small mb-0">Consulter les informations de suivi.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_notifications') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Notifications</h3>
+                        <p class="text-muted small mb-0">Lire mes notifications.</p>
+                    </div>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+========== .\templates\dashboard\index.html.twig ==========
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .e2c-dashboard {
+            --navy: #12345a;
+            --blue: #2563a6;
+            color: #26384d;
+        }
+
+        .e2c-dashboard .hero {
+            background: linear-gradient(120deg, #102b4e, #2563a6);
+            color: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(16,43,78,.15);
+        }
+
+        .e2c-dashboard .eyebrow {
+            font-size: .75rem;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            opacity: .8;
+            font-weight: 700;
+        }
+
+        .e2c-dashboard .hero h1 {
+            color: #ffffff !important;
+            font-weight: 800;
+            letter-spacing: -.03em;
+        }
+
+        .e2c-dashboard .switch-design {
+            display: inline-block;
+            padding: 11px 15px;
+            border: 1px solid rgba(255,255,255,.6);
+            border-radius: 10px;
+            color: white;
+            background: rgba(255,255,255,.12);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .e2c-dashboard .switch-design:hover {
+            background: white;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .section-title {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .e2c-dashboard .stat-card {
+            height: 100%;
+            padding: 21px;
+            background: white;
+            border: 1px solid #e6edf5;
+            border-radius: 16px;
+            box-shadow: 0 5px 18px rgba(25,50,80,.05);
+        }
+
+        .e2c-dashboard .stat-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            background: #eaf2fb;
+            color: #225b91;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .e2c-dashboard .stat-number {
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .stat-label {
+            font-size: .86rem;
+            color: #718096;
+        }
+
+        .e2c-dashboard .action-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            height: 100%;
+            padding: 15px;
+            border: 1px solid #e6edf5;
+            border-radius: 14px;
+            background: #fff;
+            color: #26384d;
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+        .e2c-dashboard .action-card:hover {
+            transform: translateY(-3px);
+            border-color: #8bb9e1;
+            background: #f7fbff;
+            box-shadow: 0 8px 20px rgba(25,50,80,.07);
+        }
+
+        .e2c-dashboard .action-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: grid;
+            place-items: center;
+            background: #edf4fc;
+            border-radius: 12px;
+            font-size: 1.15rem;
+        }
+
+        .e2c-dashboard .action-title {
+            display: block;
+            font-weight: 700;
+            font-size: .92rem;
+        }
+
+        .e2c-dashboard .action-description {
+            display: block;
+            margin-top: 3px;
+            color: #7b899b;
+            font-size: .77rem;
+        }
+
+        .e2c-dashboard .footer-note {
+            color: #8290a0;
+            font-size: .8rem;
+        }
+
+        @media(max-width: 576px) {
+            .e2c-dashboard .hero { padding: 22px; }
+            .e2c-dashboard .hero h1 {
+            color: #ffffff !important; font-size: 1.6rem; }
+        }
+
+        @media(prefers-reduced-motion: reduce) {
+            .e2c-dashboard * { transition: none !important; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{% set admin = is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_SUPER_ADMIN') %}
+{% set gestionnaire = is_granted('ROLE_GESTIONNAIRE') %}
+{% set jury = is_granted('ROLE_JURY') %}
+{% set referent = is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_REFERENT') %}
+{% set formateur = is_granted('ROLE_FORMATEUR') %}
+{% set medical = is_granted('ROLE_MEDICAL') %}
+{% set apprenti = is_granted('ROLE_APPRENTI') %}
+{% set responsable = admin or gestionnaire %}
+
+{% set roleLabel = 'Utilisateur' %}
+{% if admin %}
+    {% set roleLabel = 'Administrateur' %}
+{% elseif gestionnaire %}
+    {% set roleLabel = 'Gestionnaire' %}
+{% elseif jury %}
+    {% set roleLabel = 'Membre du jury' %}
+{% elseif referent %}
+    {% set roleLabel = 'RÃ©fÃ©rent de parcours' %}
+{% elseif formateur %}
+    {% set roleLabel = 'Formateur' %}
+{% elseif medical %}
+    {% set roleLabel = 'Personnel mÃ©dical' %}
+{% elseif apprenti %}
+    {% set roleLabel = 'Apprenti' %}
+{% endif %}
+
+<div class="e2c-dashboard">
+<section class="hero mb-4">
+        <div class="eyebrow mb-2">E2C-MENAET Â· Formation et insertion</div>
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <h1 class="mb-2">Bienvenue dans votre espace</h1>
+                <p class="mb-2 opacity-75" style="color: #ffffff !important;">
+                    Retrouvez vos outils de travail et pilotez vos activitÃ©s.
+                </p>
+                <div class="small">
+                    <strong>{{ roleLabel }}</strong>
+                    {% if app.user %} Â· {{ app.user.userIdentifier }}{% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a class="switch-design" href="{{ path('dashboard', {design: 'classique'}) }}">
+                    â†¶ Utiliser le design classique
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% if responsable %}
+        <h2 class="section-title h5 mb-3">Vue d'ensemble</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">â™™</div>
+                    <div class="stat-number">{{ stats.candidats|default(0) }}</div>
+                    <div class="stat-label">Candidats enregistrÃ©s</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">â–£</div>
+                    <div class="stat-number">{{ stats.entretiens|default(0) }}</div>
+                    <div class="stat-label">Entretiens enregistrÃ©s</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">âœš</div>
+                    <div class="stat-number">{{ stats.visites|default(0) }}</div>
+                    <div class="stat-label">Visites mÃ©dicales enregistrÃ©es</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">âœ“</div>
+                    <div class="stat-number">{{ stats.admissions|default(0) }}</div>
+                    <div class="stat-label">Candidats admis</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <h2 class="section-title h5 mb-3">Mes accÃ¨s rapides</h2>
+    <div class="row g-3">
+
+        {% if responsable %}
+            {% set links = [
+                {route:'candidat_index', icon:'â™™', title:'Candidatures', desc:'Gestion des candidats'},
+                {route:'admin_campagnes_index', icon:'â–¦', title:'Campagnes', desc:'ParamÃ¨tres de recrutement'},
+                {route:'recruitment_interviews', icon:'â–£', title:'Entretiens', desc:'Planification et Ã©valuations'},
+                {route:'medical_index', icon:'âœš', title:'Visites mÃ©dicales', desc:'Gestion des aptitudes'},
+                {route:'recruitment_admissions', icon:'âœ“', title:'Admissions', desc:'DÃ©cisions dâ€™admission'},
+                {route:'annuaire', icon:'â˜·', title:'Annuaire des admis', desc:'RÃ©pertoire des apprentis'},
+                {route:'followup_index', icon:'âŒ', title:'Suivi des parcours', desc:'Accompagnement des apprentis'},
+                {route:'app_etablissements_list', icon:'âŒ‚', title:'Ã‰tablissements', desc:'Centres de formation'},
+                {route:'app_metiers_list', icon:'âš’', title:'MÃ©tiers', desc:'Catalogue des mÃ©tiers'},
+                {route:'evaluation_apprenti_index', icon:'â˜…', title:'Ã‰valuations', desc:'Bilans pÃ©dagogiques'},
+                {route:'admin_catalogue_index', icon:'â–¤', title:'Catalogue', desc:'Administration des rÃ©fÃ©rentiels'},
+                {route:'public_inscription', icon:'ï¼‹', title:'Inscription publique', desc:'Formulaire de candidature'}
+            ] %}
+            {% for link in links %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(link.route) }}">
+                        <span class="action-icon">{{ link.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ link.title }}</span>
+                            <span class="action-description">{{ link.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+
+            {% if admin %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path('admin_users_index') }}">
+                        <span class="action-icon">â™§</span>
+                        <span>
+                            <span class="action-title">Utilisateurs et accÃ¨s</span>
+                            <span class="action-description">Gestion des comptes et profils</span>
+                        </span>
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if jury %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('recruitment_interviews') }}">
+                    <span class="action-icon">â–£</span>
+                    <span>
+                        <span class="action-title">Mes entretiens</span>
+                        <span class="action-description">Candidats affectÃ©s et Ã©valuations</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if referent or formateur %}
+            {% for item in [
+                {route:'annuaire', icon:'â˜·', title:'Annuaire des apprentis', desc:'Consulter les apprentis'},
+                {route:'followup_index', icon:'âŒ', title:'Suivi des parcours', desc:'Bilans et accompagnement'},
+                {route:'evaluation_apprenti_index', icon:'â˜…', title:'Ã‰valuations', desc:'Suivi pÃ©dagogique'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if medical %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('medical_index') }}">
+                    <span class="action-icon">âœš</span>
+                    <span>
+                        <span class="action-title">Espace mÃ©dical</span>
+                        <span class="action-description">AccÃ¨s aux dossiers mÃ©dicaux autorisÃ©s</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if apprenti %}
+            {% for item in [
+                {route:'apprenti_accueil', icon:'âŒ‚', title:'Mon espace apprenti', desc:'Mon espace personnel'},
+                {route:'apprenti_profil', icon:'â™™', title:'Mon profil', desc:'Mes informations'},
+                {route:'apprenti_parcours', icon:'âŒ', title:'Mon parcours', desc:'Ma progression'},
+                {route:'apprenti_rendez_vous', icon:'â–£', title:'Mes rendez-vous', desc:'Mes prochains rendez-vous'},
+                {route:'apprenti_evaluations', icon:'â˜…', title:'Mes Ã©valuations', desc:'Mes rÃ©sultats'},
+                {route:'apprenti_accompagnement', icon:'â™¡', title:'Mon accompagnement', desc:'Mon suivi personnel'},
+                {route:'apprenti_notifications', icon:'â™¢', title:'Mes notifications', desc:'Mes alertes et informations'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+
+    {% if not responsable and not jury and not referent and not formateur and not medical and not apprenti %}
+        <div class="alert alert-info mt-4">
+            Votre espace est en cours de configuration. Contactez un administrateur si un accÃ¨s vous manque.
+        </div>
+    {% endif %}
+
+    <div class="footer-note text-center mt-4">
+        E2C-MENAET Â· Centraliser Â· Former Â· Accompagner Â· InsÃ©rer
+    </div>
+</div>
+{% endblock %}
+
+========== .\templates\dashboard\index_classique.html.twig ==========
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    {% set roles = app.user ? app.user.roles : [] %}
+
+    {% set estAdmin =
+        is_granted('ROLE_ADMIN')
+        or is_granted('ROLE_ADMINISTRATEUR')
+        or is_granted('ROLE_SUPER_ADMIN')
+        or 'ROLE_ADMIN' in roles
+        or 'ROLE_ADMINISTRATEUR' in roles
+        or 'ROLE_SUPER_ADMIN' in roles
+    %}
+
+    {% set estGestionnaire =
+        estAdmin
+        or is_granted('ROLE_GESTIONNAIRE')
+        or 'ROLE_GESTIONNAIRE' in roles
+        or 'GESTIONNAIRE' in roles
+    %}
+
+    {% set estJury =
+        is_granted('ROLE_JURY')
+        or 'ROLE_JURY' in roles
+        or 'JURY' in roles
+    %}
+
+    {% set estReferent =
+        is_granted('ROLE_REFERENT_PARCOURS')
+        or is_granted('ROLE_REFERENT')
+        or 'ROLE_REFERENT_PARCOURS' in roles
+        or 'ROLE_REFERENT' in roles
+        or 'REFERENT_PARCOURS' in roles
+        or 'REFERENT' in roles
+    %}
+
+    {% set estFormateur =
+        is_granted('ROLE_FORMATEUR')
+        or 'ROLE_FORMATEUR' in roles
+        or 'FORMATEUR' in roles
+    %}
+
+    {% set estMedical =
+        is_granted('ROLE_MEDICAL')
+        or 'ROLE_MEDICAL' in roles
+        or 'MEDICAL' in roles
+    %}
+
+    {% set estApprenti =
+        is_granted('ROLE_APPRENTI')
+        or 'ROLE_APPRENTI' in roles
+        or 'APPRENTI' in roles
+    %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p class="text-muted">
+                Pilotage du recrutement et de l'accompagnement socioprofessionnel.
+            </p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ path('dashboard', {design: 'professionnel'}) }}"
+           class="btn btn-primary">
+            <i class="bi bi-arrow-left-right me-1"></i>
+            DÃ©couvrir le tableau de bord professionnel
+        </a>
+    </div>
+    {% if stats is defined and stats is iterable %}
+        <div class="row g-3">
+            {% for k, v in stats %}
+                <div class="col-md-3">
+                    <div class="card metric shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="text-muted text-uppercase small">{{ k }}</div>
+                            <div class="display-6 fw-bold">{{ v }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="row mt-4 g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Vue synthÃ©tique du parcours</h5>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar" style="width: 72%">
+                            Recrutement
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-warning text-dark" style="width: 54%">
+                            Visites mÃ©dicales
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-success" style="width: 38%">
+                            Suivi
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-0">
+                        Les indicateurs visuels ci-dessus sont illustratifs.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>AccÃ¨s rapides
+
+</h5>
+<div class="row g-3 mb-3">
+
+
+
+
+
+</div>
+
+                    <p class="text-muted small">
+                        Retrouvez ici les fonctions utiles Ã  votre rÃ´le.
+                    </p>
+{# BEGIN ACCES RAPIDES EVALUATIONS #}
+{% if is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+<a class="btn btn-primary w-100 mb-2" href="{{ path('evaluation_apprenti_index') }}">Ã‰valuations pÃ©dagogiques des apprentis</a>
+{% endif %}
+{% if is_granted('ROLE_APPRENTI') %}
+<a class="btn btn-primary w-100 mb-2" href="{{ path('apprenti_evaluations_pedagogiques') }}">Mes Ã©valuations pÃ©dagogiques</a>
+{% endif %}
+{# END ACCES RAPIDES EVALUATIONS #}
+
+
+                    {% if estAdmin %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('candidat_index') }}">
+                            <i class="bi bi-people me-1"></i> Candidatures
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('admin_campagnes_index') }}">
+                            <i class="bi bi-calendar-range me-1"></i> Gestion des campagnes
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('recruitment_interviews') }}">
+                            <i class="bi bi-calendar-check me-1"></i> Entretiens et Ã©valuations
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('medical_index') }}">
+                            <i class="bi bi-heart-pulse me-1"></i> Visites mÃ©dicales
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('annuaire') }}">
+                            <i class="bi bi-card-list me-1"></i> Annuaires des admis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('recruitment_admissions') }}">
+                            <i class="bi bi-clipboard-check me-1"></i> DÃ©cisions d'admission
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('followup_index') }}">
+                            <i class="bi bi-person-check me-1"></i> Suivi des apprentis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_etablissements_list') }}">
+                            <i class="bi bi-building me-1"></i> Ã‰tablissements
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_metiers_list') }}">
+                            <i class="bi bi-tools me-1"></i> MÃ©tiers
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('public_inscription') }}">
+                            <i class="bi bi-person-plus me-1"></i> Ouvrir une inscription
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('admin_users_index') }}">
+                            <i class="bi bi-gear me-1"></i> Gestion des utilisateurs
+                        </a>
+
+                    {% elseif estGestionnaire %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('candidat_index') }}">
+                            <i class="bi bi-people me-1"></i> Candidatures
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('admin_campagnes_index') }}">
+                            <i class="bi bi-calendar-range me-1"></i> Gestion des campagnes
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('recruitment_interviews') }}">
+                            <i class="bi bi-calendar-check me-1"></i> Entretiens
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('medical_index') }}">
+                            <i class="bi bi-heart-pulse me-1"></i> Visites mÃ©dicales
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('annuaire') }}">
+                            <i class="bi bi-card-list me-1"></i> Annuaires des admis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('recruitment_admissions') }}">
+                            <i class="bi bi-clipboard-check me-1"></i> DÃ©cisions d'admission
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('followup_index') }}">
+                            <i class="bi bi-person-check me-1"></i> Suivi des apprentis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_etablissements_list') }}">
+                            <i class="bi bi-building me-1"></i> Ã‰tablissements
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_metiers_list') }}">
+                            <i class="bi bi-tools me-1"></i> MÃ©tiers
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('public_inscription') }}">
+                            <i class="bi bi-person-plus me-1"></i> Ouvrir une inscription
+                        </a>
+
+                    {% elseif estJury %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('recruitment_interviews') }}">
+                            <i class="bi bi-calendar-check me-1"></i> Mes entretiens
+                        </a>
+                        <p class="small text-muted mb-0">
+                            Ouvrez les entretiens pour accÃ©der aux Ã©valuations des candidats qui vous sont attribuÃ©s.
+                        </p>
+
+                    {% elseif estReferent %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('annuaire') }}">
+                            <i class="bi bi-card-list me-1"></i> Annuaire des apprentis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('followup_index') }}">
+                            <i class="bi bi-person-check me-1"></i> Suivi des parcours
+                        </a>
+
+                    {% elseif estFormateur %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('followup_index') }}">
+                            <i class="bi bi-person-check me-1"></i> Suivi des apprentis
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('annuaire') }}">
+                            <i class="bi bi-card-list me-1"></i> Annuaire des apprentis
+                        </a>
+
+                    {% elseif estMedical %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('medical_index') }}">
+                            <i class="bi bi-heart-pulse me-1"></i> Visites mÃ©dicales
+                        </a>
+
+                    {% elseif estApprenti %}
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_accueil') }}">
+                            <i class="bi bi-house me-1"></i> Mon espace apprenti
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_profil') }}">
+                            <i class="bi bi-person me-1"></i> Mon profil
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_parcours') }}">
+                            <i class="bi bi-signpost-split me-1"></i> Mon parcours
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_rendez_vous') }}">
+                            <i class="bi bi-calendar-event me-1"></i> Mes rendez-vous
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_evaluations') }}">
+                            <i class="bi bi-clipboard-check me-1"></i> Mes Ã©valuations
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_accompagnement') }}">
+                            <i class="bi bi-person-hearts me-1"></i> Mon accompagnement
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_notifications') }}">
+                            <i class="bi bi-bell me-1"></i> Mes notifications
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_metiers_list') }}">
+                            <i class="bi bi-tools me-1"></i> Consulter les mÃ©tiers
+                        </a>
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('app_etablissements_list') }}">
+                            <i class="bi bi-building me-1"></i> Consulter les Ã©tablissements
+                        </a>
+
+                    {% else %}
+                        <p class="text-muted small mb-0">
+                            Aucun raccourci n'est configurÃ© pour votre rÃ´le.
+                            Contactez le gestionnaire si nÃ©cessaire.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% if is_granted('ROLE_GESTIONNAIRE') %}
+<section class="container my-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h5 mb-1">Administration des etablissements et metiers</h2>
+                <p class="text-muted mb-0">Creer, modifier, activer ou retirer les elements des catalogues.</p>
+            </div>
+            <a class="btn btn-primary" href="{{ path('admin_catalogue_index') }}">Gerer les catalogues</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

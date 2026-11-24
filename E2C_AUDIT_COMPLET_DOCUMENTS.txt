@@ -1,0 +1,1087 @@
+﻿========== AUDIT SECURITE DES DOCUMENTS E2C ==========
+
+========== config/packages/security.yaml (1 à 75) ==========
+   1 | security:
+   2 |     password_hashers:
+   3 |         App\Entity\User: 'auto'
+   4 | 
+   5 |     role_hierarchy:
+   6 |         ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+   7 |         ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+   8 |         ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+   9 | 
+  10 |     providers:
+  11 |         app_user_provider:
+  12 |             entity:
+  13 |                 class: App\Entity\User
+  14 |                 property: email
+  15 | 
+  16 |     firewalls:
+  17 |         dev:
+  18 |             pattern: ^/(_(profiler|wdt)|css|images|js)/
+  19 |             security: false
+  20 | 
+  21 |         main:
+  22 |             lazy: true
+  23 |             provider: app_user_provider
+  24 |             form_login:
+  25 |                 login_path: app_login
+  26 |                 check_path: app_login
+  27 |                 enable_csrf: true
+  28 |                 default_target_path: dashboard
+  29 |             logout:
+  30 |                 path: app_logout
+  31 | 
+  32 |                 target: daip_accueil
+  33 |     access_control:
+  34 |         - { path: ^/login$, roles: PUBLIC_ACCESS }
+  35 |         - { path: ^/inscription, roles: PUBLIC_ACCESS }
+  36 |         - { path: ^/uploads, roles: PUBLIC_ACCESS }
+  37 |         - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+  38 |         - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+  39 |         - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+  40 |         - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+  41 |         - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+  42 | 
+  43 |         - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+  44 |         - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+  45 |         - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+  46 |         - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+  47 |         - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+  48 |         - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+  49 | 
+  50 |         - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+  51 |         - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+  52 |         - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+  53 |         - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+  54 |         - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+  55 |         - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+  56 |         - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+  57 | 
+  58 |         - { path: ^/, roles: ROLE_USER }
+
+========== src/Controller/CandidatController.php (1 à 240) ==========
+   1 | <?php
+   2 | 
+   3 | namespace App\Controller;
+   4 | 
+   5 | use App\Entity\Candidat;
+   6 | use App\Entity\DocumentApprenti;
+   7 | use Doctrine\ORM\EntityManagerInterface;
+   8 | use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+   9 | use Symfony\Component\HttpFoundation\BinaryFileResponse;
+  10 | use Symfony\Component\HttpFoundation\Request;
+  11 | use Symfony\Component\HttpFoundation\Response;
+  12 | use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+  13 | use Symfony\Component\HttpFoundation\File\UploadedFile;
+  14 | use Symfony\Component\Routing\Attribute\Route;
+  15 | 
+  16 | class CandidatController extends AbstractController
+  17 | {
+  18 |     private const CATEGORIES = [
+  19 |         'piece_identite',
+  20 |         'diplome',
+  21 |         'acte_naissance',
+  22 |         'certificat_medical',
+  23 |         'attestation_formation',
+  24 |         'convention_stage',
+  25 |         'evaluation',
+  26 |         'autre',
+  27 |     ];
+  28 | 
+  29 |     #[Route('/candidats', name: 'candidat_index', methods: ['GET'])]
+  30 |     public function index(EntityManagerInterface $em): Response
+  31 |     {
+  32 |         return $this->render('candidat/index.html.twig', [
+  33 |             'candidats' => $em->getRepository(Candidat::class)->findBy(
+  34 |                 [],
+  35 |                 ['id' => 'DESC']
+  36 |             ),
+  37 |         ]);
+  38 |     }
+  39 | 
+  40 |     #[Route('/candidats/{id}', name: 'candidat_show', methods: ['GET'])]
+  41 |     public function show(Candidat $c, EntityManagerInterface $em): Response
+  42 |     {
+  43 |         $documents = $em->getRepository(DocumentApprenti::class)->findBy(
+  44 |             ['candidat' => $c],
+  45 |             ['dateAjout' => 'DESC']
+  46 |         );
+  47 | 
+  48 |         return $this->render('candidat/show.html.twig', [
+  49 |             'candidat' => $c,
+  50 |             'documents' => $documents,
+  51 |         ]);
+  52 |     }
+  53 | 
+  54 |     #[Route(
+  55 |         '/candidats/{id}/documents',
+  56 |         name: 'candidat_document_add',
+  57 |         methods: ['POST']
+  58 |     )]
+  59 |     public function ajouterDocument(
+  60 |         Candidat $c,
+  61 |         Request $request,
+  62 |         EntityManagerInterface $em
+  63 |     ): Response {
+  64 |         $this->denyAccessUnlessGranted('ROLE_GESTIONNAIRE');
+  65 | 
+  66 |         $retour = $this->redirectToRoute('candidat_show', ['id' => $c->getId()]);
+  67 | 
+  68 |         if (!$this->isCsrfTokenValid(
+  69 |             'ajouter_document_' . $c->getId(),
+  70 |             (string) $request->request->get('_token', '')
+  71 |         )) {
+  72 |             $this->addFlash('danger', 'Jeton de securite invalide. Reessayez.');
+  73 |             return $retour;
+  74 |         }
+  75 | 
+  76 |         $categorie = (string) $request->request->get('categorie', '');
+  77 |         $intitule = trim((string) $request->request->get('intitule', ''));
+  78 | 
+  79 |         if (!in_array($categorie, self::CATEGORIES, true)) {
+  80 |             $this->addFlash('danger', 'Veuillez choisir une categorie valide.');
+  81 |             return $retour;
+  82 |         }
+  83 | 
+  84 |         if ($intitule === '' || mb_strlen($intitule, 'UTF-8') > 180) {
+  85 |             $this->addFlash('danger', 'Le titre est obligatoire et ne doit pas depasser 180 caracteres.');
+  86 |             return $retour;
+  87 |         }
+  88 | 
+  89 |         $fichier = $request->files->get('document');
+  90 | 
+  91 |         if (!$fichier instanceof UploadedFile || !$fichier->isValid()) {
+  92 |             $this->addFlash('danger', 'Selectionnez un fichier valide.');
+  93 |             return $retour;
+  94 |         }
+  95 | 
+  96 |         $taille = $fichier->getSize();
+  97 | 
+  98 |         if ($taille === null || $taille <= 0 || $taille > 10 * 1024 * 1024) {
+  99 |             $this->addFlash('danger', 'Le fichier doit peser entre 1 octet et 10 Mo.');
+ 100 |             return $retour;
+ 101 |         }
+ 102 | 
+ 103 |         $mime = $fichier->getMimeType() ?? '';
+ 104 | 
+ 105 |         $extensionsAutorisees = [
+ 106 |             'application/pdf' => 'pdf',
+ 107 |             'image/jpeg' => 'jpg',
+ 108 |             'image/png' => 'png',
+ 109 |         ];
+ 110 | 
+ 111 |         if (!isset($extensionsAutorisees[$mime])) {
+ 112 |             $this->addFlash('danger', 'Formats autorises : PDF, JPG, JPEG et PNG.');
+ 113 |             return $retour;
+ 114 |         }
+ 115 | 
+ 116 |         $nomOriginal = basename(
+ 117 |             str_replace('\\', '/', $fichier->getClientOriginalName())
+ 118 |         );
+ 119 |         $nomOriginal = mb_substr($nomOriginal, 0, 255, 'UTF-8');
+ 120 | 
+ 121 |         if ($nomOriginal === '') {
+ 122 |             $nomOriginal = 'document.' . $extensionsAutorisees[$mime];
+ 123 |         }
+ 124 | 
+ 125 |         $nomStockage = bin2hex(random_bytes(16))
+ 126 |             . '.'
+ 127 |             . $extensionsAutorisees[$mime];
+ 128 | 
+ 129 |         $dossierStockage = $this->getParameter('kernel.project_dir')
+ 130 |             . DIRECTORY_SEPARATOR . 'var'
+ 131 |             . DIRECTORY_SEPARATOR . 'uploads'
+ 132 |             . DIRECTORY_SEPARATOR . 'dossiers';
+ 133 | 
+ 134 |         if (
+ 135 |             !is_dir($dossierStockage)
+ 136 |             && !mkdir($dossierStockage, 0770, true)
+ 137 |             && !is_dir($dossierStockage)
+ 138 |         ) {
+ 139 |             $this->addFlash('danger', 'Impossible de creer le dossier de stockage.');
+ 140 |             return $retour;
+ 141 |         }
+ 142 | 
+ 143 |         try {
+ 144 |             $fichier->move($dossierStockage, $nomStockage);
+ 145 |         } catch (\Throwable $e) {
+ 146 |             $this->addFlash('danger', 'Le fichier n a pas pu etre enregistre.');
+ 147 |             return $retour;
+ 148 |         }
+ 149 | 
+ 150 |         $document = (new DocumentApprenti())
+ 151 |             ->setCandidat($c)
+ 152 |             ->setCategorie($categorie)
+ 153 |             ->setIntitule($intitule)
+ 154 |             ->setNomOriginal($nomOriginal)
+ 155 |             ->setNomStockage($nomStockage)
+ 156 |             ->setMimeType($mime)
+ 157 |             ->setTailleOctets((int) $taille)
+ 158 |             ->setDateAjout(new \DateTimeImmutable());
+ 159 | 
+ 160 |         $em->persist($document);
+ 161 |         $em->flush();
+ 162 | 
+ 163 |         $this->addFlash('success', 'Document ajoute au dossier administratif.');
+ 164 | 
+ 165 |         return $retour;
+ 166 |     }
+ 167 | 
+ 168 |     #[Route(
+ 169 |         '/candidats/{id}/documents/{documentId}/telecharger',
+ 170 |         name: 'candidat_document_download',
+ 171 |         methods: ['GET']
+ 172 |     )]
+ 173 |     public function telechargerDocument(
+ 174 |         Candidat $c,
+ 175 |         int $documentId,
+ 176 |         EntityManagerInterface $em
+ 177 |     ): Response {
+ 178 |         $this->denyAccessUnlessGranted('ROLE_GESTIONNAIRE');
+ 179 | 
+ 180 |         $document = $em->getRepository(DocumentApprenti::class)->find($documentId);
+ 181 | 
+ 182 |         if (
+ 183 |             !($document instanceof DocumentApprenti)
+ 184 |             || $document->getCandidat()?->getId() !== $c->getId()
+ 185 |         ) {
+ 186 |             throw $this->createNotFoundException('Document introuvable.');
+ 187 |         }
+ 188 | 
+ 189 |         $chemin = $this->getParameter('kernel.project_dir')
+ 190 |             . DIRECTORY_SEPARATOR . 'var'
+ 191 |             . DIRECTORY_SEPARATOR . 'uploads'
+ 192 |             . DIRECTORY_SEPARATOR . 'dossiers'
+ 193 |             . DIRECTORY_SEPARATOR . basename($document->getNomStockage());
+ 194 | 
+ 195 |         if (!is_file($chemin)) {
+ 196 |             throw $this->createNotFoundException('Le fichier est introuvable sur le serveur.');
+ 197 |         }
+ 198 | 
+ 199 |         $response = new BinaryFileResponse($chemin);
+ 200 |         $response->headers->set('Content-Type', $document->getMimeType());
+ 201 |         $response->headers->set('X-Content-Type-Options', 'nosniff');
+ 202 |         $response->setContentDisposition(
+ 203 |             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+ 204 |             $document->getNomOriginal()
+ 205 |         );
+ 206 | 
+ 207 |         return $response;
+ 208 |     }
+ 209 | }
+
+========== src/Controller/PublicController.php (1 à 370) ==========
+   1 | <?php
+   2 | 
+   3 | namespace App\Controller;
+   4 | 
+   5 | use App\Entity\Candidat;
+   6 | use App\Entity\Campagne;
+   7 | use App\Service\CandidatService;
+   8 | use Doctrine\ORM\EntityManagerInterface;
+   9 | use Psr\Log\LoggerInterface;
+  10 | use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+  11 | use Symfony\Component\HttpFoundation\Request;
+  12 | use Symfony\Component\HttpFoundation\Response;
+  13 | use Symfony\Component\HttpFoundation\File\UploadedFile;
+  14 | use Symfony\Component\Routing\Attribute\Route;
+  15 | 
+  16 | class PublicController extends AbstractController
+  17 | {
+  18 |     private const SESSION_KEY = 'candidature_en_cours';
+  19 | 
+  20 |     #[Route('/inscription', name: 'public_inscription', methods: ['GET', 'POST'])]
+  21 |     public function inscription(Request $request): Response
+  22 |     {
+  23 |         $session = $request->getSession();
+  24 | 
+  25 |         if ($request->isMethod('POST')) {
+  26 |     file_put_contents(
+  27 |         $this->getParameter('kernel.project_dir') . '/var/post-debug.txt',
+  28 |         json_encode([
+  29 |             'content_type' => $request->headers->get('content-type'),
+  30 |             'content_length' => $request->headers->get('content-length'),
+  31 |             'request_keys' => array_keys($request->request->all()),
+  32 |             'candidat_keys' => array_keys(
+  33 |                 $request->request->all('candidat')
+  34 |             ),
+  35 |             'php_post_keys' => array_keys($_POST),
+  36 |             'php_post_candidat_keys' => array_keys(
+  37 |                 $_POST['candidat'] ?? []
+  38 |             ),
+  39 |         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+  40 |     );
+  41 | 
+  42 |             try {
+  43 |                 $data = $request->request->all('candidat');
+  44 | 
+  45 |                 if (empty($data)) {
+  46 |                     throw new \RuntimeException(
+  47 |                         'Aucune donnÃ©e de candidature nâ€™a Ã©tÃ© reÃ§ue.'
+  48 |                     );
+  49 |                 }
+  50 | 
+  51 |                 $required = [
+  52 |                     'nom' => 'Le nom est obligatoire.',
+  53 |                     'prenoms' => 'Les prÃ©noms sont obligatoires.',
+  54 |                     'sexe' => 'Le sexe est obligatoire.',
+  55 |                     'dateNaissance' => 'La date de naissance est obligatoire.',
+  56 |                     'nationalite' => 'La nationalitÃ© est obligatoire.',
+  57 |                     'telephone' => 'Le tÃ©lÃ©phone est obligatoire.',
+  58 |                     'pieceIdentite' => 'Le type de piÃ¨ce dâ€™identitÃ© est obligatoire.',
+  59 |                     'niveau' => 'Le niveau est obligatoire.',
+  60 |                     'diplome' => 'Le diplÃ´me est obligatoire.',
+  61 |                     'metier' => 'Le mÃ©tier demandÃ© est obligatoire.',
+  62 |                     'disponibilite' => 'La disponibilitÃ© est obligatoire.',
+  63 |                 ];
+  64 | 
+  65 |                 foreach ($required as $field => $message) {
+  66 |                     if (
+  67 |                         !isset($data[$field]) ||
+  68 |                         trim((string) $data[$field]) === ''
+  69 |                     ) {
+  70 |                         throw new \RuntimeException($message);
+  71 |                     }
+  72 |                 }
+  73 | 
+  74 |                 // Nettoyage des donnÃ©es
+  75 |                 foreach ($data as $key => $value) {
+  76 |                     if (is_string($value)) {
+  77 |                         $data[$key] = trim($value);
+  78 |                     }
+  79 |                 }
+  80 | 
+  81 |                 // VÃ©rification de la date
+  82 |                 $dateNaissance = \DateTime::createFromFormat(
+  83 |                     'Y-m-d',
+  84 |                     (string) $data['dateNaissance']
+  85 |                 );
+  86 | 
+  87 |                 if (!$dateNaissance || $dateNaissance->format('Y-m-d') !== $data['dateNaissance']) {
+  88 |                     throw new \RuntimeException(
+  89 |                         'La date de naissance est invalide.'
+  90 |                     );
+  91 |                 }
+  92 | 
+  93 |                 // RÃ©cupÃ©ration des fichiers
+  94 |                 $files = $request->files->all('candidat');
+  95 | 
+  96 |                 $tempDir = $this->getParameter('kernel.project_dir')
+  97 |                     . '/public/uploads/temp';
+  98 | 
+  99 |                 if (!is_dir($tempDir)) {
+ 100 |                     mkdir($tempDir, 0775, true);
+ 101 |                 }
+ 102 | 
+ 103 |                 $documents = $session->get(self::SESSION_KEY . '_documents', []);
+ 104 | 
+ 105 |                 foreach ([
+ 106 |                     'pieceIdentiteFichier',
+ 107 |                     'diplomeFichier'
+ 108 |                 ] as $field) {
+ 109 |                     $uploadedFile = $files[$field] ?? null;
+ 110 | 
+ 111 |                     if (!$uploadedFile instanceof UploadedFile) {
+ 112 |                         continue;
+ 113 |                     }
+ 114 | 
+ 115 |                     if (!$uploadedFile->isValid()) {
+ 116 |                         throw new \RuntimeException(
+ 117 |                             'Le fichier "' . $field . '" nâ€™a pas pu Ãªtre tÃ©lÃ©chargÃ©.'
+ 118 |                         );
+ 119 |                     }
+ 120 | 
+ 121 |                     if ($uploadedFile->getSize() > 10 * 1024 * 1024) {
+ 122 |                         throw new \RuntimeException(
+ 123 |                             'Le fichier "' . $field . '" dÃ©passe la taille maximale de 10 Mo.'
+ 124 |                         );
+ 125 |                     }
+ 126 | 
+ 127 |                     $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+ 128 |                     $extension = strtolower(
+ 129 |                         $uploadedFile->guessExtension() ?: ''
+ 130 |                     );
+ 131 | 
+ 132 |                     if (!in_array($extension, $allowedExtensions, true)) {
+ 133 |                         throw new \RuntimeException(
+ 134 |                             'Le fichier "' . $field . '" doit Ãªtre au format PDF, JPG, JPEG ou PNG.'
+ 135 |                         );
+ 136 |                     }
+ 137 | 
+ 138 |                     $filename = uniqid('candidature_', true) . '.' . $extension;
+ 139 | 
+ 140 |                     $uploadedFile->move($tempDir, $filename);
+ 141 | 
+ 142 |                     // Supprimer l'ancien fichier temporaire si nÃ©cessaire
+ 143 |                     if (
+ 144 |                         isset($documents[$field]) &&
+ 145 |                         is_file($tempDir . '/' . $documents[$field])
+ 146 |                     ) {
+ 147 |                         @unlink($tempDir . '/' . $documents[$field]);
+ 148 |                     }
+ 149 | 
+ 150 |                     $documents[$field] = $filename;
+ 151 |                 }
+ 152 | 
+ 153 |                 // Stockage temporaire en session
+ 154 |                 $session->set(self::SESSION_KEY, $data);
+ 155 |                 $session->set(self::SESSION_KEY . '_documents', $documents);
+ 156 | 
+ 157 |                 return $this->redirectToRoute('public_inscription_recap');
+ 158 | 
+ 159 |             } catch (\Throwable $e) {
+ 160 |                 $this->addFlash(
+ 161 |                     'danger',
+ 162 |                     'Votre candidature nâ€™a pas pu Ãªtre prÃ©parÃ©e.'
+ 163 |                 );
+ 164 | 
+ 165 |                 $this->addFlash(
+ 166 |                     'warning',
+ 167 |                     $e->getMessage()
+ 168 |                 );
+ 169 | 
+ 170 |                 $session->set(self::SESSION_KEY, $data ?? []);
+ 171 | 
+ 172 |                 return $this->render('public/inscription.html.twig', [
+ 173 |                     'data' => $data ?? [],
+ 174 |                 ]);
+ 175 |             }
+ 176 |         }
+ 177 | 
+ 178 |         $data = $session->get(self::SESSION_KEY, []);
+ 179 | 
+ 180 |         return $this->render('public/inscription.html.twig', [
+ 181 |             'data' => $data,
+ 182 |         ]);
+ 183 |     }
+ 184 | 
+ 185 |     #[Route(
+ 186 |         '/inscription/recapitulatif',
+ 187 |         name: 'public_inscription_recap',
+ 188 |         methods: ['GET']
+ 189 |     )]
+ 190 |     public function recapitulatif(Request $request): Response
+ 191 |     {
+ 192 |         $session = $request->getSession();
+ 193 | 
+ 194 |         $data = $session->get(self::SESSION_KEY);
+ 195 | 
+ 196 |         if (!$data) {
+ 197 |             $this->addFlash(
+ 198 |                 'warning',
+ 199 |                 'Aucune candidature en cours de confirmation.'
+ 200 |             );
+ 201 | 
+ 202 |             return $this->redirectToRoute('public_inscription');
+ 203 |         }
+ 204 | 
+ 205 |         $documents = $session->get(
+ 206 |             self::SESSION_KEY . '_documents',
+ 207 |             []
+ 208 |         );
+ 209 | 
+ 210 |         return $this->render('public/recapitulatif.html.twig', [
+ 211 |             'data' => $data,
+ 212 |             'documents' => $documents,
+ 213 |         ]);
+ 214 |     }
+ 215 | 
+ 216 |     #[Route(
+ 217 |         '/inscription/confirmer',
+ 218 |         name: 'public_inscription_confirmer',
+ 219 |         methods: ['POST']
+ 220 |     )]
+ 221 |     public function confirmer(
+ 222 |         Request $request,
+ 223 |         EntityManagerInterface $em,
+ 224 |         CandidatService $svc,
+ 225 |         LoggerInterface $logger
+ 226 |     ): Response {
+ 227 |         $session = $request->getSession();
+ 228 | 
+ 229 |         $data = $session->get(self::SESSION_KEY);
+ 230 | 
+ 231 |         if (!$data) {
+ 232 |             $this->addFlash(
+ 233 |                 'danger',
+ 234 |                 'Aucune candidature Ã  confirmer.'
+ 235 |             );
+ 236 | 
+ 237 |             return $this->redirectToRoute('public_inscription');
+ 238 |         }
+ 239 | 
+ 240 |         $documents = $session->get(
+ 241 |             self::SESSION_KEY . '_documents',
+ 242 |             []
+ 243 |         );
+ 244 | 
+ 245 |         try {
+ 246 |             $candidat = new Candidat();
+ 247 | 
+ 248 |             // DonnÃ©es texte
+ 249 |             $fields = [
+ 250 |                 'nom',
+ 251 |                 'prenoms',
+ 252 |                 'sexe',
+ 253 |                 'lieuNaissance',
+ 254 |                 'lieuResidence',
+ 255 |                 'nationalite',
+ 256 |                 'telephone',
+ 257 |                 'telephoneAlt',
+ 258 |                 'pieceIdentite',
+ 259 |                 'niveau',
+ 260 |                 'diplome',
+ 261 |                 'metier',
+ 262 |                 'ancienMetier',
+ 263 |                 'disponibilite',
+ 264 |                 'contactUrgenceNom',
+ 265 |                 'contactUrgenceTel',
+ 266 |                 'contactUrgenceLien',
+ 267 |                 'experience',
+ 268 |             ];
+ 269 | 
+ 270 |             foreach ($fields as $field) {
+ 271 |                 if (array_key_exists($field, $data)) {
+ 272 |                     $method = 'set' . ucfirst($field);
+ 273 | 
+ 274 |                     if (!method_exists($candidat, $method)) {
+ 275 |                         throw new \RuntimeException(
+ 276 |                             'La mÃ©thode ' . $method . '() est absente de lâ€™entitÃ© Candidat.'
+ 277 |                         );
+ 278 |                     }
+ 279 | 
+ 280 |                     $value = $data[$field];
+ 281 | 
+ 282 |                     if ($value === '') {
+ 283 |                         $value = null;
+ 284 |                     }
+ 285 | 
+ 286 |                     $candidat->$method($value);
+ 287 |                 }
+ 288 |             }
+ 289 | 
+ 290 |             // Date de naissance
+ 291 |             if (!empty($data['dateNaissance'])) {
+ 292 |                 $date = \DateTime::createFromFormat(
+ 293 |                     'Y-m-d',
+ 294 |                     $data['dateNaissance']
+ 295 |                 );
+ 296 | 
+ 297 |                 if (!$date) {
+ 298 |                     throw new \RuntimeException(
+ 299 |                         'La date de naissance est invalide.'
+ 300 |                     );
+ 301 |                 }
+ 302 | 
+ 303 |                 $candidat->setDateNaissance($date);
+ 304 |             }
+ 305 | 
+ 306 |             // Documents
+ 307 |             $tempDir = $this->getParameter('kernel.project_dir')
+ 308 |                 . '/public/uploads/temp';
+ 309 | 
+ 310 |             $finalDir = $this->getParameter('kernel.project_dir')
+ 311 |                 . '/public/uploads';
+ 312 | 
+ 313 |             if (!is_dir($finalDir)) {
+ 314 |                 mkdir($finalDir, 0775, true);
+ 315 |             }
+ 316 | 
+ 317 |             foreach ([
+ 318 |                 'pieceIdentiteFichier',
+ 319 |                 'diplomeFichier'
+ 320 |             ] as $field) {
+ 321 |                 if (empty($documents[$field])) {
+ 322 |                     continue;
+ 323 |                 }
+ 324 | 
+ 325 |                 $tempFile = $tempDir . '/' . $documents[$field];
+ 326 | 
+ 327 |                 if (!is_file($tempFile)) {
+ 328 |                     throw new \RuntimeException(
+ 329 |                         'Le document associÃ© Ã  "' . $field . '" est introuvable.'
+ 330 |                     );
+ 331 |                 }
+ 332 | 
+ 333 |                 $finalFilename = uniqid('doc_', true) . '_' . basename(
+ 334 |                     $documents[$field]
+ 335 |                 );
+ 336 | 
+ 337 |                 rename(
+ 338 |                     $tempFile,
+ 339 |                     $finalDir . '/' . $finalFilename
+ 340 |                 );
+ 341 | 
+ 342 |                 $setter = 'set' . ucfirst($field);
+ 343 | 
+ 344 |                 if (!method_exists($candidat, $setter)) {
+ 345 |                     throw new \RuntimeException(
+ 346 |                         'La mÃ©thode ' . $setter . '() est absente de lâ€™entitÃ© Candidat.'
+ 347 |                     );
+ 348 |                 }
+ 349 | 
+ 350 |                 $candidat->$setter($finalFilename);
+ 351 |             }
+ 352 | 
+ 353 |             // Ã‰ligibilitÃ©
+ 354 |             $eligibilite = $svc->estEligible($candidat);
+ 355 | 
+ 356 |             if (!is_array($eligibilite)) {
+ 357 |                 throw new \RuntimeException(
+ 358 |                     'Le service dâ€™Ã©ligibilitÃ© a retournÃ© une rÃ©ponse invalide.'
+ 359 |                 );
+ 360 |             }
+ 361 | 
+ 362 |             $candidat->setStatut(
+ 363 |                 !empty($eligibilite['eligible'])
+ 364 |                     ? 'ELIGIBLE'
+ 365 |                     : 'A_VERIFIER'
+ 366 |             );
+ 367 | 
+ 368 |             // Campagne active
+ 369 |             $campagne = $em
+ 370 |                 ->getRepository(Campagne::class)
+
+========== src/Controller/MedicalController.php (1 à 350) ==========
+   1 | <?php
+   2 | namespace App\Controller;
+   3 | use App\Entity\{VisiteMedicale,Candidat}; use Doctrine\ORM\EntityManagerInterface; use Symfony\Bundle\FrameworkBundle\Controller\AbstractController; use Symfony\Component\Routing\Attribute\Route; use Symfony\Component\HttpFoundation\Response;
+   4 | class MedicalController extends AbstractController { #[Route('/medical',name:'medical_index')] public function index(EntityManagerInterface $em):Response{return $this->render('medical/index.html.twig',['items'=>$em->getRepository(VisiteMedicale::class)->findBy([],['dateHeure'=>'ASC'])]);} }
+
+========== src/Entity/Candidat.php (1 à 350) ==========
+   1 | <?php
+   2 | 
+   3 | namespace App\Entity;
+   4 | 
+   5 | use Doctrine\ORM\Mapping as ORM;
+   6 | 
+   7 | #[ORM\Entity]
+   8 | #[ORM\Table(name: 'candidat')]
+   9 | #[ORM\Index(name: 'IDX_93C3D62716227374', columns: ['campagne_id'])]
+  10 | #[ORM\UniqueConstraint(name: 'UNIQ_93C3D627F55AE19E', columns: ['numero'])]
+  11 | #[ORM\HasLifecycleCallbacks]
+  12 | class Candidat
+  13 | {
+  14 |     #[ORM\Id]
+  15 |     #[ORM\GeneratedValue]
+  16 |     #[ORM\Column]
+  17 |     private ?int $id = null;
+  18 | 
+  19 |     #[ORM\Column(length: 30)]
+  20 |     private string $numero = '';
+  21 | 
+  22 |     #[ORM\Column(length: 100)]
+  23 |     private string $nom = '';
+  24 | 
+  25 |     #[ORM\Column(length: 160)]
+  26 |     private string $prenoms = '';
+  27 | 
+  28 |     #[ORM\Column(length: 10)]
+  29 |     private string $sexe = '';
+  30 | 
+  31 |     #[ORM\Column(type: 'date')]
+  32 |     private ?\DateTimeInterface $dateNaissance = null;
+  33 | 
+  34 |     #[ORM\Column(length: 160, nullable: true)]
+  35 |     private ?string $lieuNaissance = null;
+  36 | 
+  37 |     #[ORM\Column(length: 160, nullable: true)]
+  38 |     private ?string $lieuResidence = null;
+  39 | 
+  40 |     #[ORM\Column(length: 100)]
+  41 |     private string $nationalite = 'Ivoirienne';
+  42 | 
+  43 |     #[ORM\Column(length: 30)]
+  44 |     private string $telephone = '';
+  45 | 
+  46 |     #[ORM\Column(length: 30, nullable: true)]
+  47 |     private ?string $telephoneAlt = null;
+  48 | 
+  49 |     #[ORM\Column(length: 40)]
+  50 |     private string $pieceIdentite = 'Aucun';
+  51 | 
+  52 |     #[ORM\Column(length: 255, nullable: true)]
+  53 |     private ?string $pieceIdentiteFichier = null;
+  54 | 
+  55 |     #[ORM\Column(length: 40)]
+  56 |     private string $niveau = '';
+  57 | 
+  58 |     #[ORM\Column(length: 50)]
+  59 |     private string $diplome = 'Aucun';
+  60 | 
+  61 |     #[ORM\Column(length: 255, nullable: true)]
+  62 |     private ?string $diplomeFichier = null;
+  63 | 
+  64 |     #[ORM\Column(length: 80)]
+  65 |     private string $metier = '';
+  66 | 
+  67 |     #[ORM\Column(length: 80)]
+  68 |     private string $ancienMetier = 'Aucun';
+  69 | 
+  70 |     #[ORM\Column(length: 30)]
+  71 |     private string $disponibilite = 'Oui';
+  72 | 
+  73 |     #[ORM\Column(type: 'date', nullable: true)]
+  74 |     private ?\DateTimeInterface $disponibleLe = null;
+  75 | 
+  76 |     #[ORM\Column(length: 120, nullable: true)]
+  77 |     private ?string $contactUrgenceNom = null;
+  78 | 
+  79 |     #[ORM\Column(length: 30, nullable: true)]
+  80 |     private ?string $contactUrgenceTel = null;
+  81 | 
+  82 |     #[ORM\Column(length: 120, nullable: true)]
+  83 |     private ?string $contactUrgenceLien = null;
+  84 | 
+  85 |     #[ORM\Column(type: 'text', nullable: true)]
+  86 |     private ?string $experience = null;
+  87 | 
+  88 |     #[ORM\Column(length: 30)]
+  89 |     private string $statut = 'INSCRIT';
+  90 | 
+  91 |     #[ORM\ManyToOne]
+  92 |     private ?Campagne $campagne = null;
+  93 | 
+  94 |     #[ORM\Column]
+  95 |     private \DateTimeImmutable $createdAt;
+  96 | 
+  97 |     #[ORM\Column]
+  98 |     private \DateTimeImmutable $updatedAt;
+  99 | 
+ 100 |     public function __construct()
+ 101 |     {
+ 102 |         $this->numero = 'CAND-' . date('YmdHis') . '-' . random_int(100, 999);
+ 103 |         $this->createdAt = new \DateTimeImmutable();
+ 104 |         $this->updatedAt = new \DateTimeImmutable();
+ 105 |     }
+ 106 | 
+ 107 |     #[ORM\PreUpdate]
+ 108 |     public function touch(): void
+ 109 |     {
+ 110 |         $this->updatedAt = new \DateTimeImmutable();
+ 111 |     }
+ 112 | 
+ 113 |     public function getId(): ?int
+ 114 |     {
+ 115 |         return $this->id;
+ 116 |     }
+ 117 | 
+ 118 |     public function getNumero(): string
+ 119 |     {
+ 120 |         return $this->numero;
+ 121 |     }
+ 122 | 
+ 123 |     public function getNom(): string
+ 124 |     {
+ 125 |         return $this->nom;
+ 126 |     }
+ 127 | 
+ 128 |     public function setNom(string $v): self
+ 129 |     {
+ 130 |         $this->nom = $v;
+ 131 |         return $this;
+ 132 |     }
+ 133 | 
+ 134 |     public function getPrenoms(): string
+ 135 |     {
+ 136 |         return $this->prenoms;
+ 137 |     }
+ 138 | 
+ 139 |     public function setPrenoms(string $v): self
+ 140 |     {
+ 141 |         $this->prenoms = $v;
+ 142 |         return $this;
+ 143 |     }
+ 144 | 
+ 145 |     public function getSexe(): string
+ 146 |     {
+ 147 |         return $this->sexe;
+ 148 |     }
+ 149 | 
+ 150 |     public function setSexe(string $v): self
+ 151 |     {
+ 152 |         $this->sexe = $v;
+ 153 |         return $this;
+ 154 |     }
+ 155 | 
+ 156 |     public function getDateNaissance(): ?\DateTimeInterface
+ 157 |     {
+ 158 |         return $this->dateNaissance;
+ 159 |     }
+ 160 | 
+ 161 |     public function setDateNaissance(?\DateTimeInterface $v): self
+ 162 |     {
+ 163 |         $this->dateNaissance = $v;
+ 164 |         return $this;
+ 165 |     }
+ 166 | 
+ 167 |     public function getLieuNaissance(): ?string
+ 168 |     {
+ 169 |         return $this->lieuNaissance;
+ 170 |     }
+ 171 | 
+ 172 |     public function setLieuNaissance(?string $v): self
+ 173 |     {
+ 174 |         $this->lieuNaissance = $v;
+ 175 |         return $this;
+ 176 |     }
+ 177 | 
+ 178 |     public function getLieuResidence(): ?string
+ 179 |     {
+ 180 |         return $this->lieuResidence;
+ 181 |     }
+ 182 | 
+ 183 |     public function setLieuResidence(?string $v): self
+ 184 |     {
+ 185 |         $this->lieuResidence = $v;
+ 186 |         return $this;
+ 187 |     }
+ 188 | 
+ 189 |     public function getNationalite(): string
+ 190 |     {
+ 191 |         return $this->nationalite;
+ 192 |     }
+ 193 | 
+ 194 |     public function setNationalite(string $v): self
+ 195 |     {
+ 196 |         $this->nationalite = $v;
+ 197 |         return $this;
+ 198 |     }
+ 199 | 
+ 200 |     public function getTelephone(): string
+ 201 |     {
+ 202 |         return $this->telephone;
+ 203 |     }
+ 204 | 
+ 205 |     public function setTelephone(string $v): self
+ 206 |     {
+ 207 |         $this->telephone = $v;
+ 208 |         return $this;
+ 209 |     }
+ 210 | 
+ 211 |     public function getTelephoneAlt(): ?string
+ 212 |     {
+ 213 |         return $this->telephoneAlt;
+ 214 |     }
+ 215 | 
+ 216 |     public function setTelephoneAlt(?string $v): self
+ 217 |     {
+ 218 |         $this->telephoneAlt = $v;
+ 219 |         return $this;
+ 220 |     }
+ 221 | 
+ 222 |     public function getPieceIdentite(): string
+ 223 |     {
+ 224 |         return $this->pieceIdentite;
+ 225 |     }
+ 226 | 
+ 227 |     public function setPieceIdentite(string $v): self
+ 228 |     {
+ 229 |         $this->pieceIdentite = $v;
+ 230 |         return $this;
+ 231 |     }
+ 232 | 
+ 233 |     public function getPieceIdentiteFichier(): ?string
+ 234 |     {
+ 235 |         return $this->pieceIdentiteFichier;
+ 236 |     }
+ 237 | 
+ 238 |     public function setPieceIdentiteFichier(?string $v): self
+ 239 |     {
+ 240 |         $this->pieceIdentiteFichier = $v;
+ 241 |         return $this;
+ 242 |     }
+ 243 | 
+ 244 |     public function getNiveau(): string
+ 245 |     {
+ 246 |         return $this->niveau;
+ 247 |     }
+ 248 | 
+ 249 |     public function setNiveau(string $v): self
+ 250 |     {
+ 251 |         $this->niveau = $v;
+ 252 |         return $this;
+ 253 |     }
+ 254 | 
+ 255 |     public function getDiplome(): string
+ 256 |     {
+ 257 |         return $this->diplome;
+ 258 |     }
+ 259 | 
+ 260 |     public function setDiplome(string $v): self
+ 261 |     {
+ 262 |         $this->diplome = $v;
+ 263 |         return $this;
+ 264 |     }
+ 265 | 
+ 266 |     public function getDiplomeFichier(): ?string
+ 267 |     {
+ 268 |         return $this->diplomeFichier;
+ 269 |     }
+ 270 | 
+ 271 |     public function setDiplomeFichier(?string $v): self
+ 272 |     {
+ 273 |         $this->diplomeFichier = $v;
+ 274 |         return $this;
+ 275 |     }
+ 276 | 
+ 277 |     public function getMetier(): string
+ 278 |     {
+ 279 |         return $this->metier;
+ 280 |     }
+ 281 | 
+ 282 |     public function setMetier(string $v): self
+ 283 |     {
+ 284 |         $this->metier = $v;
+ 285 |         return $this;
+ 286 |     }
+ 287 | 
+ 288 |     public function getAncienMetier(): string
+ 289 |     {
+ 290 |         return $this->ancienMetier;
+ 291 |     }
+ 292 | 
+ 293 |     public function setAncienMetier(string $v): self
+ 294 |     {
+ 295 |         $this->ancienMetier = $v;
+ 296 |         return $this;
+ 297 |     }
+ 298 | 
+ 299 |     public function getDisponibilite(): string
+ 300 |     {
+ 301 |         return $this->disponibilite;
+ 302 |     }
+ 303 | 
+ 304 |     public function setDisponibilite(string $v): self
+ 305 |     {
+ 306 |         $this->disponibilite = $v;
+ 307 |         return $this;
+ 308 |     }
+ 309 | 
+ 310 |     public function getDisponibleLe(): ?\DateTimeInterface
+ 311 |     {
+ 312 |         return $this->disponibleLe;
+ 313 |     }
+ 314 | 
+ 315 |     public function setDisponibleLe(?\DateTimeInterface $v): self
+ 316 |     {
+ 317 |         $this->disponibleLe = $v;
+ 318 |         return $this;
+ 319 |     }
+ 320 | 
+ 321 |     public function getContactUrgenceNom(): ?string
+ 322 |     {
+ 323 |         return $this->contactUrgenceNom;
+ 324 |     }
+ 325 | 
+ 326 |     public function setContactUrgenceNom(?string $v): self
+ 327 |     {
+ 328 |         $this->contactUrgenceNom = $v;
+ 329 |         return $this;
+ 330 |     }
+ 331 | 
+ 332 |     public function getContactUrgenceTel(): ?string
+ 333 |     {
+ 334 |         return $this->contactUrgenceTel;
+ 335 |     }
+ 336 | 
+ 337 |     public function setContactUrgenceTel(?string $v): self
+ 338 |     {
+ 339 |         $this->contactUrgenceTel = $v;
+ 340 |         return $this;
+ 341 |     }
+ 342 | 
+ 343 |     public function getContactUrgenceLien(): ?string
+ 344 |     {
+ 345 |         return $this->contactUrgenceLien;
+ 346 |     }
+ 347 | 
+ 348 |     public function setContactUrgenceLien(?string $v): self
+ 349 |     {
+ 350 |         $this->contactUrgenceLien = $v;
+
+========== src/Entity/VisiteMedicale.php (1 à 250) ==========
+   1 | <?php
+   2 | namespace App\Entity;
+   3 | use Doctrine\ORM\Mapping as ORM;
+   4 | #[ORM\Entity]
+   5 | class VisiteMedicale { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $centre=''; #[ORM\Column(length:20)] private string $aptitude='EN_ATTENTE'; #[ORM\Column(length:255,nullable:true)] private ?string $certificat=null; #[ORM\Column(length:255,nullable:true)] private ?string $photo=null; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getCentre():string{return $this->centre;} public function setCentre(string $v):self{$this->centre=$v;return $this;} public function getAptitude():string{return $this->aptitude;} public function setAptitude(string $v):self{$this->aptitude=$v;return $this;} public function setCertificat(?string $v):self{$this->certificat=$v;return $this;} public function getCertificat():?string{return $this->certificat;} public function setPhoto(?string $v):self{$this->photo=$v;return $this;} public function getPhoto():?string{return $this->photo;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} public function getObservations():?string{return $this->observations;} }
+
+========== RECHERCHE DES STOCKAGES ET TELECHARGEMENTS ==========
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 9 : use Symfony\Component\HttpFoundation\BinaryFileResponse;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 13 : use Symfony\Component\HttpFoundation\File\UploadedFile;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 22 : 'certificat_medical',
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 91 : if (!$fichier instanceof UploadedFile || !$fichier->isValid()) {
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 131 : . DIRECTORY_SEPARATOR . 'uploads'
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 144 : $fichier->move($dossierStockage, $nomStockage);
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 191 : . DIRECTORY_SEPARATOR . 'uploads'
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\CandidatController.php : 199 : $response = new BinaryFileResponse($chemin);
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 13 : use Symfony\Component\HttpFoundation\File\UploadedFile;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 97 : . '/public/uploads/temp';
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 106 : 'pieceIdentiteFichier',
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 107 : 'diplomeFichier'
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 109 : $uploadedFile = $files[$field] ?? null;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 111 : if (!$uploadedFile instanceof UploadedFile) {
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 115 : if (!$uploadedFile->isValid()) {
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 121 : if ($uploadedFile->getSize() > 10 * 1024 * 1024) {
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 129 : $uploadedFile->guessExtension() ?: ''
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 140 : $uploadedFile->move($tempDir, $filename);
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 147 : @unlink($tempDir . '/' . $documents[$field]);
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 308 : . '/public/uploads/temp';
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 311 : . '/public/uploads';
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 318 : 'pieceIdentiteFichier',
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 319 : 'diplomeFichier'
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 337 : rename(
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 386 : $session->remove(self::SESSION_KEY);
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Controller\PublicController.php : 387 : $session->remove(self::SESSION_KEY . '_documents');
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 53 : private ?string $pieceIdentiteFichier = null;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 62 : private ?string $diplomeFichier = null;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 233 : public function getPieceIdentiteFichier(): ?string
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 235 : return $this->pieceIdentiteFichier;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 238 : public function setPieceIdentiteFichier(?string $v): self
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 240 : $this->pieceIdentiteFichier = $v;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 266 : public function getDiplomeFichier(): ?string
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 268 : return $this->diplomeFichier;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 271 : public function setDiplomeFichier(?string $v): self
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\Candidat.php : 273 : $this->diplomeFichier = $v;
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Entity\VisiteMedicale.php : 5 : class VisiteMedicale { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $centre=''; #[ORM\Column(length:20)] private string $aptitude='EN_ATTENTE'; #[ORM\Column(length:255,nullable:true)] private ?string $certificat=null; #[ORM\Column(length:255,nullable:true)] private ?string $photo=null; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getCentre():string{return $this->centre;} public function setCentre(string $v):self{$this->centre=$v;return $this;} public function getAptitude():string{return $this->aptitude;} public function setAptitude(string $v):self{$this->aptitude=$v;return $this;} public function setCertificat(?string $v):self{$this->certificat=$v;return $this;} public function getCertificat():?string{return $this->certificat;} public function setPhoto(?string $v):self{$this->photo=$v;return $this;} public function getPhoto():?string{return $this->photo;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} public function getObservations():?string{return $this->observations;} }
+C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\src\Service\CandidatService.php : 4 : class CandidatService { public function estEligible(Candidat $c, int $min=12, int $max=35):array { $age=$c->getAge(); $okNat=mb_strtolower($c->getNationalite())==='ivoirienne'; $okAge=$age!==null && $age>=$min && $age<=$max; $okDiplome=$c->getDiplome()!=='Aucun' && $c->getDiplomeFichier(); return ['eligible'=>$okNat&&$okAge&&$okDiplome,'age'=>$age,'nationalite'=>$okNat,'ageOk'=>$okAge,'diplomeOk'=>$okDiplome]; } }
+
+========== INVENTAIRE DES DOSSIERS (NOMS MASQUES) ==========
+
+
+Dossier        : public/uploads
+NombreFichiers : 10
+TailleTotaleMo : 2,28
+
+
+
+
+
+
+Dossier        : public/uploads/temp
+NombreFichiers : 2
+TailleTotaleMo : 0,11
+
+
+
+
+
+
+Dossier        : var/uploads
+NombreFichiers : 1
+TailleTotaleMo : 0,4
+
+
+
+
+
+
+Dossier        : var/uploads/dossiers
+NombreFichiers : 1
+TailleTotaleMo : 0,4
+
+
+
+

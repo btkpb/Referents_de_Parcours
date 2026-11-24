@@ -1,0 +1,79 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier une campagne' : 'Nouvelle campagne' }} - E2C{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 850px;">
+    <div class="mb-4">
+        <h1 class="h3">{{ edition ? 'Modifier la campagne' : 'CrÃ©er une campagne de recrutement' }}</h1>
+        <p class="text-muted mb-0">DÃ©finissez les dates, les critÃ¨res dâ€™Ã¢ge et le quota global.</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form method="post">
+                <input type="hidden" name="_token" value="{{ csrf_token('campagne_form') }}">
+
+                <div class="mb-3">
+                    <label class="form-label" for="nom">Nom de la campagne</label>
+                    <input class="form-control" id="nom" name="nom" maxlength="160"
+                           value="{{ campagne.nom }}" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="dateDebut">Date de dÃ©but</label>
+                        <input class="form-control" type="date" id="dateDebut" name="dateDebut"
+                               value="{{ campagne.dateDebut }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="dateFin">Date de fin</label>
+                        <input class="form-control" type="date" id="dateFin" name="dateFin"
+                               value="{{ campagne.dateFin }}" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="ageMin">Ã‚ge minimum</label>
+                        <input class="form-control" type="number" min="1" max="120"
+                               id="ageMin" name="ageMin" value="{{ campagne.ageMin }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="ageMax">Ã‚ge maximum</label>
+                        <input class="form-control" type="number" min="1" max="120"
+                               id="ageMax" name="ageMax" value="{{ campagne.ageMax }}" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="quotaGlobal">Quota global (facultatif)</label>
+                    <input class="form-control" type="number" min="0"
+                           id="quotaGlobal" name="quotaGlobal"
+                           value="{{ campagne.quotaGlobal }}">
+                    <div class="form-text">Laissez vide si aucun plafond global nâ€™est dÃ©fini.</div>
+                </div>
+
+                {% if edition and campagne.active %}
+                    <div class="alert alert-success">
+                        Cette campagne est actuellement active. Sa modification ne change pas son statut.
+                    </div>
+                {% elseif not edition %}
+                    <div class="alert alert-info">
+                        La campagne sera crÃ©Ã©e en statut inactif. Vous pourrez lâ€™activer depuis la liste.
+                    </div>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        {{ edition ? 'Enregistrer les modifications' : 'CrÃ©er la campagne' }}
+                    </button>
+                    <a href="{{ path('admin_campagnes_index') }}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,483 @@
+﻿
+========== .\src\Entity\AffectationChantier.php ==========
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class AffectationChantier { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\ManyToOne] private ?Chantier $chantier=null; #[ORM\Column(type:'date')] private ?\DateTimeInterface $dateDebut=null; #[ORM\Column(type:'date',nullable:true)] private ?\DateTimeInterface $dateFin=null; #[ORM\Column(length:30)] private string $statut='EN_COURS'; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getChantier():?Chantier{return $this->chantier;} public function setChantier(?Chantier $v):self{$this->chantier=$v;return $this;} public function getDateDebut():?\DateTimeInterface{return $this->dateDebut;} public function setDateDebut(?\DateTimeInterface $v):self{$this->dateDebut=$v;return $this;} public function getDateFin():?\DateTimeInterface{return $this->dateFin;} public function setDateFin(?\DateTimeInterface $v):self{$this->dateFin=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} }
+
+
+========== .\src\Entity\Chantier.php ==========
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Chantier { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\Column(length:160)] private string $nom=''; #[ORM\Column(length:180)] private string $localisation=''; #[ORM\Column(length:160,nullable:true)] private ?string $entreprise=null; #[ORM\Column(length:40)] private string $statut='ACTIF'; public function getId():?int{return $this->id;} public function getNom():string{return $this->nom;} public function setNom(string $v):self{$this->nom=$v;return $this;} public function getLocalisation():string{return $this->localisation;} public function setLocalisation(string $v):self{$this->localisation=$v;return $this;} public function getEntreprise():?string{return $this->entreprise;} public function setEntreprise(?string $v):self{$this->entreprise=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} }
+
+
+========== .\src\Entity\User.php ==========
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'app_user')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 180, unique: true)]
+    private string $email = '';
+
+    #[ORM\Column]
+    private array $roles = [];
+
+    #[ORM\Column]
+    private string $password = '';
+
+    // Confirmation temporaire : jamais enregistrÃ©e en base de donnÃ©es.
+    private ?string $confirmationPassword = null;
+
+    #[ORM\Column(length: 120)]
+    private string $nom = '';
+
+    #[ORM\Column(length: 120)]
+    private string $prenoms = '';
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $telephone = null;
+
+    #[ORM\Column(length: 40)]
+    private string $profil = 'demandeur';
+
+    #[ORM\Column]
+    private bool $active = false;
+
+    #[ORM\OneToOne(targetEntity: Candidat::class)]
+    #[ORM\JoinColumn(
+        name: 'candidat_id',
+        referencedColumnName: 'id',
+        nullable: true,
+        onDelete: 'SET NULL'
+    )]
+    private ?Candidat $candidat = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        return array_values(array_unique(array_merge($this->roles, ['ROLE_USER'])));
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    public function getConfirmationPassword(): ?string
+    {
+        return $this->confirmationPassword;
+    }
+
+    public function setConfirmationPassword(?string $confirmationPassword): self
+    {
+        $this->confirmationPassword = $confirmationPassword;
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getPrenoms(): string
+    {
+        return $this->prenoms;
+    }
+
+    public function setPrenoms(string $prenoms): self
+    {
+        $this->prenoms = $prenoms;
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): self
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
+    public function getProfil(): string
+    {
+        return $this->profil;
+    }
+
+    public function setProfil(string $profil): self
+    {
+        $this->profil = $profil;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): self
+    {
+        $this->active = $active;
+        return $this;
+    }
+
+    public function getCandidat(): ?Candidat
+    {
+        return $this->candidat;
+    }
+
+    public function setCandidat(?Candidat $candidat): self
+    {
+        $this->candidat = $candidat;
+        return $this;
+    }
+}
+
+========== .\src\Controller\FollowupController.php ==========
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Candidat;
+use App\Entity\Emploi;
+use App\Entity\EntretienParcours;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+class FollowupController extends AbstractController
+{
+    private const ROLES_SUIVI = [
+        'ROLE_ADMIN', 'ROLE_ADMINISTRATEUR', 'ROLE_SUPER_ADMIN',
+        'ROLE_GESTIONNAIRE', 'ROLE_REFERENT_PARCOURS', 'ROLE_REFERENT',
+        'ROLE_FORMATEUR',
+    ];
+
+    private function verifierAccesSuivi(): void
+    {
+        $autorise = false;
+        foreach (self::ROLES_SUIVI as $role) {
+            if ($this->isGranted($role)) { $autorise = true; break; }
+        }
+        if (!$autorise) {
+            throw $this->createAccessDeniedException('Vous nâ€™Ãªtes pas autorisÃ© Ã  accÃ©der aux dossiers de suivi.');
+        }
+    }
+
+    #[Route('/suivi', name: 'followup_index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em): Response
+    {
+        $this->verifierAccesSuivi();
+        return $this->render('followup/index.html.twig', [
+            'entretiens' => $em->getRepository(EntretienParcours::class)->findBy([], ['dateEntretien' => 'DESC']),
+            'emplois' => $em->getRepository(Emploi::class)->findBy([], ['id' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/suivi/nouveau', name: 'followup_new', methods: ['GET', 'POST'])]
+    public function nouveau(Request $request, EntityManagerInterface $em): Response
+    {
+        $this->verifierAccesSuivi();
+        $entretien = new EntretienParcours();
+        return $this->formulaire($request, $em, $entretien, false);
+    }
+
+    #[Route('/suivi/{id}/modifier', name: 'followup_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
+    public function modifier(EntretienParcours $entretien, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->verifierAccesSuivi();
+        return $this->formulaire($request, $em, $entretien, true);
+    }
+
+    private function formulaire(Request $request, EntityManagerInterface $em, EntretienParcours $entretien, bool $edition): Response
+    {
+        $candidats = $em->getRepository(Candidat::class)->findBy([], ['nom' => 'ASC', 'prenoms' => 'ASC']);
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('entretien_parcours', (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide. Rechargez le formulaire.');
+            }
+            $type = (string) $request->request->get('typeEntretien', 'ACCUEIL');
+            $typesAutorises = ['ACCUEIL', 'MI_PARCOURS', 'SORTIE'];
+            if (!in_array($type, $typesAutorises, true)) {
+                throw $this->createNotFoundException('Type dâ€™entretien inconnu.');
+            }
+            $candidatId = filter_var($request->request->get('candidat_id'), FILTER_VALIDATE_INT);
+            $candidat = $candidatId ? $em->getRepository(Candidat::class)->find($candidatId) : null;
+            $date = (string) $request->request->get('dateEntretien', '');
+            $details = $request->request->all('details');
+
+            if (!$candidat || $date === '') {
+                $this->addFlash('danger', 'Veuillez sÃ©lectionner un bÃ©nÃ©ficiaire et renseigner la date du rendez-vous.');
+            } else {
+                try { $dateEntretien = new \DateTimeImmutable($date); }
+                catch (\Throwable) { $dateEntretien = null; }
+                if (!$dateEntretien) {
+                    $this->addFlash('danger', 'La date du rendez-vous est invalide.');
+                } else {
+                    // Seuls les champs attendus sont conservÃ©s dans le JSON.
+                    $clesAutorisees = [
+                        'contact','lieuHabitation','numeroDaip','numeroAej','urgenceNom','urgenceContact',
+                        'resume','situationFamiliale','mobilite','logement','sante','situationProfessionnelle',
+                        'ressources','objectifs','freins','nomReferent','contactReferent','nomTuteur','contactTuteur',
+                        'etablissementTheorique','etablissementStage','prochainRdv','actionsRealisees','pointsForts',
+                        'pointsFaibles','freinsPedagogiques','avisFormateur','planAction','maintienFormation',
+                        'commentaireBeneficiaire','commentaireTuteur','commentaireReferent','conclusionReferent',
+                        'motifSortie','dateSortie','projet','abandon','contactBeneficiaire',
+                    ];
+                    $nettoyes = [];
+                    foreach ($clesAutorisees as $cle) {
+                        $valeur = $details[$cle] ?? '';
+                        $nettoyes[$cle] = is_string($valeur) ? trim($valeur) : '';
+                    }
+                    $entretien->setCandidat($candidat)
+                        ->setTypeEntretien($type)
+                        ->setDateEntretien($dateEntretien)
+                        ->setDetails($nettoyes)
+                        ->setSynthese($nettoyes['resume'] ?: null)
+                        ->setPlanAction($nettoyes['planAction'] ?: null)
+                        ->setStatut('REALISE');
+                    $em->persist($entretien);
+                    $em->flush();
+                    $this->addFlash('success', $edition ? 'Entretien de parcours mis Ã  jour.' : 'Entretien de parcours enregistrÃ©.');
+                    return $this->redirectToRoute('followup_index');
+                }
+            }
+        }
+
+        return $this->render('followup/form.html.twig', [
+            'entretien' => $entretien,
+            'candidats' => $candidats,
+            'edition' => $edition,
+            'details' => $entretien->getDetails(),
+        ]);
+    }
+
+    #[Route('/suivi/repertoire', name: 'followup_directory', methods: ['GET'])]
+    public function repertoire(EntityManagerInterface $em): Response
+    {
+        $this->verifierAccesSuivi();
+        $entretiens = $em->getRepository(EntretienParcours::class)->findBy([], ['dateEntretien' => 'DESC']);
+        $comptages = [];
+        foreach ($entretiens as $entretien) {
+            $candidat = $entretien->getCandidat();
+            if (!$candidat || !in_array($entretien->getTypeEntretien(), ['ACCUEIL', 'MI_PARCOURS'], true)) { continue; }
+            $metier = $candidat->getMetier() ?: 'MÃ©tier non renseignÃ©';
+            $id = $candidat->getId();
+            $comptages[$metier] ??= ['entree' => [], 'miParcours' => []];
+            if ($entretien->getTypeEntretien() === 'ACCUEIL') { $comptages[$metier]['entree'][$id] = true; }
+            if ($entretien->getTypeEntretien() === 'MI_PARCOURS') { $comptages[$metier]['miParcours'][$id] = true; }
+        }
+        $recapitulatif = [];
+        foreach ($comptages as $metier => $comptage) {
+            $recapitulatif[] = ['metier' => $metier, 'entree' => count($comptage['entree']), 'miParcours' => count($comptage['miParcours'])];
+        }
+        usort($recapitulatif, static fn (array $a, array $b): int => strcmp($a['metier'], $b['metier']));
+
+        $lignes = [];
+        foreach ($entretiens as $entretien) {
+            if (!in_array($entretien->getTypeEntretien(), ['MI_PARCOURS', 'SORTIE'], true)) { continue; }
+            $d = $entretien->getDetails();
+            if (trim((string) ($d['freins'] ?? '')) === '' && trim((string) ($d['freinsPedagogiques'] ?? '')) === '' && trim((string) ($d['abandon'] ?? '')) === '') { continue; }
+            $c = $entretien->getCandidat();
+            $metier = $c?->getMetier() ?: 'MÃ©tier non renseignÃ©';
+            $lignes[] = [
+                'referent' => trim(($d['nomReferent'] ?? '') . ' ' . ($d['contactReferent'] ?? '')),
+                'metier' => $metier,
+                'entreeCount' => count($comptages[$metier]['entree'] ?? []),
+                'miCount' => count($comptages[$metier]['miParcours'] ?? []),
+                'beneficiaire' => $c ? trim($c->getNom() . ' ' . $c->getPrenoms()) : 'BÃ©nÃ©ficiaire supprimÃ©',
+                'freins' => trim(($d['freins'] ?? '') . ' ' . ($d['freinsPedagogiques'] ?? '')),
+                'abandon' => $d['abandon'] ?? '',
+                'contact' => (($d['contactBeneficiaire'] ?? '') ?: ($d['contact'] ?? $c?->getTelephone() ?? '')),
+                'type' => $entretien->getTypeEntretien(),
+                'date' => $entretien->getDateEntretien(),
+            ];
+        }
+        return $this->render('followup/directory.html.twig', ['lignes' => $lignes, 'recapitulatif' => $recapitulatif]);
+    }
+}
+
+
+========== .\src\Controller\DashboardController.php ==========
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Candidat;
+use App\Entity\Entretien;
+use App\Entity\VisiteMedicale;
+use App\Entity\Admission;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+class DashboardController extends AbstractController
+{
+    #[Route('/', name: 'dashboard')]
+    public function index(
+        EntityManagerInterface $em,
+        Request $request
+    ): Response {
+        $session = $request->getSession();
+        $design = $request->query->get('design');
+
+        if (in_array($design, ['classique', 'professionnel'], true)) {
+            $session->set('dashboard_design', $design);
+        }
+
+        $designActif = $session->get(
+            'dashboard_design',
+            'professionnel'
+        );
+
+        $stats = [
+            'candidats' => $em->getRepository(Candidat::class)->count([]),
+            'entretiens' => $em->getRepository(Entretien::class)->count([]),
+            'visites' => $em->getRepository(VisiteMedicale::class)->count([]),
+            'admissions' => $em->getRepository(Admission::class)->count([
+                'decision' => 'ADMIS'
+            ]),
+        ];
+
+        $template = $designActif === 'classique'
+            ? 'dashboard/index_classique.html.twig'
+            : 'dashboard/index.html.twig';
+
+        return $this->render($template, [
+            'stats' => $stats,
+            'designActif' => $designActif,
+        ]);
+    }
+}
+
+========== .\config\packages\security.yaml ==========
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+        ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+        ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            user_checker: App\Security\UserChecker
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: dashboard
+            logout:
+                path: app_logout
+
+                target: daip_accueil
+    access_control:
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+        - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+
+        - { path: '^/candidats/[0-9]+$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_FORMATEUR')" }
+        - { path: '^/candidats/[0-9]+/photo-identite$', methods: [GET], allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+        - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+        - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/admissions, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+        - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+        - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+
+        - { path: ^/admin/campagnes, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+        - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+        - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+
+        - { path: ^/creer-compte$, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
+

@@ -1,0 +1,936 @@
+﻿DIAGNOSTIC TECHNIQUE E2C-MTFPA
+
+
+========================================
+FICHIER : src\Entity\Entretien.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Entretien { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $lieu=''; #[ORM\Column] private int $nombreJury=1; #[ORM\Column(length:30)] private string $statut='PLANIFIE'; #[ORM\Column(nullable:true)] private ?string $juryNoms=null; #[ORM\Column(nullable:true)] private ?string $convocationEnvoyeeAt=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getLieu():string{return $this->lieu;} public function setLieu(string $v):self{$this->lieu=$v;return $this;} public function getNombreJury():int{return $this->nombreJury;} public function setNombreJury(int $v):self{$this->nombreJury=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} public function getJuryNoms():?string{return $this->juryNoms;} public function setJuryNoms(?string $v):self{$this->juryNoms=$v;return $this;} public function getConvocationEnvoyeeAt():?string{return $this->convocationEnvoyeeAt;} public function setConvocationEnvoyeeAt(?string $v):self{$this->convocationEnvoyeeAt=$v;return $this;} }
+
+
+========================================
+FICHIER : src\Entity\Evaluation.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+
+========================================
+FICHIER : src\Entity\Admission.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Admission { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Candidat $candidat=null; #[ORM\Column(length:30)] private string $decision='EN_ATTENTE'; #[ORM\Column(length:120,nullable:true)] private ?string $metierAffecte=null; #[ORM\Column(type:'datetime',nullable:true)] private ?\DateTimeInterface $dateAdmission=null; #[ORM\Column(length:40,nullable:true)] private ?string $codeAdmission=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function getMetierAffecte():?string{return $this->metierAffecte;} public function setMetierAffecte(?string $v):self{$this->metierAffecte=$v;return $this;} public function getDateAdmission():?\DateTimeInterface{return $this->dateAdmission;} public function setDateAdmission(?\DateTimeInterface $v):self{$this->dateAdmission=$v;return $this;} public function getCodeAdmission():?string{return $this->codeAdmission;} public function setCodeAdmission(?string $v):self{$this->codeAdmission=$v;return $this;} }
+
+
+========================================
+FICHIER : src\Entity\VisiteMedicale.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class VisiteMedicale { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $centre=''; #[ORM\Column(length:20)] private string $aptitude='EN_ATTENTE'; #[ORM\Column(length:255,nullable:true)] private ?string $certificat=null; #[ORM\Column(length:255,nullable:true)] private ?string $photo=null; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getCentre():string{return $this->centre;} public function setCentre(string $v):self{$this->centre=$v;return $this;} public function getAptitude():string{return $this->aptitude;} public function setAptitude(string $v):self{$this->aptitude=$v;return $this;} public function setCertificat(?string $v):self{$this->certificat=$v;return $this;} public function getCertificat():?string{return $this->certificat;} public function setPhoto(?string $v):self{$this->photo=$v;return $this;} public function getPhoto():?string{return $this->photo;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} public function getObservations():?string{return $this->observations;} }
+
+
+========================================
+FICHIER : src\Entity\Candidat.php
+========================================
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'candidat')]
+#[ORM\Index(name: 'IDX_93C3D62716227374', columns: ['campagne_id'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_93C3D627F55AE19E', columns: ['numero'])]
+#[ORM\HasLifecycleCallbacks]
+class Candidat
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 30)]
+    private string $numero = '';
+
+    #[ORM\Column(length: 100)]
+    private string $nom = '';
+
+    #[ORM\Column(length: 160)]
+    private string $prenoms = '';
+
+    #[ORM\Column(length: 10)]
+    private string $sexe = '';
+
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $dateNaissance = null;
+
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $lieuNaissance = null;
+
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $lieuResidence = null;
+
+    #[ORM\Column(length: 100)]
+    private string $nationalite = 'Ivoirienne';
+
+    #[ORM\Column(length: 30)]
+    private string $telephone = '';
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $telephoneAlt = null;
+
+    #[ORM\Column(length: 40)]
+    private string $pieceIdentite = 'Aucun';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $pieceIdentiteFichier = null;
+
+    #[ORM\Column(length: 40)]
+    private string $niveau = '';
+
+    #[ORM\Column(length: 50)]
+    private string $diplome = 'Aucun';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $diplomeFichier = null;
+
+    #[ORM\Column(length: 80)]
+    private string $metier = '';
+
+    #[ORM\Column(length: 80)]
+    private string $ancienMetier = 'Aucun';
+
+    #[ORM\Column(length: 30)]
+    private string $disponibilite = 'Oui';
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $disponibleLe = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $contactUrgenceNom = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $contactUrgenceTel = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $contactUrgenceLien = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $experience = null;
+
+    #[ORM\Column(length: 30)]
+    private string $statut = 'INSCRIT';
+
+    #[ORM\ManyToOne]
+    private ?Campagne $campagne = null;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
+    public function __construct()
+    {
+        $this->numero = 'CAND-' . date('YmdHis') . '-' . random_int(100, 999);
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function touch(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNumero(): string
+    {
+        return $this->numero;
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $v): self
+    {
+        $this->nom = $v;
+        return $this;
+    }
+
+    public function getPrenoms(): string
+    {
+        return $this->prenoms;
+    }
+
+    public function setPrenoms(string $v): self
+    {
+        $this->prenoms = $v;
+        return $this;
+    }
+
+    public function getSexe(): string
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(string $v): self
+    {
+        $this->sexe = $v;
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(?\DateTimeInterface $v): self
+    {
+        $this->dateNaissance = $v;
+        return $this;
+    }
+
+    public function getLieuNaissance(): ?string
+    {
+        return $this->lieuNaissance;
+    }
+
+    public function setLieuNaissance(?string $v): self
+    {
+        $this->lieuNaissance = $v;
+        return $this;
+    }
+
+    public function getLieuResidence(): ?string
+    {
+        return $this->lieuResidence;
+    }
+
+    public function setLieuResidence(?string $v): self
+    {
+        $this->lieuResidence = $v;
+        return $this;
+    }
+
+    public function getNationalite(): string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(string $v): self
+    {
+        $this->nationalite = $v;
+        return $this;
+    }
+
+    public function getTelephone(): string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(string $v): self
+    {
+        $this->telephone = $v;
+        return $this;
+    }
+
+    public function getTelephoneAlt(): ?string
+    {
+        return $this->telephoneAlt;
+    }
+
+    public function setTelephoneAlt(?string $v): self
+    {
+        $this->telephoneAlt = $v;
+        return $this;
+    }
+
+    public function getPieceIdentite(): string
+    {
+        return $this->pieceIdentite;
+    }
+
+    public function setPieceIdentite(string $v): self
+    {
+        $this->pieceIdentite = $v;
+        return $this;
+    }
+
+    public function getPieceIdentiteFichier(): ?string
+    {
+        return $this->pieceIdentiteFichier;
+    }
+
+    public function setPieceIdentiteFichier(?string $v): self
+    {
+        $this->pieceIdentiteFichier = $v;
+        return $this;
+    }
+
+    public function getNiveau(): string
+    {
+        return $this->niveau;
+    }
+
+    public function setNiveau(string $v): self
+    {
+        $this->niveau = $v;
+        return $this;
+    }
+
+    public function getDiplome(): string
+    {
+        return $this->diplome;
+    }
+
+    public function setDiplome(string $v): self
+    {
+        $this->diplome = $v;
+        return $this;
+    }
+
+    public function getDiplomeFichier(): ?string
+    {
+        return $this->diplomeFichier;
+    }
+
+    public function setDiplomeFichier(?string $v): self
+    {
+        $this->diplomeFichier = $v;
+        return $this;
+    }
+
+    public function getMetier(): string
+    {
+        return $this->metier;
+    }
+
+    public function setMetier(string $v): self
+    {
+        $this->metier = $v;
+        return $this;
+    }
+
+    public function getAncienMetier(): string
+    {
+        return $this->ancienMetier;
+    }
+
+    public function setAncienMetier(string $v): self
+    {
+        $this->ancienMetier = $v;
+        return $this;
+    }
+
+    public function getDisponibilite(): string
+    {
+        return $this->disponibilite;
+    }
+
+    public function setDisponibilite(string $v): self
+    {
+        $this->disponibilite = $v;
+        return $this;
+    }
+
+    public function getDisponibleLe(): ?\DateTimeInterface
+    {
+        return $this->disponibleLe;
+    }
+
+    public function setDisponibleLe(?\DateTimeInterface $v): self
+    {
+        $this->disponibleLe = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceNom(): ?string
+    {
+        return $this->contactUrgenceNom;
+    }
+
+    public function setContactUrgenceNom(?string $v): self
+    {
+        $this->contactUrgenceNom = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceTel(): ?string
+    {
+        return $this->contactUrgenceTel;
+    }
+
+    public function setContactUrgenceTel(?string $v): self
+    {
+        $this->contactUrgenceTel = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceLien(): ?string
+    {
+        return $this->contactUrgenceLien;
+    }
+
+    public function setContactUrgenceLien(?string $v): self
+    {
+        $this->contactUrgenceLien = $v;
+        return $this;
+    }
+
+    public function getExperience(): ?string
+    {
+        return $this->experience;
+    }
+
+    public function setExperience(?string $v): self
+    {
+        $this->experience = $v;
+        return $this;
+    }
+
+    public function getStatut(): string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(string $v): self
+    {
+        $this->statut = $v;
+        return $this;
+    }
+
+    public function getCampagne(): ?Campagne
+    {
+        return $this->campagne;
+    }
+
+    public function setCampagne(?Campagne $v): self
+    {
+        $this->campagne = $v;
+        return $this;
+    }
+
+    public function getAge(): ?int
+    {
+        return $this->dateNaissance
+            ? (new \DateTimeImmutable())->diff($this->dateNaissance)->y
+            : null;
+    }
+}
+
+
+========================================
+FICHIER : src\Entity\Campagne.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+#[ORM\Entity]
+class Campagne { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\Column(length:160)] private string $nom=''; #[ORM\Column(type:'date')] private ?\DateTimeInterface $dateDebut=null; #[ORM\Column(type:'date')] private ?\DateTimeInterface $dateFin=null; #[ORM\Column] private bool $active=true; #[ORM\Column(nullable:true)] private ?int $ageMin=12; #[ORM\Column(nullable:true)] private ?int $ageMax=35; #[ORM\Column(nullable:true)] private ?int $quotaGlobal=null; public function getId():?int{return $this->id;} public function getNom():string{return $this->nom;} public function setNom(string $v):self{$this->nom=$v;return $this;} public function getDateDebut():?\DateTimeInterface{return $this->dateDebut;} public function setDateDebut(?\DateTimeInterface $v):self{$this->dateDebut=$v;return $this;} public function getDateFin():?\DateTimeInterface{return $this->dateFin;} public function setDateFin(?\DateTimeInterface $v):self{$this->dateFin=$v;return $this;} public function isActive():bool{return $this->active;} public function setActive(bool $v):self{$this->active=$v;return $this;} public function getAgeMin():?int{return $this->ageMin;} public function setAgeMin(?int $v):self{$this->ageMin=$v;return $this;} public function getAgeMax():?int{return $this->ageMax;} public function setAgeMax(?int $v):self{$this->ageMax=$v;return $this;} public function getQuotaGlobal():?int{return $this->quotaGlobal;} public function setQuotaGlobal(?int $v):self{$this->quotaGlobal=$v;return $this;} }
+
+
+========================================
+FICHIER : src\Entity\User.php
+========================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+#[ORM\Entity]
+#[ORM\Table(name:'app_user')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface {
+ #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null;
+ #[ORM\Column(length:180,unique:true)] private string $email='';
+ #[ORM\Column] private array $roles=[];
+ #[ORM\Column] private string $password='';
+ #[ORM\Column(length:120)] private string $nom='';
+ #[ORM\Column(length:120)] private string $prenoms='';
+ #[ORM\Column(length:40)] private string $profil='gestionnaire';
+ #[ORM\Column] private bool $active=true;
+ #[ORM\OneToOne(targetEntity: Candidat::class)]
+ #[ORM\JoinColumn(name: 'candidat_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+ private ?Candidat $candidat = null;
+ public function getId():?int{return $this->id;} public function getEmail():string{return $this->email;} public function setEmail(string $v):self{$this->email=$v;return $this;} public function getUserIdentifier():string{return $this->email;} public function getRoles():array{return array_values(array_unique(array_merge($this->roles,['ROLE_USER'])));} public function setRoles(array $v):self{$this->roles=$v;return $this;} public function getPassword():string{return $this->password;} public function setPassword(string $v):self{$this->password=$v;return $this;} public function eraseCredentials():void{} public function getNom():string{return $this->nom;} public function setNom(string $v):self{$this->nom=$v;return $this;} public function getPrenoms():string{return $this->prenoms;} public function setPrenoms(string $v):self{$this->prenoms=$v;return $this;} public function getProfil():string{return $this->profil;} public function setProfil(string $v):self{$this->profil=$v;return $this;} public function isActive():bool{return $this->active;} public function setActive(bool $v):self{$this->active=$v;return $this;}
+
+ public function getCandidat(): ?Candidat
+ {
+     return $this->candidat;
+ }
+
+ public function setCandidat(?Candidat $candidat): self
+ {
+     $this->candidat = $candidat;
+     return $this;
+ }}
+
+
+========================================
+FICHIER : src\Entity\MetierCatalogue.php
+========================================
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'metier_catalogue')]
+#[ORM\UniqueConstraint(
+    name: 'UNIQ_METIER_CATALOGUE_NOM',
+    columns: ['nom']
+)]
+#[ORM\Index(
+    name: 'IDX_METIER_CATALOGUE_SECTEUR',
+    columns: ['secteur']
+)]
+#[ORM\Index(
+    name: 'IDX_METIER_CATALOGUE_ACTIF',
+    columns: ['actif']
+)]
+class MetierCatalogue
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 120)]
+    private string $nom;
+
+    #[ORM\Column(length: 120)]
+    private string $secteur;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $actif = true;
+
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getSecteur(): string
+    {
+        return $this->secteur;
+    }
+
+    public function setSecteur(string $secteur): self
+    {
+        $this->secteur = $secteur;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function isActif(): bool
+    {
+        return $this->actif;
+    }
+
+    public function setActif(bool $actif): self
+    {
+        $this->actif = $actif;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+}
+
+
+========================================
+FICHIER : src\Controller\RecruitmentController.php
+========================================
+<?php
+namespace App\Controller;
+use App\Entity\{Candidat,Entretien,Evaluation};
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\{Request,Response};
+class RecruitmentController extends AbstractController { #[Route('/recrutement/entretiens',name:'recruitment_interviews')] public function interviews(EntityManagerInterface $em):Response{return $this->render('recrutement/entretiens.html.twig',['items'=>$em->getRepository(Entretien::class)->findBy([],['dateHeure'=>'ASC'])]);} #[Route('/recrutement/entretiens/{id}/evaluation',name:'recruitment_eval',methods:['GET','POST'])] public function eval(Entretien $e,Request $r,EntityManagerInterface $em):Response{$ev=$em->getRepository(Evaluation::class)->findOneBy(['entretien'=>$e])??new Evaluation();$ev->setEntretien($e);if($r->isMethod('POST')){$d=$r->request->all('evaluation');$ev->setScores($d);$ev->setDecision(($ev->total()>=24)?'APTE':'INAPTE');$em->persist($ev);$em->flush();$this->addFlash('success','Ã‰valuation enregistrÃ©e.');return $this->redirectToRoute('recruitment_interviews');}return $this->render('recrutement/evaluation.html.twig',['entretien'=>$e,'evaluation'=>$ev]);} }
+
+
+========================================
+FICHIER : src\Controller\MedicalController.php
+========================================
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Candidat;
+use App\Entity\VisiteMedicale;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Routing\Attribute\Route;
+
+class MedicalController extends AbstractController
+{
+    private const MAX_FILE_SIZE = 10485760;
+
+    private function assertMedicalAccess(): void
+    {
+        if (
+            !$this->isGranted('ROLE_GESTIONNAIRE')
+            && !$this->isGranted('ROLE_MEDICAL')
+        ) {
+            throw $this->createAccessDeniedException(
+                'AccÃ¨s rÃ©servÃ© au Gestionnaire et au Personnel mÃ©dical.'
+            );
+        }
+    }
+
+    #[Route('/medical', name: 'medical_index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em): Response
+    {
+        $this->assertMedicalAccess();
+
+        return $this->render('medical/index.html.twig', [
+            'items' => $em->getRepository(VisiteMedicale::class)
+                ->findBy([], ['dateHeure' => 'DESC']),
+            'candidats' => $em->getRepository(Candidat::class)
+                ->findBy([], ['nom' => 'ASC']),
+        ]);
+    }
+
+    #[Route('/medical/nouvelle', name: 'medical_nouvelle', methods: ['GET', 'POST'])]
+    public function nouvelle(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->assertMedicalAccess();
+
+        if ($request->isMethod('GET')) {
+            return $this->redirectToRoute('medical_index');
+        }
+
+        if (!$this->isCsrfTokenValid(
+            'medical_nouvelle',
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Jeton de sÃ©curitÃ© invalide.');
+        }
+
+        $certificat = $request->files->get('certificat');
+        $photo = $request->files->get('photo');
+
+        $fichiersDeplaces = [];
+
+        try {
+            $candidatId = filter_var(
+                $request->request->get('candidat'),
+                FILTER_VALIDATE_INT
+            );
+
+            $candidat = $candidatId
+                ? $em->getRepository(Candidat::class)->find($candidatId)
+                : null;
+
+            if (!$candidat) {
+                throw new \InvalidArgumentException('Veuillez sÃ©lectionner un candidat valide.');
+            }
+
+            $centre = trim((string) $request->request->get('centre'));
+            if ($centre === '' || mb_strlen($centre) > 180) {
+                throw new \InvalidArgumentException('Le centre mÃ©dical est obligatoire (180 caractÃ¨res maximum).');
+            }
+
+            $aptitude = (string) $request->request->get('aptitude');
+            if (!in_array($aptitude, ['APTE', 'INAPTE', 'EN_ATTENTE'], true)) {
+                throw new \InvalidArgumentException('Le statut mÃ©dical sÃ©lectionnÃ© est invalide.');
+            }
+
+            $dateSaisie = (string) $request->request->get('dateHeure');
+            $date = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', $dateSaisie);
+
+            if (!$date || $date->format('Y-m-d\TH:i') !== $dateSaisie) {
+                throw new \InvalidArgumentException('Veuillez renseigner une date et une heure valides.');
+            }
+
+            $certificatExtension = $this->validateUpload(
+                $certificat,
+                ['application/pdf'],
+                'Le certificat mÃ©dical doit Ãªtre un fichier PDF.'
+            );
+
+            $photoExtension = $this->validateUpload(
+                $photo,
+                ['image/jpeg', 'image/png'],
+                'La photo mÃ©dicale doit Ãªtre au format JPG, JPEG ou PNG.'
+            );
+
+            $dossier = $this->getParameter('kernel.project_dir')
+                . '/var/uploads/medical';
+
+            if (!is_dir($dossier) && !mkdir($dossier, 0770, true) && !is_dir($dossier)) {
+                throw new \RuntimeException('Impossible de crÃ©er le dossier mÃ©dical privÃ©.');
+            }
+
+            $visite = new VisiteMedicale();
+            $visite->setCandidat($candidat);
+            $visite->setDateHeure($date);
+            $visite->setCentre($centre);
+            $visite->setAptitude($aptitude);
+
+            $observations = trim((string) $request->request->get('observations'));
+            $visite->setObservations($observations !== '' ? $observations : null);
+
+            if ($certificat instanceof UploadedFile && $certificatExtension !== null) {
+                $nom = bin2hex(random_bytes(24)) . '.' . $certificatExtension;
+                $certificat->move($dossier, $nom);
+                $fichiersDeplaces[] = $dossier . '/' . $nom;
+                $visite->setCertificat($nom);
+            }
+
+            if ($photo instanceof UploadedFile && $photoExtension !== null) {
+                $nom = bin2hex(random_bytes(24)) . '.' . $photoExtension;
+                $photo->move($dossier, $nom);
+                $fichiersDeplaces[] = $dossier . '/' . $nom;
+                $visite->setPhoto($nom);
+            }
+
+            $em->persist($visite);
+            $em->flush();
+
+            $this->addFlash('success', 'La visite mÃ©dicale a Ã©tÃ© enregistrÃ©e.');
+
+        } catch (\InvalidArgumentException $e) {
+            foreach ($fichiersDeplaces as $fichier) {
+                if (is_file($fichier)) {
+                    @unlink($fichier);
+                }
+            }
+
+            $this->addFlash('danger', $e->getMessage());
+
+        } catch (\Throwable $e) {
+            foreach ($fichiersDeplaces as $fichier) {
+                if (is_file($fichier)) {
+                    @unlink($fichier);
+                }
+            }
+
+            $this->addFlash('danger', 'Erreur lors de lâ€™enregistrement de la visite mÃ©dicale.');
+        }
+
+        return $this->redirectToRoute('medical_index');
+    }
+
+    private function validateUpload(
+        ?UploadedFile $file,
+        array $mimeAutorises,
+        string $messageErreur
+    ): ?string {
+        if ($file === null) {
+            return null;
+        }
+
+        if (!$file->isValid()) {
+            throw new \InvalidArgumentException('Un fichier transmis est invalide.');
+        }
+
+        if ($file->getSize() > self::MAX_FILE_SIZE) {
+            throw new \InvalidArgumentException('Chaque fichier doit faire 10 Mo maximum.');
+        }
+
+        $mime = $file->getMimeType();
+
+        if (!in_array($mime, $mimeAutorises, true)) {
+            throw new \InvalidArgumentException($messageErreur);
+        }
+
+        return match ($mime) {
+            'application/pdf' => 'pdf',
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            default => throw new \InvalidArgumentException($messageErreur),
+        };
+    }
+
+    #[Route(
+        '/medical/{id}/document/{type}',
+        name: 'medical_document_download',
+        requirements: ['id' => '\d+', 'type' => 'certificat|photo'],
+        methods: ['GET']
+    )]
+    public function telecharger(
+        VisiteMedicale $visite,
+        string $type
+    ): BinaryFileResponse {
+        $this->assertMedicalAccess();
+
+        $nomFichier = match ($type) {
+            'certificat' => $visite->getCertificat(),
+            'photo' => $visite->getPhoto(),
+            default => null,
+        };
+
+        if (!$nomFichier || basename($nomFichier) !== $nomFichier) {
+            throw $this->createNotFoundException('Document mÃ©dical introuvable.');
+        }
+
+        $chemin = $this->getParameter('kernel.project_dir')
+            . '/var/uploads/medical/'
+            . $nomFichier;
+
+        if (!is_file($chemin)) {
+            throw $this->createNotFoundException('Le fichier mÃ©dical est introuvable.');
+        }
+
+        $mime = $type === 'certificat'
+            ? 'application/pdf'
+            : match (strtolower(pathinfo($nomFichier, PATHINFO_EXTENSION))) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                default => 'application/octet-stream',
+            };
+
+        $response = new BinaryFileResponse($chemin);
+        $response->headers->set('Content-Type', $mime);
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            basename($nomFichier)
+        );
+
+        return $response;
+    }
+}
+
+
+========================================
+FICHIER : config\packages\security.yaml
+========================================
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+        ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+        ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: dashboard
+            logout:
+                path: app_logout
+
+                target: daip_accueil
+    access_control:
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+        - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+
+        - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+        - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+        - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+        - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+
+        - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+        - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+        - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+
+        - { path: ^/, roles: ROLE_USER }
+
+
+========================================
+FICHIER : config\routes.yaml
+========================================
+controllers:
+    resource: routing.controllers
+    type: attribute

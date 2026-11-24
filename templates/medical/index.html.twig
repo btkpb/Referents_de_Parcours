@@ -1,0 +1,454 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des visites médicales - E2C{% endblock %}
+
+{% block stylesheets %}
+<style>
+.medical-page {
+    --medical-blue: #245b91;
+    --medical-light: #5B9BD5;
+    --medical-border: #e3eaf2;
+    color: #25364a;
+}
+.medical-hero {
+    background: linear-gradient(120deg, #245b91, #5B9BD5);
+    color: white;
+    border-radius: 18px;
+    padding: 28px 30px;
+    box-shadow: 0 8px 24px rgba(36, 91, 145, .18);
+}
+.medical-hero h1 { color: white; font-weight: 750; }
+.medical-hero p { color: rgba(255,255,255,.88); }
+.medical-card {
+    border: 1px solid var(--medical-border);
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(31, 56, 82, .06);
+    overflow: hidden;
+}
+.medical-card-header {
+    background: #f5f9fd;
+    border-bottom: 1px solid var(--medical-border);
+    padding: 17px 21px;
+}
+.medical-card-header h2 { color: #244d73; font-weight: 700; }
+.medical-stat {
+    background: white;
+    border: 1px solid var(--medical-border);
+    border-radius: 14px;
+    padding: 17px 19px;
+    height: 100%;
+}
+.medical-stat-label { color: #64748b; font-size: .83rem; }
+.medical-stat-value { color: #244d73; font-size: 1.65rem; font-weight: 750; }
+.medical-page .form-label { color: #344b63; font-weight: 600; }
+.medical-page .form-control,
+.medical-page .form-select {
+    border-color: #d7e1eb;
+    border-radius: 9px;
+    min-height: 43px;
+}
+.medical-page .form-control:focus,
+.medical-page .form-select:focus {
+    border-color: #5B9BD5;
+    box-shadow: 0 0 0 .2rem rgba(91,155,213,.15);
+}
+.medical-table { margin-bottom: 0; }
+.medical-table thead th {
+    background: #edf4fa;
+    color: #294c6b;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+    padding: 14px 12px;
+    white-space: nowrap;
+}
+.medical-table tbody td { padding: 14px 12px; }
+.medical-table tbody tr:hover { background: #f7fbff; }
+.medical-badge {
+    display: inline-block;
+    padding: 6px 11px;
+    border-radius: 30px;
+    font-size: .78rem;
+    font-weight: 700;
+}
+.medical-badge.apte { background: #d9f3e4; color: #176b3a; }
+.medical-badge.inapte { background: #fde1e1; color: #a32929; }
+.medical-badge.attente { background: #fff0c2; color: #805b00; }
+.medical-action {
+    background: #f7fbff;
+    border: 1px solid #dce8f3;
+    border-radius: 12px;
+    padding: 15px;
+    min-width: 245px;
+}
+.medical-action summary { cursor: pointer; }
+.medical-confidential {
+    background: #f1f6fb;
+    border-left: 4px solid #5B9BD5;
+    border-radius: 8px;
+    padding: 15px 18px;
+}
+.medical-pagination .page-link {
+    color: #245b91;
+    border-color: #dce6ef;
+}
+.medical-pagination .active .page-link {
+    background: #245b91;
+    border-color: #245b91;
+    color: white;
+}
+@media(max-width:767px) {
+    .medical-hero { padding: 22px 18px; }
+    .medical-hero h1 { font-size: 1.45rem; }
+    .medical-card .card-body { padding: 16px !important; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4 medical-page">
+
+    <section class="medical-hero mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="small text-uppercase fw-semibold mb-2">
+                    E2C - Gestion administrative et médicale
+                </div>
+                <h1 class="h2 mb-2">Gestion des visites médicales</h1>
+                <p class="mb-0">
+                    Planification, suivi des visites et enregistrement des aptitudes médicales.
+                </p>
+            </div>
+            <div class="text-md-end">
+                <div class="small">Résultats correspondant aux filtres</div>
+                <div class="display-6 fw-bold">{{ total }}</div>
+                <div class="small">visite(s)</div>
+            </div>
+        </div>
+    </section>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <div class="medical-stat">
+                <div class="medical-stat-label">Visites affichées sur cette page</div>
+                <div class="medical-stat-value">{{ items|length }}</div>
+                <div class="small text-muted">Sur {{ total }} résultat(s)</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="medical-stat">
+                <div class="medical-stat-label">Pagination</div>
+                <div class="medical-stat-value">{{ page }} / {{ nombrePages }}</div>
+                <div class="small text-muted">{{ limite }} visites maximum par page</div>
+            </div>
+        </div>
+    </div>
+
+    <section class="medical-card mb-4">
+        <div class="medical-card-header">
+            <h2 class="h5 mb-0">Planifier une visite médicale</h2>
+            <div class="small text-muted mt-1">
+                Enregistrement d'un rendez-vous médical pour un candidat.
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <form method="post" action="{{ path('medical_nouvelle') }}">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('medical_nouvelle') }}">
+
+                <div class="row g-3">
+                    <div class="col-12 col-lg-6">
+                        <label for="candidat" class="form-label">
+                            Candidat <span class="text-danger">*</span>
+                        </label>
+                        <select name="candidat" id="candidat" class="form-select" required>
+                            <option value="">Sélectionner un candidat</option>
+                            {% for candidat in candidats %}
+                                <option value="{{ candidat.id }}">
+                                    {{ candidat.nom }} {{ candidat.prenoms }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <label for="dateHeure" class="form-label">
+                            Date et heure <span class="text-danger">*</span>
+                        </label>
+                        <input type="datetime-local" name="dateHeure" id="dateHeure"
+                               class="form-control"
+                               value="{{ 'now'|date('Y-m-d\\TH:i') }}" required>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <label for="centre" class="form-label">
+                            Centre médical <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="centre" id="centre"
+                               class="form-control" maxlength="180"
+                               placeholder="Nom du centre médical" required>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <label for="observations_planification" class="form-label">
+                            Observations de planification
+                        </label>
+                        <textarea name="observations_planification" id="observations_planification"
+                                  class="form-control" rows="2"
+                                  placeholder="Informations complémentaires (facultatif)"></textarea>
+                    </div>
+
+                    <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div class="small text-muted">
+                            Toute nouvelle visite est enregistrée avec le statut En attente.
+                        </div>
+                        <button type="submit" class="btn btn-primary px-4 py-2">
+                            Planifier la visite
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="medical-card mb-4">
+        <div class="medical-card-header">
+            <h2 class="h5 mb-1">Historique des visites médicales</h2>
+            <div class="small text-muted">
+                Recherche et consultation des visites enregistrées.
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <form method="get" action="{{ path('medical_index') }}" class="row g-3 mb-4">
+                <div class="col-12 col-lg-6">
+                    <label for="recherche" class="form-label">Rechercher un candidat</label>
+                    <input type="search" name="recherche" id="recherche"
+                           class="form-control" value="{{ recherche }}"
+                           placeholder="Nom ou prénoms du candidat">
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <label for="aptitude" class="form-label">Filtrer par décision</label>
+                    <select name="aptitude" id="aptitude" class="form-select">
+                        <option value="">Toutes les décisions</option>
+                        <option value="EN_ATTENTE" {% if aptitudeFiltre == 'EN_ATTENTE' %}selected{% endif %}>En attente</option>
+                        <option value="APTE" {% if aptitudeFiltre == 'APTE' %}selected{% endif %}>Apte</option>
+                        <option value="INAPTE" {% if aptitudeFiltre == 'INAPTE' %}selected{% endif %}>Inapte</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        Rechercher
+                    </button>
+                    <a href="{{ path('medical_index') }}" class="btn btn-outline-secondary">
+                        Effacer
+                    </a>
+                </div>
+            </form>
+
+            {% if items is empty %}
+                <div class="text-center py-5">
+                    <div class="h5 text-secondary">Aucune visite trouvée</div>
+                    <p class="text-muted mb-0">
+                        Modifiez les critères de recherche ou planifiez une nouvelle visite.
+                    </p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table medical-table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date et heure</th>
+                                <th>Candidat</th>
+                                <th>Centre médical</th>
+                                <th>Décision</th>
+                                <th>Documents</th>
+                                {% if isMedicalStaff %}
+                                    <th>Action médicale</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    <strong>
+                                        {{ item.dateHeure ? item.dateHeure|date('d/m/Y') : 'Non renseignée' }}
+                                    </strong>
+                                    <div class="small text-muted">
+                                        {{ item.dateHeure ? item.dateHeure|date('H:i') : '' }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {% if item.candidat %}
+                                        <strong>{{ item.candidat.nom }} {{ item.candidat.prenoms }}</strong>
+                                        <div class="small text-muted">{{ item.candidat.numero }}</div>
+                                    {% else %}
+                                        <span class="text-muted">Candidat non renseigné</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ item.centre }}</td>
+
+                                <td>
+                                    {% if item.aptitude == 'APTE' %}
+                                        <span class="medical-badge apte">Apte</span>
+                                    {% elseif item.aptitude == 'INAPTE' %}
+                                        <span class="medical-badge inapte">Inapte</span>
+                                    {% else %}
+                                        <span class="medical-badge attente">En attente</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.certificat %}
+                                        <a class="btn btn-sm btn-outline-primary mb-1"
+                                           href="{{ path('medical_document_download', {id: item.id, type: 'certificat'}) }}">
+                                            Certificat PDF
+                                        </a>
+                                    {% endif %}
+
+                                    {% if item.photo %}
+                                        <a class="btn btn-sm btn-outline-secondary mb-1"
+                                           href="{{ path('medical_document_download', {id: item.id, type: 'photo'}) }}">
+                                            Photo
+                                        </a>
+                                    {% endif %}
+
+                                    {% if not item.certificat and not item.photo %}
+                                        <span class="small text-muted">Aucun document</span>
+                                    {% endif %}
+                                </td>
+
+                                {% if isMedicalStaff %}
+                                    <td>
+                                        <details class="medical-action">
+                                            <summary class="text-success fw-semibold">
+                                                Saisir / modifier la décision
+                                            </summary>
+
+                                            <form method="post"
+                                                  action="{{ path('medical_resultat', {id: item.id}) }}"
+                                                  enctype="multipart/form-data"
+                                                  class="mt-3">
+
+                                                <input type="hidden" name="_token"
+                                                       value="{{ csrf_token('medical_resultat_' ~ item.id) }}">
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Décision médicale</label>
+                                                    <select name="aptitude" class="form-select" required>
+                                                        <option value="">Choisir une décision</option>
+                                                        <option value="APTE" {% if item.aptitude == 'APTE' %}selected{% endif %}>Apte</option>
+                                                        <option value="INAPTE" {% if item.aptitude == 'INAPTE' %}selected{% endif %}>Inapte</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">
+                                                        Certificat médical PDF
+                                                        {% if not item.certificat %}<span class="text-danger">*</span>{% endif %}
+                                                    </label>
+                                                    <input type="file" name="certificat"
+                                                           class="form-control"
+                                                           accept=".pdf,application/pdf"
+                                                           {% if not item.certificat %}required{% endif %}>
+                                                    <div class="form-text">
+                                                        {% if item.certificat %}
+                                                            Certificat existant : vous pouvez le conserver ou le remplacer.
+                                                        {% else %}
+                                                            Obligatoire pour valider la décision. PDF, 10 Mo maximum.
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Photo médicale facultative</label>
+                                                    <input type="file" name="photo"
+                                                           class="form-control"
+                                                           accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                                    <div class="form-text">JPG, JPEG ou PNG, 10 Mo maximum.</div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Observations médicales</label>
+                                                    <textarea name="observations" class="form-control"
+                                                              rows="2"
+                                                              placeholder="Observations complémentaires">{{ item.observations }}</textarea>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                                    Enregistrer la décision
+                                                </button>
+                                            </form>
+                                        </details>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if nombrePages > 1 %}
+                    <nav class="medical-pagination mt-4" aria-label="Pagination des visites">
+                        <ul class="pagination justify-content-center flex-wrap">
+                            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                                <a class="page-link"
+                                   href="{{ path('medical_index', {page: page - 1, recherche: recherche, aptitude: aptitudeFiltre}) }}">
+                                    Précédent
+                                </a>
+                            </li>
+
+                            {% for numeroPage in 1..nombrePages %}
+                                {% if numeroPage == 1 or numeroPage == nombrePages or (numeroPage >= page - 2 and numeroPage <= page + 2) %}
+                                    <li class="page-item {% if numeroPage == page %}active{% endif %}">
+                                        <a class="page-link"
+                                           href="{{ path('medical_index', {page: numeroPage, recherche: recherche, aptitude: aptitudeFiltre}) }}">
+                                            {{ numeroPage }}
+                                        </a>
+                                    </li>
+                                {% elseif numeroPage == page - 3 or numeroPage == page + 3 %}
+                                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            <li class="page-item {% if page >= nombrePages %}disabled{% endif %}">
+                                <a class="page-link"
+                                   href="{{ path('medical_index', {page: page + 1, recherche: recherche, aptitude: aptitudeFiltre}) }}">
+                                    Suivant
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="medical-confidential small">
+        <strong>Confidentialité des données médicales</strong>
+        <p class="mb-1 mt-2">
+            Les certificats et photos médicales sont conservés dans un dossier privé.
+            Leur consultation et leur téléchargement restent réservés aux profils autorisés.
+        </p>
+        <p class="mb-0">
+            Seul le Personnel médical peut enregistrer ou modifier une décision médicale.
+        </p>
+    </div>
+</div>
+{% endblock %}

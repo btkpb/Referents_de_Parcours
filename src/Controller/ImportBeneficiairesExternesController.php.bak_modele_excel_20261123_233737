@@ -1,0 +1,761 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\Entity\BeneficiaireExterne;
+use App\Entity\ImportBeneficiaireLot;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/admin/integrations-externes', name: 'integration_externe_')]
+class ImportBeneficiairesExternesController extends AbstractController
+{
+    private const MAX_FILE_SIZE = 5242880;
+    private const MAX_ROWS = 5000;
+
+    private const COLONNES_OBLIGATOIRES = [
+        'nom',
+        'prenoms',
+        'sexe',
+        'date_naissance',
+        'telephone',
+        'metier',
+        'lieu_naissance',
+        'lieu_residence',
+        'nationalite',
+        'piece_identite',
+        'numero_piece_identite',
+    ];
+
+    private function verifierAcces(): void
+    {
+        $this->denyAccessUnlessGranted('ROLE_GESTIONNAIRE');
+    }
+
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em, Request $request): Response
+    {
+        $this->verifierAcces();
+
+        $recherche = trim((string) $request->query->get('q', ''));
+        $page = max(1, $request->query->getInt('page', 1));
+        $limite = 15;
+
+        $qb = $em->getRepository(ImportBeneficiaireLot::class)
+            ->createQueryBuilder('l')
+            ->leftJoin('l.importePar', 'u')
+            ->addSelect('u')
+            ->orderBy('l.dateImport', 'DESC')
+            ->addOrderBy('l.id', 'DESC');
+
+        if ($recherche !== '') {
+            $qb->andWhere(
+                'LOWER(l.programme) LIKE :q
+                OR LOWER(l.partenaire) LIKE :q
+                OR LOWER(l.referenceLot) LIKE :q'
+            )->setParameter('q', '%' . mb_strtolower($recherche) . '%');
+        }
+
+        $qb->setFirstResult(($page - 1) * $limite)
+            ->setMaxResults($limite);
+
+        $lots = $qb->getQuery()->getResult();
+
+        $statistiques = $em->createQuery(
+            'SELECT COUNT(l.id) FROM App\Entity\ImportBeneficiaireLot l'
+        )->getSingleScalarResult();
+
+        $totalBeneficiaires = $em->createQuery(
+            'SELECT COUNT(b.id) FROM App\Entity\BeneficiaireExterne b'
+        )->getSingleScalarResult();
+
+        $enAttente = $em->createQuery(
+            "SELECT COUNT(b.id)
+             FROM App\Entity\BeneficiaireExterne b
+             WHERE b.statutValidation = :statut"
+        )->setParameter('statut', 'EN_ATTENTE_VALIDATION')
+         ->getSingleScalarResult();
+
+        return $this->render('beneficiaire_externe/index.html.twig', [
+            'lots' => $lots,
+            'recherche' => $recherche,
+            'page' => $page,
+            'limite' => $limite,
+            'nombreLots' => (int) $statistiques,
+            'totalBeneficiaires' => (int) $totalBeneficiaires,
+            'enAttente' => (int) $enAttente,
+        ]);
+    }
+
+    #[Route('/nouveau', name: 'nouveau', methods: ['GET', 'POST'])]
+    public function nouveau(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->verifierAcces();
+
+        $erreurs = [];
+
+        $donnees = [
+            'programme' => '',
+            'partenaire' => '',
+            'referenceLot' => '',
+        ];
+
+        if ($request->isMethod('POST')) {
+            $donnees['programme'] = trim((string) $request->request->get('programme', ''));
+            $donnees['partenaire'] = trim((string) $request->request->get('partenaire', ''));
+            $donnees['referenceLot'] = trim((string) $request->request->get('referenceLot', ''));
+
+            if (!$this->isCsrfTokenValid(
+                'integration_externe_nouveau',
+                (string) $request->request->get('_token', '')
+            )) {
+                $erreurs[] = 'Jeton de sécurité invalide.';
+            }
+
+            if ($donnees['programme'] === '' || mb_strlen($donnees['programme']) > 180) {
+                $erreurs[] = 'Le programme est obligatoire (180 caractères maximum).';
+            }
+
+            if ($donnees['partenaire'] === '' || mb_strlen($donnees['partenaire']) > 180) {
+                $erreurs[] = 'Le partenaire est obligatoire (180 caractères maximum).';
+            }
+
+            if (mb_strlen($donnees['referenceLot']) > 100) {
+                $erreurs[] = 'La référence du lot ne doit pas dépasser 100 caractères.';
+            }
+
+            $fichier = $request->files->get('fichier');
+
+            if (!$fichier instanceof UploadedFile) {
+                $erreurs[] = 'Veuillez sélectionner un fichier Excel ou CSV.';
+            } elseif (!$fichier->isValid()) {
+                $erreurs[] = 'Le fichier transmis est invalide.';
+            } elseif (($fichier->getSize() ?? 0) > self::MAX_FILE_SIZE) {
+                $erreurs[] = 'Le fichier ne doit pas dépasser 5 Mo.';
+            } elseif (!in_array(
+                strtolower($fichier->getClientOriginalExtension()),
+                ['xlsx', 'xls', 'csv'],
+                true
+            )) {
+                $erreurs[] = 'Format non accepté. Utilisez .xlsx, .xls ou .csv.';
+            }
+
+            if ($erreurs === [] && $fichier instanceof UploadedFile) {
+                $lignes = [];
+
+                try {
+                    $extension = strtolower($fichier->getClientOriginalExtension());
+
+                    $reader = IOFactory::createReaderForFile($fichier->getPathname());
+
+                    if ($extension === 'csv' && method_exists($reader, 'setDelimiter')) {
+                        $premiereLigne = file(
+                            $fichier->getPathname(),
+                            FILE_IGNORE_NEW_LINES
+                        )[0] ?? '';
+
+                        $delimiter = substr_count($premiereLigne, ';')
+                            > substr_count($premiereLigne, ',') ? ';' : ',';
+
+                        $reader->setDelimiter($delimiter);
+                        $reader->setEnclosure('"');
+                        $reader->setInputEncoding('UTF-8');
+                    }
+
+                    $reader->setReadDataOnly(true);
+                    $classeur = $reader->load($fichier->getPathname());
+                    $feuille = $classeur->getActiveSheet();
+                    $tableau = $feuille->toArray(null, true, true, false);
+                    $classeur->disconnectWorksheets();
+
+                    if (count($tableau) < 2) {
+                        throw new \RuntimeException(
+                            'Le fichier ne contient aucune ligne de bénéficiaire.'
+                        );
+                    }
+
+                    if (count($tableau) - 1 > self::MAX_ROWS) {
+                        throw new \RuntimeException(
+                            'Le fichier dépasse la limite de 5 000 lignes.'
+                        );
+                    }
+
+                    $entetes = array_map(
+                        static fn ($v) => strtolower(trim((string) $v)),
+                        $tableau[0]
+                    );
+
+                    $colonnes = [];
+
+                    $aliasObligatoires = [
+                        'piece_identite' => ['piece_identite', 'type_piece'],
+                    ];
+
+                    foreach (self::COLONNES_OBLIGATOIRES as $colonne) {
+                        $nomsPossibles = $aliasObligatoires[$colonne] ?? [$colonne];
+                        $position = false;
+
+                        foreach ($nomsPossibles as $nomPossible) {
+                            $position = array_search($nomPossible, $entetes, true);
+
+                            if ($position !== false) {
+                                break;
+                            }
+                        }
+
+                        if ($position === false) {
+                            throw new \RuntimeException(
+                                'Colonne obligatoire absente : ' . $colonne
+                            );
+                        }
+
+                        $cleInterne = $colonne === 'piece_identite'
+                            ? 'type_piece'
+                            : $colonne;
+
+                        $colonnes[$cleInterne] = $position;
+                    }
+
+                    $colonnesOptionnelles = [
+                        'telephone_secondaire' => ['telephone_alt', 'telephone_secondaire'],
+                        'email' => ['email'],
+
+                        'niveau_etude' => ['niveau', 'niveau_etude'],
+                        'diplome' => ['diplome'],
+                        'ancien_metier' => ['ancien_metier'],
+                        'disponibilite' => ['disponibilite'],
+                        'disponible_le' => ['disponible_le'],
+                        'contact_urgence_nom' => ['contact_urgence_nom'],
+                        'contact_urgence_tel' => ['contact_urgence_tel'],
+                        'contact_urgence_lien' => ['contact_urgence_lien'],
+                        'experience' => ['experience'],
+                        'reference_beneficiaire' => ['reference_beneficiaire'],
+                    ];
+
+                    foreach ($colonnesOptionnelles as $cle => $alias) {
+                        foreach ($alias as $nomColonne) {
+                            $position = array_search($nomColonne, $entetes, true);
+
+                            if ($position !== false) {
+                                $colonnes[$cle] = $position;
+                                break;
+                            }
+                        }
+                    }
+
+                    foreach (array_slice($tableau, 1, null, true) as $index => $ligne) {
+                        $valeur = static function (string $nom) use ($colonnes, $ligne): string {
+                            if (!isset($colonnes[$nom])) {
+                                return '';
+                            }
+
+                            return trim((string) ($ligne[$colonnes[$nom]] ?? ''));
+                        };
+
+                        $nom = $valeur('nom');
+                        $prenoms = $valeur('prenoms');
+                        $sexe = strtoupper($valeur('sexe'));
+                        $telephone = $valeur('telephone');
+                        $metier = $valeur('metier');
+                        $lieuNaissance = $valeur('lieu_naissance');
+                        $lieuResidence = $valeur('lieu_residence');
+                        $nationalite = $valeur('nationalite');
+                        $typePieceBrut = $valeur('type_piece');
+                        $numeroPieceIdentite = $valeur('numero_piece_identite');
+
+                        if (
+                            $nom === '' || $prenoms === '' || $sexe === ''
+                            || $telephone === '' || $metier === ''
+                            || $lieuNaissance === '' || $lieuResidence === ''
+                            || $nationalite === '' || $typePieceBrut === ''
+                            || $numeroPieceIdentite === ''
+                        ) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1)
+                                . ' : un champ obligatoire est vide.'
+                            );
+                        }
+
+                        if (
+                            mb_strlen($nom) > 100
+                            || mb_strlen($prenoms) > 160
+                            || mb_strlen($sexe) > 10
+                            || mb_strlen($telephone) > 30
+                            || mb_strlen($metier) > 80
+                            || mb_strlen($lieuNaissance) > 160
+                            || mb_strlen($lieuResidence) > 160
+                            || mb_strlen($nationalite) > 100
+                            || mb_strlen($numeroPieceIdentite) > 100
+                        ) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1)
+                                . ' : un champ dépasse la longueur autorisée.'
+                            );
+                        }
+
+                        $dateBrute = $ligne[$colonnes['date_naissance']] ?? null;
+                        $dateNaissance = $this->convertirDate($dateBrute);
+
+                        if (!$dateNaissance) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1)
+                                . ' : date de naissance invalide.'
+                            );
+                        }
+
+                        $typePieceBrut = $valeur('type_piece');
+                        $typePiece = null;
+
+                        if ($typePieceBrut !== '') {
+                            $cleTypePiece = mb_strtolower(trim($typePieceBrut));
+
+                            $cleTypePiece = strtr($cleTypePiece, [
+                                'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+                                'à' => 'a', 'â' => 'a',
+                                'î' => 'i', 'ï' => 'i',
+                                'ô' => 'o',
+                                'ù' => 'u', 'û' => 'u',
+                                'ç' => 'c',
+                                '’' => "'",
+                            ]);
+
+                            $cleTypePiece = preg_replace('/[^a-z0-9]+/u', '_', $cleTypePiece);
+                            $cleTypePiece = trim($cleTypePiece, '_');
+
+                            $typePiece = match ($cleTypePiece) {
+                                'cni' => 'CNI',
+                                'attestation_d_identite',
+                                'attestation_identite' => 'Attestation d’identité',
+                                'passeport' => 'Passeport',
+                                'extrait_de_naissance' => 'Extrait de naissance',
+                                default => null,
+                            };
+
+                            if ($typePiece === null) {
+                                throw new \RuntimeException(
+                                    'Ligne ' . ($index + 1)
+                                    . ' : type de pièce d’identité non reconnu.'
+                                );
+                            }
+                        }
+                        $email = $valeur('email');
+
+                        if ($email !== '' && (
+                            mb_strlen($email) > 180
+                            || filter_var($email, FILTER_VALIDATE_EMAIL) === false
+                        )) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1) . ' : adresse e-mail invalide.'
+                            );
+                        }
+
+                        $limitesOptionnelles = [
+                            'telephone_secondaire' => 30,
+                                                                                                            'niveau_etude' => 40,
+                            'diplome' => 50,
+                            'ancien_metier' => 80,
+                            'disponibilite' => 30,
+                            'contact_urgence_nom' => 120,
+                            'contact_urgence_tel' => 30,
+                            'contact_urgence_lien' => 120,
+                            'reference_beneficiaire' => 120,
+                        ];
+
+                        foreach ($limitesOptionnelles as $champ => $limite) {
+                            if (mb_strlen($valeur($champ)) > $limite) {
+                                throw new \RuntimeException(
+                                    'Ligne ' . ($index + 1)
+                                    . ' : le champ ' . $champ
+                                    . ' dépasse ' . $limite . ' caractères.'
+                                );
+                            }
+                        }
+
+                        $disponibleLeBrut = $valeur('disponible_le');
+                        $disponibleLe = $disponibleLeBrut !== ''
+                            ? $this->convertirDate($disponibleLeBrut)
+                            : null;
+
+                        if ($disponibleLeBrut !== '' && $disponibleLe === null) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1)
+                                . ' : date de disponibilité invalide.'
+                            );
+                        }
+
+                        if (mb_strlen($valeur('experience')) > 20000) {
+                            throw new \RuntimeException(
+                                'Ligne ' . ($index + 1)
+                                . ' : le champ expérience dépasse 20 000 caractères.'
+                            );
+                        }
+                        $lignes[] = [
+                            'ligne' => $index + 1,
+                            'nom' => $nom,
+                            'prenoms' => $prenoms,
+                            'sexe' => $sexe,
+                            'dateNaissance' => $dateNaissance,
+                            'telephone' => $telephone,
+                            'telephoneSecondaire' => $valeur('telephone_secondaire'),
+                            'email' => $email,
+                            'lieuNaissance' => $valeur('lieu_naissance'),
+                            'lieuResidence' => $valeur('lieu_residence'),
+                            'nationalite' => $valeur('nationalite'),
+                            'typePiece' => $typePiece,
+                            'numeroPieceIdentite' => $valeur('numero_piece_identite'),
+                            'metier' => $metier,
+                            'niveauEtude' => $valeur('niveau_etude'),
+                            'diplome' => $valeur('diplome'),
+                            'ancienMetier' => $valeur('ancien_metier'),
+                            'disponibilite' => $valeur('disponibilite'),
+                            'disponibleLe' => $disponibleLe,
+                            'contactUrgenceNom' => $valeur('contact_urgence_nom'),
+                            'contactUrgenceTel' => $valeur('contact_urgence_tel'),
+                            'contactUrgenceLien' => $valeur('contact_urgence_lien'),
+                            'experience' => $valeur('experience'),
+                            'referenceBeneficiaire' => $valeur('reference_beneficiaire'),
+                        ];
+                    }
+
+                    if ($lignes === []) {
+                        throw new \RuntimeException('Aucune ligne exploitable dans le fichier.');
+                    }
+                } catch (\Throwable $e) {
+                    $erreurs[] = $e instanceof \RuntimeException
+                        ? $e->getMessage()
+                        : 'Impossible de lire le fichier. Vérifiez son format et son contenu.';
+                }
+
+                if ($erreurs === []) {
+                    $utilisateur = $this->getUser();
+
+                    if (!$utilisateur instanceof User) {
+                        throw $this->createAccessDeniedException(
+                            'Utilisateur connecté non reconnu.'
+                        );
+                    }
+
+                    $repertoire = $this->getParameter('kernel.project_dir')
+                        . '/var/uploads/integrations_externes';
+
+                    if (!is_dir($repertoire) && !mkdir($repertoire, 0770, true) && !is_dir($repertoire)) {
+                        throw new \RuntimeException(
+                            'Impossible de créer le dossier de stockage privé.'
+                        );
+                    }
+
+                    $nomStocke = bin2hex(random_bytes(16)) . '.' . $extension;
+                    $nomOriginal = mb_substr(
+                        basename($fichier->getClientOriginalName()),
+                        0,
+                        255
+                    );
+
+                    $cheminStocke = $repertoire . '/' . $nomStocke;
+
+                    try {
+                        $fichier->move($repertoire, $nomStocke);
+
+                        $em->getConnection()->beginTransaction();
+
+                        $lot = (new ImportBeneficiaireLot())
+                            ->setProgramme($donnees['programme'])
+                            ->setPartenaire($donnees['partenaire'])
+                            ->setReferenceLot($donnees['referenceLot'] ?: null)
+                            ->setFichierOriginal($nomOriginal)
+                            ->setFichierStocke($nomStocke)
+                            ->setImportePar($utilisateur);
+
+                        $em->persist($lot);
+
+                        // Détection des doublons présents dans le fichier importé.
+                                                // Indexation des doublons déjà présents en base.
+                        // Deux lectures groupées remplacent les requêtes répétées par bénéficiaire.
+
+                        $normaliserIdentite = static function (
+                            string $nom,
+                            string $prenoms,
+                            \DateTimeInterface $dateNaissance
+                        ): string {
+                            return implode('|', [
+                                mb_strtolower(trim($nom)),
+                                mb_strtolower(trim($prenoms)),
+                                $dateNaissance->format('Y-m-d'),
+                            ]);
+                        };
+
+                        $normaliserClePiece = static function (
+                            ?string $typePiece,
+                            ?string $numeroPiece
+                        ): string {
+                            $type = trim((string) $typePiece);
+                            $numero = mb_strtoupper(trim((string) $numeroPiece));
+
+                            $type = str_replace(["’", "‘", "`"], "'", $type);
+                            $type = mb_strtolower($type);
+                            $type = preg_replace('/\s+/u', ' ', $type);
+
+                            if ($type === '' || $numero === '' || $type === 'aucun') {
+                                return '';
+                            }
+
+                            return $type . '|' . $numero;
+                        };
+
+                        $clesPiecesCandidats = [];
+                        $clesIdentitesCandidats = [];
+                        $clesPiecesExternes = [];
+                        $clesIdentitesExternes = [];
+
+                        // Première requête : dossiers candidats existants.
+                        $candidatsExistants = $em->createQuery(
+                            'SELECT c.nom AS nom,
+                                    c.prenoms AS prenoms,
+                                    c.dateNaissance AS dateNaissance,
+                                    c.numeroPieceIdentite AS numeroPieceIdentite,
+                                    c.pieceIdentite AS typePiece
+                             FROM App\Entity\Candidat c'
+                        )->getArrayResult();
+
+                        foreach ($candidatsExistants as $existant) {
+                            $clePiece = $normaliserClePiece(
+                                $existant['typePiece'] ?? null,
+                                $existant['numeroPieceIdentite'] ?? null
+                            );
+
+                            if ($clePiece !== '') {
+                                $clesPiecesCandidats[$clePiece] = true;
+                            }
+
+                            $date = $existant['dateNaissance'] ?? null;
+
+                            if ($date instanceof \DateTimeInterface) {
+                                $cle = $normaliserIdentite(
+                                    (string) $existant['nom'],
+                                    (string) $existant['prenoms'],
+                                    $date
+                                );
+
+                                $clesIdentitesCandidats[$cle] = true;
+                            }
+                        }
+
+                        // Deuxième requête : bénéficiaires des imports précédents.
+                        $externesExistants = $em->createQuery(
+                            'SELECT b.nom AS nom,
+                                    b.prenoms AS prenoms,
+                                    b.dateNaissance AS dateNaissance,
+                                    b.numeroPieceIdentite AS numeroPieceIdentite,
+                                    b.typePiece AS typePiece
+                             FROM App\Entity\BeneficiaireExterne b'
+                        )->getArrayResult();
+
+                        foreach ($externesExistants as $existant) {
+                            $clePiece = $normaliserClePiece(
+                                $existant['typePiece'] ?? null,
+                                $existant['numeroPieceIdentite'] ?? null
+                            );
+
+                            if ($clePiece !== '') {
+                                $clesPiecesExternes[$clePiece] = true;
+                            }
+
+                            $date = $existant['dateNaissance'] ?? null;
+
+                            if ($date instanceof \DateTimeInterface) {
+                                $cle = $normaliserIdentite(
+                                    (string) $existant['nom'],
+                                    (string) $existant['prenoms'],
+                                    $date
+                                );
+
+                                $clesIdentitesExternes[$cle] = true;
+                            }
+                        }
+
+                        // Détection des répétitions à l'intérieur du fichier courant.
+                        $clesPiecesFichier = [];
+                        $identites = [];
+
+                        foreach ($lignes as $ligne) {
+                            $clePiece = $normaliserClePiece(
+                                $ligne['typePiece'] ?? null,
+                                $ligne['numeroPieceIdentite'] ?? null
+                            );
+
+                            if ($clePiece !== '') {
+                                $clesPiecesFichier[$clePiece] = ($clesPiecesFichier[$clePiece] ?? 0) + 1;
+                            }
+
+                            $cleIdentite = $normaliserIdentite(
+                                (string) $ligne['nom'],
+                                (string) $ligne['prenoms'],
+                                $ligne['dateNaissance']
+                            );
+
+                            $identites[$cleIdentite] = ($identites[$cleIdentite] ?? 0) + 1;
+                        }
+
+                        // Création des bénéficiaires en attente de validation.
+                        foreach ($lignes as $ligne) {
+                            $beneficiaire = (new BeneficiaireExterne())
+                                ->setNom($ligne['nom'])
+                                ->setPrenoms($ligne['prenoms'])
+                                ->setSexe($ligne['sexe'])
+                                ->setDateNaissance($ligne['dateNaissance'])
+                                ->setTelephone($ligne['telephone'])
+                                ->setTelephoneSecondaire($ligne['telephoneSecondaire'] ?: null)
+                                ->setEmail($ligne['email'] ?: null)
+                                ->setLieuNaissance($ligne['lieuNaissance'] ?: null)
+                                ->setLieuResidence($ligne['lieuResidence'] ?: null)
+                                ->setNationalite($ligne['nationalite'] ?: null)
+                                ->setTypePiece($ligne['typePiece'] ?: null)
+                                ->setNumeroPieceIdentite($ligne['numeroPieceIdentite'] ?: null)
+                                ->setMetier($ligne['metier'])
+                                ->setNiveauEtude($ligne['niveauEtude'] ?: null)
+                                ->setDiplome($ligne['diplome'] ?: null)
+                                ->setAncienMetier($ligne['ancienMetier'] ?: null)
+                                ->setDisponibilite($ligne['disponibilite'] ?: null)
+                                ->setDisponibleLe($ligne['disponibleLe'])
+                                ->setContactUrgenceNom($ligne['contactUrgenceNom'] ?: null)
+                                ->setContactUrgenceTel($ligne['contactUrgenceTel'] ?: null)
+                                ->setContactUrgenceLien($ligne['contactUrgenceLien'] ?: null)
+                                ->setExperience($ligne['experience'] ?: null)
+                                ->setReferenceBeneficiaire($ligne['referenceBeneficiaire'] ?: null)
+                                ->setNumeroLigne($ligne['ligne'])
+                                ->setStatutValidation('EN_ATTENTE_VALIDATION')
+                                ->setLotImport($lot);
+
+                            $observations = [];
+
+                            $clePiece = $normaliserClePiece(
+                                $ligne['typePiece'] ?? null,
+                                $ligne['numeroPieceIdentite'] ?? null
+                            );
+
+                            $cleIdentite = $normaliserIdentite(
+                                (string) $ligne['nom'],
+                                (string) $ligne['prenoms'],
+                                $ligne['dateNaissance']
+                            );
+
+                            // 1. Même type et même numéro dans le fichier courant.
+                            if (
+                                $clePiece !== ''
+                                && ($clesPiecesFichier[$clePiece] ?? 0) > 1
+                            ) {
+                                $observations[] = 'Même type et numéro de pièce répétés dans ce fichier : vérification manuelle nécessaire.';
+                            }
+
+                            // 2. Même type et même numéro dans un dossier candidat.
+                            if (
+                                $clePiece !== ''
+                                && isset($clesPiecesCandidats[$clePiece])
+                            ) {
+                                $observations[] = 'Type et numéro de pièce déjà présents dans un dossier candidat : contrôle du Gestionnaire requis.';
+                            }
+
+                            // 3. Même type et même numéro dans un ancien import externe.
+                            if (
+                                $clePiece !== ''
+                                && isset($clesPiecesExternes[$clePiece])
+                            ) {
+                                $observations[] = 'Type et numéro de pièce déjà présents dans un précédent dossier externe : contrôle du Gestionnaire requis.';
+                            }
+                            // 4. Identité correspondant à un candidat existant.
+                            if (isset($clesIdentitesCandidats[$cleIdentite])) {
+                                $observations[] = 'Nom, prénoms et date de naissance correspondant à un dossier candidat : vérification manuelle nécessaire.';
+                            }
+
+                            // 5. Identité correspondant à un ancien import externe.
+                            if (isset($clesIdentitesExternes[$cleIdentite])) {
+                                $observations[] = 'Nom, prénoms et date de naissance correspondant à un précédent dossier externe : vérification manuelle nécessaire.';
+                            }
+
+                            // 6. Identité répétée dans le fichier courant.
+                            if (($identites[$cleIdentite] ?? 0) > 1) {
+                                $observations[] = 'Identité répétée dans le fichier : vérification manuelle nécessaire.';
+                            }
+
+                            if ($observations !== []) {
+                                $beneficiaire->setObservationsValidation(
+                                    implode(' ', array_unique($observations))
+                                );
+                            }
+
+                            $em->persist($beneficiaire);
+                        }
+                        $em->flush();
+                        $em->getConnection()->commit();
+
+                        $this->addFlash(
+                            'success',
+                            count($lignes) . ' bénéficiaire(s) importé(s) dans le lot. '
+                            . 'Tous sont en attente de validation.'
+                        );
+
+                        return $this->redirectToRoute('integration_externe_index');
+                    } catch (\Throwable $e) {
+                        if ($em->getConnection()->isTransactionActive()) {
+                            $em->getConnection()->rollBack();
+                        }
+
+                        if (is_file($cheminStocke)) {
+                            @unlink($cheminStocke);
+                        }
+
+                        throw $e;
+                    }
+                }
+            }
+        }
+
+        return $this->render('beneficiaire_externe/nouveau.html.twig', [
+            'erreurs' => $erreurs,
+            'donnees' => $donnees,
+        ]);
+    }
+
+    private function convertirDate(mixed $valeur): ?\DateTimeImmutable
+    {
+        if ($valeur instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($valeur);
+        }
+
+        if (is_numeric($valeur) && (float) $valeur > 0) {
+            try {
+                return ExcelDate::excelToDateTimeObject((float) $valeur)
+                    ->setTime(0, 0);
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        $texte = trim((string) $valeur);
+
+        if ($texte === '') {
+            return null;
+        }
+
+        foreach (['!Y-m-d', '!d/m/Y', '!d-m-Y'] as $format) {
+            $date = \DateTimeImmutable::createFromFormat($format, $texte);
+
+            if ($date && $date->format(substr($format, 1)) === $texte) {
+                return $date;
+            }
+        }
+
+        return null;
+    }
+}

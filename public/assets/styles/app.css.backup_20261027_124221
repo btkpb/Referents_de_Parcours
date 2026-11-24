@@ -1,0 +1,375 @@
+:root {
+    --navy: #071a3a;
+    --navy-light: #102d60;
+    --gold: #f4b400;
+    --gold-light: #ffda70;
+    --page-bg: #f5f7fb;
+    --text: #263247;
+    --white: #ffffff;
+}
+
+html {
+    scroll-behavior: smooth;
+    background: var(--page-bg);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--page-bg) !important;
+    color: var(--text) !important;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.daip-navbar {
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+    background: var(--navy) !important;
+    color: var(--white);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.daip-nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 12px 24px;
+}
+
+.daip-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.daip-logo {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 175px;
+    max-height: 72px;
+    object-fit: contain;
+}
+
+.daip-navigation-collapse {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    gap: 16px;
+}
+
+.daip-nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.daip-nav-links a {
+    display: inline-block;
+    padding: 10px 9px;
+    border-radius: 5px;
+    color: var(--gold-light) !important;
+    font-size: 0.94rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.daip-nav-links a:hover,
+.daip-nav-links a:focus {
+    color: var(--white) !important;
+    background: var(--navy-light);
+}
+
+.daip-nav-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.daip-user-label {
+    max-width: 180px;
+    overflow-wrap: anywhere;
+    color: var(--white);
+    font-size: 0.85rem;
+}
+
+.daip-login-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    background: var(--gold);
+    color: var(--navy) !important;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.daip-login-btn:hover,
+.daip-login-btn:focus {
+    background: var(--white);
+    border-color: var(--white);
+    color: var(--navy) !important;
+}
+
+.daip-menu-toggle {
+    display: none;
+    padding: 8px 12px;
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--gold-light);
+}
+
+.daip-main {
+    flex: 1;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px !important;
+    background: var(--white);
+    color: var(--text);
+}
+
+.daip-main h1,
+.daip-main h2,
+.daip-main h3,
+.daip-main h4,
+.daip-main p,
+.daip-main li,
+.daip-main label {
+    color: var(--text);
+}
+
+.daip-main a:not(.btn) {
+    overflow-wrap: anywhere;
+}
+
+.daip-main .btn-primary,
+.btn-primary {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--white);
+}
+
+.daip-main .btn-primary:hover,
+.btn-primary:hover {
+    background: var(--navy-light);
+    border-color: var(--navy-light);
+}
+
+.bg-navy {
+    background: var(--navy) !important;
+}
+
+.metric {
+    border-left: 5px solid var(--gold);
+}
+
+.card {
+    border-radius: 16px;
+}
+
+.display-1 {
+    color: #198754;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+#contact {
+    scroll-margin-top: 24px;
+    padding: 28px;
+    margin-top: 32px;
+    border-radius: 10px;
+    background: #eef2f8;
+    color: var(--text);
+}
+
+#contact h2,
+#contact h3,
+#contact p,
+#contact li,
+#contact a {
+    color: var(--text);
+}
+
+.daip-footer {
+    margin-top: auto;
+    padding: 18px 12px;
+    background: var(--navy) !important;
+    color: var(--white) !important;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .daip-nav-container {
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    .daip-navigation-collapse {
+        flex-basis: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .daip-nav-links {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .daip-nav-container {
+        justify-content: space-between;
+        padding: 12px;
+    }
+
+    .daip-logo {
+        max-width: 145px;
+        max-height: 60px;
+    }
+
+    .daip-menu-toggle {
+        display: inline-block;
+    }
+
+    .daip-navigation-collapse {
+        display: none;
+        flex-basis: 100%;
+        width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .daip-navigation-collapse.show {
+        display: flex;
+    }
+
+    .daip-nav-links {
+        width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .daip-nav-links a {
+        display: block;
+        text-align: center;
+    }
+
+    .daip-nav-login {
+        flex-wrap: wrap;
+    }
+
+    .daip-main {
+        padding: 24px 16px !important;
+    }
+
+    #contact {
+        padding: 20px 16px;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+}
+
+/* E2C NAVIGATION COMPACTE */
+@media (min-width: 992px) {
+    .daip-navigation-collapse {
+        min-width: 0;
+    }
+
+    .daip-nav-links {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: .25rem;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .daip-nav-links > a,
+    .daip-nav-dropdown > summary {
+        white-space: nowrap;
+        padding: .55rem .65rem;
+    }
+
+    .daip-nav-dropdown {
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .daip-nav-dropdown > summary {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .daip-nav-dropdown > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .daip-nav-dropdown > summary::after {
+        content: " ▾";
+    }
+
+    .daip-nav-dropdown-menu {
+        position: absolute;
+        z-index: 1050;
+        top: 100%;
+        right: 0;
+        min-width: 210px;
+        padding: .5rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.12);
+        display: flex;
+        flex-direction: column;
+        white-space: normal;
+    }
+
+    .daip-nav-dropdown-menu a {
+        display: block;
+        padding: .55rem .7rem;
+        text-decoration: none;
+        color: #212529;
+        border-radius: .25rem;
+    }
+
+    .daip-nav-dropdown-menu a:hover {
+        background: #f1f4f8;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .daip-nav-links {
+        flex-wrap: wrap;
+    }
+
+    .daip-nav-dropdown-menu {
+        display: flex;
+        flex-direction: column;
+        padding-left: 1rem;
+    }
+
+    .daip-nav-dropdown-menu a {
+        padding: .5rem;
+    }
+}
+/* FIN E2C NAVIGATION COMPACTE */

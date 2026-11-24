@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle importation externe | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .import-page { color: #243447; }
+    .import-header {
+        background: linear-gradient(120deg, #2469a8, #5B9BD5);
+        color: #fff; border-radius: 18px; padding: 26px;
+        box-shadow: 0 8px 24px rgba(36,105,168,.16);
+    }
+    .import-header h1 { color: #fff; font-weight: 750; }
+    .import-header p { color: rgba(255,255,255,.9); margin-bottom: 0; }
+    .import-panel {
+        background: #fff; border: 1px solid #e8eef5; border-radius: 16px;
+        padding: 24px; box-shadow: 0 5px 20px rgba(31,55,80,.05);
+    }
+    .import-panel h2 { color: #243447; font-weight: 700; }
+    .import-page .form-control { min-height: 44px; border-color: #dce5ee; border-radius: 9px; }
+    .import-page .form-label { font-weight: 650; color: #40556b; }
+    .import-help {
+        background: #f1f6fb; border: 1px solid #dce9f5;
+        border-radius: 12px; padding: 18px;
+    }
+    .import-help code { color: #1557a0; white-space: normal; }
+    .import-notice {
+        background: #fff8e6; border: 1px solid #f2dfaa;
+        color: #765719; border-radius: 12px; padding: 16px;
+    }
+</style>
+
+<div class="import-page">
+    <div class="import-header mb-4">
+        <h1 class="h3 mb-2">Nouveau lot d'importation</h1>
+        <p>Enregistrement d'une liste de bénéficiaires transmise par un partenaire.</p>
+    </div>
+
+    <div class="mb-3">
+        <a href="{{ path('integration_externe_index') }}" class="btn btn-outline-secondary">
+            ← Retour aux lots
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ path('integration_externe_modele') }}"
+           class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel me-2"></i>
+            Télécharger le modèle Excel
+        </a>
+    </div>
+    {% if erreurs is not empty %}
+        <div class="alert alert-danger">
+            <div class="fw-bold mb-2">L'importation n'a pas pu être effectuée :</div>
+            <ul class="mb-0">
+                {% for erreur in erreurs %}
+                    <li>{{ erreur }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="import-panel mb-4">
+        <h2 class="h5 mb-4">Informations du lot</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('integration_externe_nouveau') }}">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="programme" class="form-label">Programme concerné *</label>
+                    <input type="text" id="programme" name="programme" class="form-control"
+                           maxlength="180" required value="{{ donnees.programme }}"
+                           placeholder="Ex. Programme de formation et d'insertion">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="partenaire" class="form-label">Partenaire transmetteur *</label>
+                    <input type="text" id="partenaire" name="partenaire" class="form-control"
+                           maxlength="180" required value="{{ donnees.partenaire }}"
+                           placeholder="Nom de la structure partenaire">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="referenceLot" class="form-label">Référence du lot</label>
+                    <input type="text" id="referenceLot" name="referenceLot" class="form-control"
+                           maxlength="100" value="{{ donnees.referenceLot }}"
+                           placeholder="Référence du courrier ou du fichier">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="fichier" class="form-label">Fichier des bénéficiaires *</label>
+                    <input type="file" id="fichier" name="fichier" class="form-control"
+                           accept=".xlsx,.xls,.csv" required>
+                    <div class="form-text">Formats acceptés : Excel (.xlsx, .xls) ou CSV. Taille maximale : 5 Mo.</div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end mt-4">
+                <a href="{{ path('integration_externe_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary px-4">Importer le fichier</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="import-help mb-3">
+        <h2 class="h6 fw-bold mb-3">Structure attendue du fichier Excel ou CSV</h2>
+
+        <p class="mb-2">
+            La première ligne doit contenir les noms des colonnes ci-dessous,
+            écrits sans accents et séparés selon le format du fichier.
+        </p>
+
+        <div class="mb-3">
+            <strong class="text-danger">Colonnes obligatoires (11) :</strong>
+            <p class="mb-1">
+                <code>nom, prenoms, sexe, date_naissance, telephone, metier, lieu_naissance, lieu_residence, nationalite, piece_identite, numero_piece_identite</code>
+            </p>
+            <small class="text-muted">
+                Ces onze informations doivent être renseignées pour chaque bénéficiaire.
+            </small>
+        </div>
+
+        <hr>
+
+        <div class="mb-3">
+            <strong>Colonnes facultatives (12) :</strong>
+            <p class="mb-2">
+                <code>email, telephone_alt, niveau, diplome, ancien_metier, disponibilite, disponible_le, contact_urgence_nom, contact_urgence_tel, contact_urgence_lien, experience, reference_beneficiaire</code>
+            </p>
+            <div class="alert alert-info py-2 mb-0">
+                <small>
+                    Ces informations ne sont pas obligatoires lors de l'importation.
+                    Les cellules peuvent rester vides. Le Gestionnaire pourra compléter
+                    et actualiser les dossiers ultérieurement.
+                </small>
+            </div>
+        </div>
+
+        <hr>
+
+        <p class="small mb-2">
+            <strong>Compatibilité :</strong>
+            les anciens noms de colonnes
+            <code>telephone_secondaire</code>,
+            <code>type_piece</code> et
+            <code>niveau_etude</code>
+            restent acceptés.
+        </p>
+
+        <p class="small mb-2">
+            <strong>Types de pièce acceptés :</strong>
+            CNI, Attestation d'identité, Passeport, Extrait de naissance.
+            Le type de pièce et le numéro de pièce d'identité sont obligatoires.
+        </p>
+
+        <p class="small mb-2">
+            <strong>Date de naissance et disponibilité :</strong>
+            format JJ/MM/AAAA ou AAAA-MM-JJ.
+            Les dates Excel reconnues sont également acceptées.
+        </p>
+
+        <p class="small mb-0">
+            <strong>Documents justificatifs :</strong>
+            les fichiers de pièce d'identité, de diplôme et la photo d'identité
+            ne sont pas importés dans ce fichier. Ils pourront être déposés
+            ultérieurement selon les règles de gestion des dossiers.
+        </p>
+    </div>
+    <div class="import-notice">
+        <div class="fw-bold mb-1">Important — Validation administrative obligatoire</div>
+        <p class="mb-0 small">
+            L'importation ne vaut pas admission. Tous les bénéficiaires seront enregistrés avec le statut
+            « EN ATTENTE DE VALIDATION ». Aucun dossier candidat, aucune admission et aucun compte utilisateur
+            ne seront créés automatiquement. Le Gestionnaire devra contrôler et compléter chaque dossier avant validation.
+        </p>
+    </div>
+</div>
+{% endblock %}

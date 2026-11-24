@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Convocation à un entretien - MENAET - DAIP</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 17mm 12mm 17mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            color: #243447;
+            font-size: 9.5px;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #245b91;
+            padding-bottom: 8px;
+            margin-bottom: 13px;
+        }
+
+        .logo {
+            max-width: 85px;
+            max-height: 52px;
+            margin-bottom: 4px;
+        }
+
+        .institution {
+            color: #173f68;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .direction {
+            color: #52677c;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .document-title {
+            text-align: center;
+            color: #173f68;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 12px 0 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #66788a;
+            font-size: 9px;
+            margin-bottom: 13px;
+        }
+
+        p {
+            margin: 6px 0;
+        }
+
+        .identity {
+            border: 1px solid #cbd8e5;
+            background: #f4f7fb;
+            padding: 9px 11px;
+            margin: 10px 0;
+            page-break-inside: avoid;
+        }
+
+        .identity-name {
+            color: #173f68;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .details {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            page-break-inside: avoid;
+        }
+
+        .details tr {
+            page-break-inside: avoid;
+        }
+
+        .details td {
+            border: 1px solid #d8e1ea;
+            padding: 7px 9px;
+            vertical-align: top;
+        }
+
+        .details .label {
+            width: 32%;
+            background: #f1f5f9;
+            font-weight: bold;
+            color: #36536e;
+        }
+
+        .jury-list {
+            margin: 0;
+            padding-left: 15px;
+        }
+
+        .notice {
+            margin-top: 13px;
+            padding: 9px 11px;
+            border-left: 4px solid #5B9BD5;
+            background: #f3f7fb;
+            page-break-inside: avoid;
+        }
+
+        .closing {
+            margin-top: 13px;
+        }
+
+        .signature {
+            margin-top: 20px;
+            text-align: right;
+            color: #36536e;
+            page-break-inside: avoid;
+        }
+
+        .footer {
+            margin-top: 18px;
+            border-top: 1px solid #cbd8e5;
+            padding-top: 6px;
+            text-align: center;
+            font-size: 8px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        {% if logoDataUri %}
+            <img class="logo" src="{{ logoDataUri }}" alt="Logo DAIP">
+        {% endif %}
+        <div class="institution">MENAET</div>
+        <div class="direction">DIRECTION DE L'APPRENTISSAGE ET DE L'INSERTION PROFESSIONNELLE</div>
+        <div class="direction">DAIP</div>
+    </div>
+
+    <div class="document-title">CONVOCATION À L'ENTRETIEN</div>
+    <div class="subtitle">Procédure de recrutement E2C</div>
+
+    <p>Madame, Monsieur,</p>
+
+    <p>
+        Dans le cadre de la procédure de recrutement de l'École de la Deuxième
+        Chance (E2C), vous êtes invité(e) à vous présenter à l'entretien
+        physique dont les informations figurent ci-dessous.
+    </p>
+
+    <div class="identity">
+        <div class="identity-name">
+            {% if candidat %}
+                {{ candidat.nom }} {{ candidat.prenoms }}
+            {% else %}
+                Candidat
+            {% endif %}
+        </div>
+        <div>
+            <strong>Numéro de candidature :</strong>
+            {% if candidat %}{{ candidat.numero }}{% else %}Non renseigné{% endif %}
+        </div>
+    </div>
+
+    <table class="details">
+        <tr>
+            <td class="label">Métier choisi</td>
+            <td>
+                {% if candidat and candidat.metier %}
+                    {{ candidat.metier }}
+                {% else %}
+                    Non renseigné
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Date de l'entretien</td>
+            <td>
+                {% if entretien.dateHeure %}
+                    {{ entretien.dateHeure|date('d/m/Y') }}
+                {% else %}
+                    À préciser
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Heure</td>
+            <td>
+                {% if entretien.dateHeure %}
+                    {{ entretien.dateHeure|date('H:i') }}
+                {% else %}
+                    À préciser
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Lieu</td>
+            <td>{{ entretien.lieu }}</td>
+        </tr>
+        <tr>
+            <td class="label">Membres du jury</td>
+            <td>
+                {% if entretien.jurys|length > 0 %}
+                    <ul class="jury-list">
+                        {% for jury in entretien.jurys %}
+                            <li>{{ jury.prenoms }} {{ jury.nom }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    Jury non encore affecté
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <div class="notice">
+        <strong>Consignes :</strong>
+        Veuillez vous présenter à l'heure indiquée et vous munir d'une pièce
+        d'identité. En cas d'empêchement, veuillez contacter le service
+        chargé du recrutement.
+    </div>
+
+    <p class="closing">
+        Nous vous souhaitons une bonne préparation et vous prions d'agréer
+        nos salutations distinguées.
+    </p>
+
+    <div class="signature">
+        <strong>Le Service chargé du recrutement</strong><br>
+        MENAET - DAIP
+    </div>
+
+    <div class="footer">
+        Document généré le {{ dateEdition|date('d/m/Y à H:i') }} —
+        MENAET - DAIP — E2C
+    </div>
+
+</body>
+</html>

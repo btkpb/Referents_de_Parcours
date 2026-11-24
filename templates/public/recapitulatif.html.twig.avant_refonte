@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Récapitulatif de ma candidature{% endblock %}
+
+{% block body %}
+
+{% for message in app.flashes('danger') %}
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>✗ Erreur :</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('warning') %}
+    <div class="alert alert-warning alert-dismissible fade show">
+        <strong>⚠ Attention :</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+
+        <div class="card shadow border-0">
+
+            <div class="card-header p-4 inscription-header">
+                <h2 class="mb-2 fw-bold inscription-title">
+                    Récapitulatif de votre candidature
+                </h2>
+
+                <p class="mb-0 inscription-subtitle">
+                    Vérifiez attentivement les informations avant de confirmer.
+                </p>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div class="alert alert-warning">
+                    <strong>Important :</strong>
+                    votre candidature ne sera enregistrée définitivement
+                    qu'après avoir cliqué sur
+                    <strong>« Confirmer ma candidature »</strong>.
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-4">
+                    Identité
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>Nom</strong>
+                        <div>{{ data.nom|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Prénoms</strong>
+                        <div>{{ data.prenoms|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Sexe</strong>
+                        <div>{{ data.sexe|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Date de naissance</strong>
+                        <div>{{ data.dateNaissance|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Lieu de naissance</strong>
+                        <div>{{ data.lieuNaissance|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Lieu de résidence</strong>
+                        <div>{{ data.lieuResidence|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Nationalité</strong>
+                        <div>{{ data.nationalite|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Téléphone</strong>
+                        <div>{{ data.telephone|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Téléphone alternatif</strong>
+                        <div>{{ data.telephoneAlt|default('-') }}</div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-5">
+                    Pièce d'identité
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Type</strong>
+                        <div>{{ data.pieceIdentite|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Justificatif</strong>
+                        <div>
+                            {% if documents.pieceIdentiteFichier is defined %}
+                                <span class="badge bg-success">
+                                    Document transmis
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    Aucun document
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-5">
+                    Formation
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>Niveau</strong>
+                        <div>{{ data.niveau|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Diplôme</strong>
+                        <div>{{ data.diplome|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Justificatif</strong>
+                        <div>
+                            {% if documents.diplomeFichier is defined %}
+                                <span class="badge bg-success">
+                                    Document transmis
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    Aucun document
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-5">
+                    Métier et disponibilité
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>Métier demandé</strong>
+                        <div>{{ data.metier|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Ancien métier</strong>
+                        <div>{{ data.ancienMetier|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Disponibilité</strong>
+                        <div>{{ data.disponibilite|default('-') }}</div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-5">
+                    Contact d'urgence
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <strong>Nom</strong>
+                        <div>{{ data.contactUrgenceNom|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Téléphone</strong>
+                        <div>{{ data.contactUrgenceTel|default('-') }}</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Lien</strong>
+                        <div>{{ data.contactUrgenceLien|default('-') }}</div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold border-bottom pb-2 mt-5">
+                    Expérience professionnelle
+                </h5>
+
+                <div class="bg-light rounded p-3">
+                    {{ data.experience|default('Aucune expérience renseignée.')|nl2br }}
+                </div>
+
+                <div class="alert alert-info mt-5">
+                    <strong>Dernière vérification :</strong>
+                    si toutes les informations sont correctes,
+                    cliquez sur <strong>Confirmer ma candidature</strong>.
+                    Sinon, cliquez sur <strong>Retour modifier</strong>.
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+
+                    <a href="{{ path('public_inscription') }}"
+                       class="btn btn-outline-secondary btn-lg">
+                        ← Retour modifier
+                    </a>
+
+                    <form method="post"
+                          action="{{ path('public_inscription_confirmer') }}">
+                        <button type="submit"
+                                class="btn btn-success btn-lg">
+                            ✓ Confirmer ma candidature
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

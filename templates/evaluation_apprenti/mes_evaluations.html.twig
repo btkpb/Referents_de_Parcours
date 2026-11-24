@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes évaluations pédagogiques{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="h3 mb-3">Mes évaluations pédagogiques</h1>
+
+    {% if not candidatAssocie %}
+        <div class="alert alert-warning">
+            Votre compte n’est pas encore associé à un dossier d’apprenti. Contactez le gestionnaire.
+        </div>
+    {% elseif evaluations is empty %}
+        <div class="alert alert-info">
+            Aucune évaluation pédagogique n’a encore été publiée à votre intention.
+        </div>
+    {% else %}
+        {% for e in evaluations %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between flex-wrap gap-2">
+                    <strong>
+                        {% if e.type_evaluation == 'DEBUT' %}Évaluation de début
+                        {% elseif e.type_evaluation == 'PERIODIQUE' %}Évaluation périodique
+                        {% elseif e.type_evaluation == 'STAGE' %}Évaluation de stage
+                        {% else %}Évaluation finale{% endif %}
+                    </strong>
+                    <span>{{ e.date_evaluation|date('d/m/Y') }}</span>
+                </div>
+                <div class="card-body">
+                    <h2 class="h5">Résultat : {{ e.total }}/100</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Compétences techniques</th><td>{{ e.score_technique }}/20</td></tr>
+                                <tr><th>Qualité du travail</th><td>{{ e.score_qualite }}/20</td></tr>
+                                <tr><th>Sécurité</th><td>{{ e.score_securite }}/20</td></tr>
+                                <tr><th>Assiduité et ponctualité</th><td>{{ e.score_assiduite }}/20</td></tr>
+                                <tr><th>Autonomie</th><td>{{ e.score_autonomie }}/20</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if e.points_forts %}
+                        <h3 class="h6">Points forts</h3>
+                        <p>{{ e.points_forts|nl2br }}</p>
+                    {% endif %}
+                    {% if e.axes_amelioration %}
+                        <h3 class="h6">Axes d’amélioration</h3>
+                        <p>{{ e.axes_amelioration|nl2br }}</p>
+                    {% endif %}
+                    {% if e.commentaire %}
+                        <h3 class="h6">Commentaire du formateur</h3>
+                        <p>{{ e.commentaire|nl2br }}</p>
+                    {% endif %}
+
+                    <p class="text-muted small mb-0">
+                        Évaluateur : {{ e.auteur_prenoms|default('') }} {{ e.auteur_nom|default('') }}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

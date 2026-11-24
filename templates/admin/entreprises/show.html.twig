@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche entreprise - {{ entreprise.raisonSociale }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a href="{{ path('admin_entreprises_index') }}" class="text-decoration-none">
+                ← Retour aux entreprises
+            </a>
+            <h2 class="fw-bold text-primary mt-2 mb-1">{{ entreprise.raisonSociale }}</h2>
+            {% if entreprise.sigle %}
+                <div class="text-muted">{{ entreprise.sigle }}</div>
+            {% endif %}
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ path('admin_entreprises_edit', {id: entreprise.id}) }}"
+               class="btn btn-primary">Modifier</a>
+
+            <form method="post" action="{{ path('admin_entreprises_toggle', {id: entreprise.id}) }}"
+                  onsubmit="return confirm('Confirmez-vous le changement de statut de cette entreprise ?');">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('entreprise_statut_' ~ entreprise.id) }}">
+                <button class="btn {{ entreprise.statut == 'ACTIVE' ? 'btn-outline-danger' : 'btn-outline-success' }}"
+                        type="submit">
+                    {{ entreprise.statut == 'ACTIVE' ? 'Désactiver' : 'Activer' }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Informations générales</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Secteur d'activité</small>
+                            <div>{{ entreprise.secteurActivite ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Ville</small>
+                            <div>{{ entreprise.ville ?: 'Non renseignée' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Adresse</small>
+                            <div>{{ entreprise.adresse ?: 'Non renseignée' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Téléphone principal</small>
+                            <div>{{ entreprise.telephone ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Téléphone secondaire</small>
+                            <div>{{ entreprise.telephoneSecondaire ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">E-mail</small>
+                            <div>{{ entreprise.email ?: 'Non renseigné' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Responsable de l'entreprise</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Nom</small>
+                            <div>{{ entreprise.nomResponsable ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Fonction</small>
+                            <div>{{ entreprise.fonctionResponsable ?: 'Non renseignée' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Téléphone</small>
+                            <div>{{ entreprise.telephoneResponsable ?: 'Non renseigné' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-bold">Maître de stage / Tuteur</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Nom</small>
+                            <div>{{ entreprise.nomTuteur ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Fonction</small>
+                            <div>{{ entreprise.fonctionTuteur ?: 'Non renseignée' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Téléphone</small>
+                            <div>{{ entreprise.telephoneTuteur ?: 'Non renseigné' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">E-mail</small>
+                            <div>{{ entreprise.emailTuteur ?: 'Non renseigné' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Statut</div>
+                <div class="card-body">
+                    {% if entreprise.statut == 'ACTIVE' %}
+                        <span class="badge bg-success fs-6">Entreprise active</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">Entreprise inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold">Documents de l'entreprise</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="fw-semibold mb-2">Logo</div>
+                        {% if entreprise.logoFichier %}
+                            <a href="{{ path('admin_entreprises_fichier', {id: entreprise.id, type: 'logo'}) }}"
+                               target="_blank">Afficher le logo</a>
+                        {% else %}
+                            <span class="text-muted">Aucun logo enregistré</span>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="fw-semibold mb-2">Cachet</div>
+                        {% if entreprise.cachetFichier %}
+                            <a href="{{ path('admin_entreprises_fichier', {id: entreprise.id, type: 'cachet'}) }}"
+                               target="_blank">Afficher le cachet</a>
+                        {% else %}
+                            <span class="text-muted">Aucun cachet enregistré</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

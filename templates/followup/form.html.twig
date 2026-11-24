@@ -1,0 +1,442 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un entretien' : 'Nouvel entretien de parcours' }} - E2C MENAET{% endblock %}
+
+{% block body %}
+<style>
+.e2c-form-page {
+    --e2c-navy: #142d4e;
+    --e2c-navy-light: #203f65;
+    --e2c-gold: #d5a83b;
+    --e2c-bg: #f3f6fa;
+    --e2c-border: #dce4ee;
+    color: #26364a;
+}
+.e2c-form-page .page-header {
+    background: linear-gradient(120deg, var(--e2c-navy), var(--e2c-navy-light));
+    color: #fff;
+    border-radius: 16px;
+    padding: 25px 28px;
+    margin-bottom: 24px;
+    border-bottom: 4px solid var(--e2c-gold);
+    box-shadow: 0 8px 24px rgba(20,45,78,.12);
+}
+.e2c-form-page .page-header h1 {
+    color: #fff;
+    font-weight: 750;
+    margin: 5px 0 7px;
+}
+.e2c-form-page .page-header p {
+    color: rgba(255,255,255,.82);
+    margin: 0;
+}
+.e2c-form-page .eyebrow {
+    color: #f0cf79;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .11em;
+}
+.e2c-form-page .form-card {
+    background: #fff;
+    border: 1px solid var(--e2c-border);
+    border-radius: 16px;
+    box-shadow: 0 7px 24px rgba(24,48,78,.06);
+    overflow: hidden;
+}
+.e2c-form-page .form-card-body {
+    padding: 26px;
+}
+.e2c-form-page fieldset {
+    border: 1px solid var(--e2c-border) !important;
+    border-radius: 13px;
+    padding: 22px !important;
+    margin-bottom: 22px;
+    background: #fff;
+    min-width: 0;
+}
+.e2c-form-page fieldset legend {
+    float: none;
+    width: auto;
+    padding: 0 10px;
+    margin: 0;
+    color: var(--e2c-navy);
+    font-size: 1rem;
+    font-weight: 750;
+}
+.e2c-form-page .section-intro {
+    color: #6b7b8f;
+    font-size: .88rem;
+    margin: 0 0 18px;
+}
+.e2c-form-page .form-label {
+    color: #34465d;
+    font-weight: 650;
+    font-size: .9rem;
+    margin-bottom: 7px;
+}
+.e2c-form-page .form-control,
+.e2c-form-page .form-select {
+    min-height: 44px;
+    border-color: #d5deea;
+    border-radius: 9px;
+    background-color: #fff;
+}
+.e2c-form-page textarea.form-control {
+    min-height: 95px;
+    resize: vertical;
+}
+.e2c-form-page .form-control:focus,
+.e2c-form-page .form-select:focus {
+    border-color: #6c91bd;
+    box-shadow: 0 0 0 .2rem rgba(49,100,157,.12);
+}
+.e2c-form-page .form-control::placeholder {
+    color: #9aa7b7;
+}
+.e2c-form-page .required-mark {
+    color: #bd3545;
+}
+.e2c-form-page .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+    margin-right: 7px;
+    background: #edf2f8;
+    color: var(--e2c-navy);
+    font-size: .82rem;
+    font-weight: 800;
+}
+.e2c-form-page .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--e2c-border);
+}
+.e2c-form-page .btn-primary {
+    background: var(--e2c-navy);
+    border-color: var(--e2c-navy);
+}
+.e2c-form-page .btn-primary:hover {
+    background: #24466e;
+    border-color: #24466e;
+}
+.e2c-form-page .btn {
+    border-radius: 9px;
+    font-weight: 650;
+    padding: 10px 17px;
+}
+.e2c-form-page .type-hint {
+    background: #f1f5fa;
+    border-left: 4px solid var(--e2c-gold);
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: #53657a;
+    font-size: .88rem;
+    margin-bottom: 22px;
+}
+.e2c-form-page [hidden] {
+    display: none !important;
+}
+@media (max-width: 767.98px) {
+    .e2c-form-page .page-header {
+        padding: 20px;
+    }
+    .e2c-form-page .form-card-body {
+        padding: 16px;
+    }
+    .e2c-form-page fieldset {
+        padding: 16px !important;
+    }
+    .e2c-form-page .form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+    .e2c-form-page .form-actions .btn {
+        width: 100%;
+    }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .e2c-form-page .form-card {
+        animation: e2cFormAppear .25s ease-out;
+    }
+    @keyframes e2cFormAppear {
+        from { opacity: 0; transform: translateY(7px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+}
+</style>
+
+<div class="container-fluid px-0 e2c-form-page">
+
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="eyebrow">ACCOMPAGNEMENT SOCIO-PROFESSIONNEL</div>
+            <h1 class="h3">{{ edition ? 'Modifier l’entretien' : 'Créer un entretien de parcours' }}</h1>
+            <p>Enregistrement et suivi du parcours individuel du bénéficiaire.</p>
+        </div>
+        <a class="btn btn-outline-light" href="{{ path('followup_index') }}">
+            <span aria-hidden="true">←</span> Retour au suivi
+        </a>
+    </div>
+
+    {% for m in app.flashes('danger') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ m }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    {% endfor %}
+
+    <div class="type-hint">
+        <strong>Information :</strong> choisissez le type d’entretien. Les rubriques correspondantes s’afficheront automatiquement. Les informations communes restent disponibles pour les trois types.
+    </div>
+
+    <form method="post" class="form-card" autocomplete="on">
+        <div class="form-card-body">
+
+            <input type="hidden" name="_token" value="{{ csrf_token('entretien_parcours') }}">
+
+            <fieldset>
+                <legend><span class="section-number">1</span>Informations générales</legend>
+                <p class="section-intro">Définissez la nature de l’entretien, le bénéficiaire concerné et la date du rendez-vous.</p>
+
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="typeEntretien">Type d’entretien <span class="required-mark">*</span></label>
+                        <select class="form-select" id="typeEntretien" name="typeEntretien" required>
+                            <option value="ACCUEIL" {{ entretien.typeEntretien == 'ACCUEIL' ? 'selected' : '' }}>Entretien d’accueil</option>
+                            <option value="MI_PARCOURS" {{ entretien.typeEntretien == 'MI_PARCOURS' ? 'selected' : '' }}>Entretien à mi-parcours</option>
+                            <option value="SORTIE" {{ entretien.typeEntretien == 'SORTIE' ? 'selected' : '' }}>Entretien de sortie</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <label class="form-label" for="candidat_id">Bénéficiaire / apprenti <span class="required-mark">*</span></label>
+                        <select class="form-select" id="candidat_id" name="candidat_id" required>
+                            <option value="">— Sélectionner un bénéficiaire —</option>
+                            {% for c in candidats %}
+                                <option value="{{ c.id }}" {{ entretien.candidat and entretien.candidat.id == c.id ? 'selected' : '' }}>
+                                    {{ c.nom }} {{ c.prenoms }} — {{ c.numero }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <label class="form-label" for="dateEntretien">Date du rendez-vous <span class="required-mark">*</span></label>
+                        <input class="form-control" type="date" id="dateEntretien" name="dateEntretien" value="{{ entretien.dateEntretien ? entretien.dateEntretien|date('Y-m-d') : 'now'|date('Y-m-d') }}" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset data-section="commun">
+                <legend><span class="section-number">2</span>Identification et contacts</legend>
+                <p class="section-intro">Coordonnées du bénéficiaire, personnes ressources et structures d’accompagnement.</p>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Contact du bénéficiaire</label>
+                        <input class="form-control" name="details[contact]" value="{{ details.contact|default('') }}" placeholder="Téléphone">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lieu d’habitation</label>
+                        <input class="form-control" name="details[lieuHabitation]" value="{{ details.lieuHabitation|default('') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Numéro d’inscription DAIP</label>
+                        <input class="form-control" name="details[numeroDaip]" value="{{ details.numeroDaip|default('') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Numéro AEJ</label>
+                        <input class="form-control" name="details[numeroAej]" value="{{ details.numeroAej|default('') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Personne à contacter en urgence</label>
+                        <input class="form-control" name="details[urgenceNom]" value="{{ details.urgenceNom|default('') }}" placeholder="Nom et prénoms">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Contact d’urgence</label>
+                        <input class="form-control" name="details[urgenceContact]" value="{{ details.urgenceContact|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nom du référent de parcours</label>
+                        <input class="form-control" name="details[nomReferent]" value="{{ details.nomReferent|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact du référent</label>
+                        <input class="form-control" name="details[contactReferent]" value="{{ details.contactReferent|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nom du tuteur / formateur</label>
+                        <input class="form-control" name="details[nomTuteur]" value="{{ details.nomTuteur|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact du tuteur / formateur</label>
+                        <input class="form-control" name="details[contactTuteur]" value="{{ details.contactTuteur|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Établissement des cours théoriques</label>
+                        <input class="form-control" name="details[etablissementTheorique]" value="{{ details.etablissementTheorique|default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Établissement de stage</label>
+                        <input class="form-control" name="details[etablissementStage]" value="{{ details.etablissementStage|default('') }}">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset data-section="ACCUEIL">
+                <legend><span class="section-number">3</span>Entretien d’accueil — diagnostic social</legend>
+                <p class="section-intro">Établissez la situation initiale du bénéficiaire, ses besoins, ses objectifs et les éventuels freins à son parcours.</p>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Résumé de l’entretien</label>
+                        <textarea class="form-control" rows="3" name="details[resume]">{{ details.resume|default('') }}</textarea>
+                    </div>
+
+                    {% for cle, libelle in {
+                        'situationFamiliale':'Situation familiale',
+                        'mobilite':'Mobilité',
+                        'logement':'Logement',
+                        'sante':'Santé',
+                        'situationProfessionnelle':'Situation professionnelle',
+                        'ressources':'Ressources',
+                        'objectifs':'Objectifs',
+                        'freins':'Observations et/ou freins sociaux détectés'
+                    } %}
+                        <div class="col-md-6">
+                            <label class="form-label">{{ libelle }}</label>
+                            <textarea class="form-control" rows="3" name="details[{{ cle }}]">{{ attribute(details, cle)|default('') }}</textarea>
+                        </div>
+                    {% endfor %}
+
+                    <div class="col-md-6">
+                        <label class="form-label">Prochain rendez-vous — mi-parcours prévu</label>
+                        <input class="form-control" type="date" name="details[prochainRdv]" value="{{ details.prochainRdv|default('') }}">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset data-section="MI_PARCOURS">
+                <legend><span class="section-number">4</span>Entretien à mi-parcours — bilan et plan d’action</legend>
+                <p class="section-intro">Évaluez la progression du bénéficiaire, les actions réalisées et les mesures à mettre en œuvre pour la poursuite de sa formation.</p>
+
+                <div class="row g-3">
+                    {% for cle, libelle in {
+                        'resume':'Résumé de l’entretien',
+                        'actionsRealisees':'1. Actions réalisées par le / la bénéficiaire',
+                        'pointsForts':'2. Points forts',
+                        'pointsFaibles':'3. Points faibles',
+                        'freins':'4. Freins sociaux détectés',
+                        'freinsPedagogiques':'5. Freins et observations pédagogiques',
+                        'avisFormateur':'6. Avis du formateur',
+                        'planAction':'7. Élaboration du plan d’action',
+                        'objectifs':'8. Objectifs et étapes à atteindre',
+                        'maintienFormation':'Objectif de maintien en formation'
+                    } %}
+                        <div class="col-md-6">
+                            <label class="form-label">{{ libelle }}</label>
+                            <textarea class="form-control" rows="3" name="details[{{ cle }}]">{{ attribute(details, cle)|default('') }}</textarea>
+                        </div>
+                    {% endfor %}
+
+                    <div class="col-md-6">
+                        <label class="form-label">Prochain rendez-vous / période de sortie prévue</label>
+                        <input class="form-control" name="details[prochainRdv]" value="{{ details.prochainRdv|default('') }}" placeholder="Ex. du 01/05/2027 au 15/05/2027">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset data-section="SORTIE">
+                <legend><span class="section-number">5</span>Entretien de sortie de formation</legend>
+                <p class="section-intro">Formalisez le bilan de sortie, le projet professionnel et les conclusions de l’accompagnement.</p>
+
+                <div class="row g-3">
+                    {% for cle, libelle in {
+                        'projet':'Projet professionnel',
+                        'commentaireBeneficiaire':'Commentaire du bénéficiaire',
+                        'commentaireTuteur':'Commentaire du tuteur / formateur',
+                        'commentaireReferent':'Commentaire du référent de parcours',
+                        'conclusionReferent':'Conclusion du référent de parcours'
+                    } %}
+                        <div class="col-md-6">
+                            <label class="form-label">{{ libelle }}</label>
+                            <textarea class="form-control" rows="3" name="details[{{ cle }}]">{{ attribute(details, cle)|default('') }}</textarea>
+                        </div>
+                    {% endfor %}
+
+                    <div class="col-md-4">
+                        <label class="form-label">Motif de sortie</label>
+                        <select class="form-select" name="details[motifSortie]">
+                            <option value="">— Sélectionner —</option>
+                            <option value="TERME_DISPOSITIF" {{ details.motifSortie|default('') == 'TERME_DISPOSITIF' ? 'selected' : '' }}>Terme du dispositif</option>
+                            <option value="SORTIE_ANTICIPEE" {{ details.motifSortie|default('') == 'SORTIE_ANTICIPEE' ? 'selected' : '' }}>Sortie anticipée</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date de sortie</label>
+                        <input class="form-control" type="date" name="details[dateSortie]" value="{{ details.dateSortie|default('') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Abandon</label>
+                        <select class="form-select" name="details[abandon]">
+                            <option value="">— À préciser —</option>
+                            <option value="NON" {{ details.abandon|default('') == 'NON' ? 'selected' : '' }}>Non</option>
+                            <option value="OUI" {{ details.abandon|default('') == 'OUI' ? 'selected' : '' }}>Oui</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Motif détaillé / observations</label>
+                        <textarea class="form-control" rows="3" name="details[freins]">{{ details.freins|default('') }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact du bénéficiaire pour le répertoire</label>
+                        <input class="form-control" name="details[contactBeneficiaire]" value="{{ details.contactBeneficiaire|default('') }}">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="form-actions">
+                <a class="btn btn-outline-secondary" href="{{ path('followup_index') }}">Annuler et revenir au suivi</a>
+                <button class="btn btn-primary px-4" type="submit">
+                    {{ edition ? 'Enregistrer les modifications' : 'Enregistrer l’entretien' }}
+                </button>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<script>
+(function () {
+    const select = document.getElementById('typeEntretien');
+    if (!select) return;
+
+    const sections = document.querySelectorAll('.e2c-form-page [data-section]');
+
+    function afficherSections() {
+        const type = select.value;
+
+        sections.forEach(function (section) {
+            const cle = section.dataset.section;
+            const visible = cle === 'commun' || cle === type;
+
+            section.hidden = !visible;
+
+            section.querySelectorAll('input, textarea, select').forEach(function (champ) {
+                champ.disabled = !visible;
+            });
+        });
+    }
+
+    select.addEventListener('change', afficherSections);
+    afficherSections();
+})();
+</script>
+{% endblock %}

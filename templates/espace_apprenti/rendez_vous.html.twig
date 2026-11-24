@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes rendez-vous - E2C-MENAET{% endblock %}
+
+{% block body %}
+
+{% set totalRendezVous = rendezVous|length %}
+{% set aVenir = 0 %}
+{% set termines = 0 %}
+
+{% for item in rendezVous %}
+    {% if item.date and item.date >= date() %}
+        {% set aVenir = aVenir + 1 %}
+    {% elseif item.date %}
+        {% set termines = termines + 1 %}
+    {% endif %}
+{% endfor %}
+
+<style>
+.rdv-page { padding: 28px 0 50px; color: #243247; }
+.rdv-hero {
+    padding: 30px 32px; margin-bottom: 25px; border-radius: 18px;
+    background: linear-gradient(120deg, #164e86, #287bb9);
+    color: white; box-shadow: 0 8px 24px rgba(22,78,134,.17);
+}
+.rdv-hero h1 { color: white; font-size: 1.8rem; font-weight: 750; margin-bottom: 8px; }
+.rdv-hero p { color: rgba(255,255,255,.9); margin: 0; }
+.rdv-stat {
+    height: 100%; padding: 20px; border: 1px solid #e8edf4;
+    border-radius: 15px; background: white;
+    box-shadow: 0 4px 15px rgba(30,55,90,.045);
+}
+.rdv-stat-label { color: #718096; font-size: .86rem; font-weight: 600; margin-bottom: 8px; }
+.rdv-stat-value { font-size: 1.9rem; font-weight: 800; color: #183b63; }
+.rdv-stat-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 45px; height: 45px; border-radius: 13px;
+    background: #edf5fc; color: #287bb9; font-weight: 800;
+}
+.rdv-section-title { font-size: 1.2rem; font-weight: 750; color: #203b5b; margin: 30px 0 16px; }
+.rdv-card {
+    background: white; border: 1px solid #e8edf4; border-radius: 15px;
+    padding: 21px; margin-bottom: 15px;
+    box-shadow: 0 4px 14px rgba(30,55,90,.045);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.rdv-card:hover { transform: translateY(-2px); box-shadow: 0 9px 22px rgba(30,55,90,.09); }
+.rdv-date {
+    min-width: 86px; text-align: center; padding: 13px 9px;
+    border-radius: 12px; background: #edf5fc; color: #1d6096;
+}
+.rdv-date-day { display: block; font-size: 1.65rem; line-height: 1.2; font-weight: 800; }
+.rdv-date-month { display: block; font-size: .78rem; font-weight: 700; text-transform: uppercase; margin-top: 4px; }
+.rdv-card h3 { color: #203b5b; font-size: 1.05rem; font-weight: 750; margin-bottom: 9px; }
+.rdv-info { color: #65758b; font-size: .91rem; margin: 5px 0; }
+.rdv-info strong { color: #344a63; }
+.rdv-type {
+    display: inline-block; padding: 5px 10px; margin-bottom: 9px;
+    border-radius: 20px; background: #edf5fc; color: #1765a0;
+    font-size: .74rem; font-weight: 750;
+}
+.rdv-badge { display: inline-block; padding: 7px 12px; border-radius: 30px; font-size: .76rem; font-weight: 750; background: #edf2f7; color: #536579; }
+.rdv-badge-planifie, .rdv-badge-confirme { background: #e5f2ff; color: #1765a0; }
+.rdv-badge-termine, .rdv-badge-realise { background: #e3f6ec; color: #187343; }
+.rdv-badge-annule, .rdv-badge-reporte { background: #fff0e8; color: #ad5428; }
+.rdv-empty { padding: 45px 20px; text-align: center; border: 1px dashed #cbd7e5; border-radius: 16px; background: #f8fbfe; }
+.rdv-empty-icon { font-size: 2.6rem; margin-bottom: 12px; color: #287bb9; }
+.rdv-empty h3 { font-size: 1.15rem; color: #203b5b; font-weight: 750; }
+.rdv-empty p { color: #718096; margin-bottom: 0; }
+@media (max-width: 576px) {
+    .rdv-page { padding-top: 16px; }
+    .rdv-hero { padding: 24px 20px; }
+    .rdv-hero h1 { font-size: 1.45rem; }
+    .rdv-card { padding: 15px; }
+    .rdv-date { min-width: 68px; }
+}
+</style>
+
+<div class="container rdv-page">
+
+    <div class="rdv-hero">
+        <h1>Mes rendez-vous</h1>
+        <p>Consultez vos convocations, vos entretiens de recrutement et vos rendez-vous d’accompagnement.</p>
+    </div>
+
+    {% include 'espace_apprenti/_menu.html.twig' %}
+
+    <div class="row g-3 mt-3">
+        <div class="col-md-4">
+            <div class="rdv-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="rdv-stat-label">Total des rendez-vous</div>
+                        <div class="rdv-stat-value">{{ totalRendezVous }}</div>
+                    </div>
+                    <div class="rdv-stat-icon">T</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rdv-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="rdv-stat-label">Rendez-vous à venir</div>
+                        <div class="rdv-stat-value">{{ aVenir }}</div>
+                    </div>
+                    <div class="rdv-stat-icon">A</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rdv-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="rdv-stat-label">Rendez-vous passés</div>
+                        <div class="rdv-stat-value">{{ termines }}</div>
+                    </div>
+                    <div class="rdv-stat-icon">P</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="rdv-section-title">Historique et calendrier de mes rendez-vous</h2>
+
+    {% if rendezVous is empty %}
+        <div class="rdv-empty">
+            <div class="rdv-empty-icon">◷</div>
+            <h3>Aucun rendez-vous enregistré</h3>
+            <p>Vos convocations et rendez-vous d’accompagnement apparaîtront ici dès leur enregistrement.</p>
+        </div>
+    {% else %}
+
+        {% for item in rendezVous %}
+            {% set statut = item.statut|default('PLANIFIE')|upper %}
+            {% set classeStatut = 'rdv-badge' %}
+
+            {% if 'ANNUL' in statut %}
+                {% set classeStatut = classeStatut ~ ' rdv-badge-annule' %}
+            {% elseif 'REPORT' in statut %}
+                {% set classeStatut = classeStatut ~ ' rdv-badge-reporte' %}
+            {% elseif 'REALISE' in statut or 'TERMINE' in statut %}
+                {% set classeStatut = classeStatut ~ ' rdv-badge-realise' %}
+            {% elseif 'CONFIRM' in statut %}
+                {% set classeStatut = classeStatut ~ ' rdv-badge-confirme' %}
+            {% elseif 'PLANIF' in statut %}
+                {% set classeStatut = classeStatut ~ ' rdv-badge-planifie' %}
+            {% endif %}
+
+            <div class="rdv-card">
+                <div class="row align-items-center g-3">
+                    <div class="col-auto">
+                        <div class="rdv-date">
+                            {% if item.date %}
+                                <span class="rdv-date-day">{{ item.date|date('d') }}</span>
+                                <span class="rdv-date-month">{{ item.date|date('M Y') }}</span>
+                            {% else %}
+                                <span class="rdv-date-day">--</span>
+                                <span class="rdv-date-month">Date à préciser</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <span class="rdv-type">
+                            {% if item.type == 'RECRUTEMENT' %}
+                                RECRUTEMENT
+                            {% else %}
+                                ACCOMPAGNEMENT
+                            {% endif %}
+                        </span>
+
+                        <h3>{{ item.libelle }}</h3>
+
+                        <div class="rdv-info">
+                            <strong>Date :</strong>
+                            {% if item.date %}
+                                {{ item.date|date('d/m/Y') }}
+                                {% if item.heureDisponible %}
+                                    à {{ item.date|date('H:i') }}
+                                {% endif %}
+                            {% else %}
+                                Non précisée
+                            {% endif %}
+                        </div>
+
+                        {% if item.lieu %}
+                            <div class="rdv-info">
+                                <strong>Lieu :</strong> {{ item.lieu }}
+                            </div>
+                        {% endif %}
+
+                        {% if item.interlocuteur %}
+                            <div class="rdv-info">
+                                <strong>Interlocuteur / Jury :</strong> {{ item.interlocuteur }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-auto">
+                        <span class="{{ classeStatut }}">{{ item.statut }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    {% endif %}
+</div>
+{% endblock %}

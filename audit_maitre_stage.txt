@@ -1,0 +1,1738 @@
+﻿=== FORMULAIRES ADMIN UTILISATEURS ===
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\demandes.html.twig ===
+{% extends 'base.html.twig' %}
+
+{% block title %}Validation des comptes | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .e2c-requests {
+        --e2c-blue: #245B91;
+        --e2c-light: #5B9BD5;
+        --e2c-ink: #20354b;
+        --e2c-muted: #718096;
+        background: #f3f6fa;
+        min-height: 85vh;
+        padding: 28px 0 50px;
+    }
+
+    .e2c-requests .page-heading {
+        background: linear-gradient(120deg, #174675, #5B9BD5);
+        color: #fff;
+        border-radius: 18px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 25px rgba(36, 91, 145, .16);
+    }
+
+    .e2c-requests .page-heading h1 {
+        font-weight: 750;
+        letter-spacing: -.5px;
+    }
+
+    .e2c-requests .heading-subtitle {
+        color: rgba(255,255,255,.85);
+    }
+
+    .e2c-requests .stat-card {
+        background: #fff;
+        border: 1px solid #e7edf4;
+        border-radius: 15px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 3px 12px rgba(20, 50, 80, .04);
+    }
+
+    .e2c-requests .stat-label {
+        color: var(--e2c-muted);
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .e2c-requests .stat-number {
+        color: var(--e2c-ink);
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .e2c-requests .section-card {
+        background: #fff;
+        border: 1px solid #e6edf4;
+        border-radius: 17px;
+        box-shadow: 0 4px 16px rgba(20, 50, 80, .045);
+        overflow: hidden;
+    }
+
+    .e2c-requests .section-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #edf1f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .e2c-requests .request-item {
+        padding: 24px;
+        border-bottom: 1px solid #edf1f5;
+        transition: background .2s ease;
+    }
+
+    .e2c-requests .request-item:last-child {
+        border-bottom: 0;
+    }
+
+    .e2c-requests .request-item:hover {
+        background: #fbfdff;
+    }
+
+    .e2c-requests .identity-avatar {
+        width: 52px;
+        height: 52px;
+        flex: 0 0 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #e8f2fc;
+        color: var(--e2c-blue);
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .e2c-requests .request-name {
+        color: var(--e2c-ink);
+        font-size: 1.08rem;
+        font-weight: 750;
+        margin-bottom: 5px;
+    }
+
+    .e2c-requests .contact-line {
+        color: #5d6c7d;
+        font-size: .9rem;
+        overflow-wrap: anywhere;
+        margin-top: 7px;
+    }
+
+    .e2c-requests .request-id {
+        color: #8795a5;
+        font-size: .78rem;
+    }
+
+    .e2c-requests .pending-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff4dc;
+        color: #946200;
+        border: 1px solid #f4e2b9;
+        border-radius: 30px;
+        padding: 6px 11px;
+        font-size: .77rem;
+        font-weight: 700;
+    }
+
+    .e2c-requests .approval-panel {
+        background: #f7f9fc;
+        border: 1px solid #e8edf4;
+        border-radius: 13px;
+        padding: 18px;
+    }
+
+    .e2c-requests .form-label {
+        color: #354b62;
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+    .e2c-requests .form-select {
+        min-height: 44px;
+        border-color: #dce4ed;
+        border-radius: 9px;
+    }
+
+    .e2c-requests .form-select:focus {
+        border-color: var(--e2c-light);
+        box-shadow: 0 0 0 .2rem rgba(91,155,213,.15);
+    }
+
+    .e2c-requests .btn {
+        border-radius: 9px;
+        font-weight: 650;
+        padding: 9px 15px;
+    }
+
+    .e2c-requests .btn-approve {
+        background: #198754;
+        color: #fff;
+        border: 1px solid #198754;
+    }
+
+    .e2c-requests .btn-approve:hover {
+        background: #146c43;
+        color: #fff;
+    }
+
+    .e2c-requests .empty-state {
+        padding: 65px 20px;
+        text-align: center;
+    }
+
+    .e2c-requests .empty-icon {
+        width: 76px;
+        height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #e9f3fc;
+        color: var(--e2c-blue);
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    @media (max-width: 767px) {
+        .e2c-requests {
+            padding-top: 15px;
+        }
+
+        .e2c-requests .page-heading {
+            padding: 22px 18px;
+        }
+
+        .e2c-requests .request-item {
+            padding: 17px;
+        }
+
+        .e2c-requests .section-header {
+            padding: 17px;
+        }
+    }
+</style>
+
+<div class="e2c-requests">
+    <div class="container">
+
+        {# En-tÃªte principal #}
+        <div class="page-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="small text-uppercase fw-bold mb-2" style="letter-spacing:1.5px;">
+                        E2C-MENAET / Administration
+                    </div>
+                    <h1 class="h2 mb-2 text-white">Validation des comptes</h1>
+                    <p class="heading-subtitle mb-0">
+                        Gestion et validation des demandes d'accÃ¨s Ã  la plateforme.
+                    </p>
+                </div>
+                <a href="{{ path('admin_users_index') }}"
+                   class="btn btn-light">
+                    Retour Ã  la gestion des utilisateurs
+                </a>
+            </div>
+        </div>
+
+        {# Messages systÃ¨me #}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show shadow-sm">
+                    {{ message }}
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Indicateurs #}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Demandes en attente</div>
+                    <div class="stat-number">{{ demandes|length }}</div>
+                    <div class="small text-muted mt-1">Comptes Ã  examiner</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Validation administrative</div>
+                    <div class="fw-bold text-primary fs-5">Obligatoire</div>
+                    <div class="small text-muted mt-1">Avant toute activation</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Attribution des profils</div>
+                    <div class="fw-bold text-success fs-5">ContrÃ´lÃ©e</div>
+                    <div class="small text-muted mt-1">RÃ©servÃ©e aux administrateurs autorisÃ©s</div>
+                </div>
+            </div>
+        </div>
+
+        {# Liste des demandes #}
+        <div class="section-card">
+            <div class="section-header">
+                <div>
+                    <h2 class="h5 fw-bold mb-1" style="color:#20354b;">
+                        Demandes de crÃ©ation de comptes
+                    </h2>
+                    <p class="small text-muted mb-0">
+                        Consultez les informations et prenez une dÃ©cision pour chaque demande.
+                    </p>
+                </div>
+                <span class="badge rounded-pill text-bg-warning px-3 py-2">
+                    {{ demandes|length }} en attente
+                </span>
+            </div>
+
+            {% for demande in demandes %}
+                <div class="request-item">
+                    <div class="row g-4 align-items-start">
+
+                        {# IdentitÃ© du demandeur #}
+                        <div class="col-lg-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="identity-avatar">
+                                    {{ demande.prenoms|first|upper }}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="request-name">
+                                        {{ demande.nom }} {{ demande.prenoms }}
+                                    </div>
+                                    <span class="pending-label">
+                                        En attente de validation
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="contact-line">
+                                <strong>E-mail :</strong> {{ demande.email }}
+                            </div>
+                            <div class="contact-line">
+                                <strong>TÃ©lÃ©phone :</strong>
+                                {{ demande.telephone ?: 'Non renseignÃ©' }}
+                            </div>
+                            <div class="request-id mt-3">
+                                RÃ©fÃ©rence du compte : #{{ demande.id }}
+                            </div>
+                        </div>
+
+                        {# Traitement administratif #}
+                        <div class="col-lg-8">
+                            <div class="approval-panel">
+                                <div class="fw-bold mb-3" style="color:#20354b;">
+                                    DÃ©cision de l'administrateur
+                                </div>
+
+                                <form method="post"
+                                      action="{{ path('admin_users_approve', {id: demande.id}) }}"
+                                      class="approval-form"
+                                      data-candidat-id="candidat_{{ demande.id }}">
+
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('approve_user_' ~ demande.id) }}">
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label"
+                                                   for="profil_{{ demande.id }}">
+                                                Profil Ã  attribuer *
+                                            </label>
+                                            <select class="form-select profil-select"
+                                                    id="profil_{{ demande.id }}"
+                                                    name="profil" required>
+                                                <option value="">Choisir un profil</option>
+                                                {% for cle, libelle in profils %}
+                                                    <option value="{{ cle }}">{{ libelle }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 candidat-field"
+                                             id="bloc_candidat_{{ demande.id }}"
+                                             hidden>
+                                            <label class="form-label"
+                                                   for="candidat_{{ demande.id }}">
+                                                Dossier candidat *
+                                            </label>
+                                            <select class="form-select candidat-select"
+                                                    id="candidat_{{ demande.id }}"
+                                                    name="candidat_id">
+                                                <option value="">SÃ©lectionner un candidat</option>
+                                                {% for candidat in candidats %}
+                                                    <option value="{{ candidat.id }}">
+                                                        {{ candidat.nom }} {{ candidat.prenoms }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 mt-4">
+                                        <button type="submit" class="btn btn-approve">
+                                            Approuver et activer le compte
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="border-top mt-3 pt-3">
+                                    <form method="post"
+                                          action="{{ path('admin_users_refuse', {id: demande.id}) }}"
+                                          onsubmit="return confirm('Confirmez-vous le refus de cette demande ? Le compte restera conservÃ© mais dÃ©sactivÃ©.');">
+                                        <input type="hidden" name="_token"
+                                               value="{{ csrf_token('refuse_user_' ~ demande.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            Refuser cette demande
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">âœ“</div>
+                    <h3 class="h5 fw-bold" style="color:#20354b;">
+                        Aucune demande en attente
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Toutes les demandes de crÃ©ation de comptes ont Ã©tÃ© traitÃ©es.
+                    </p>
+                    <a href="{{ path('admin_users_index') }}"
+                       class="btn btn-outline-primary">
+                        Consulter les utilisateurs
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4 small text-muted">
+            E2C-MENAET â€” Administration des accÃ¨s utilisateurs
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.approval-form').forEach(function (form) {
+        const profil = form.querySelector('.profil-select');
+        const candidatId = form.dataset.candidatId;
+        const blocCandidat = document.getElementById(
+            'bloc_' + candidatId
+        );
+        const candidat = form.querySelector('.candidat-select');
+
+        function actualiserCandidat() {
+            const estApprenti = profil.value === 'apprenti';
+
+            blocCandidat.hidden = !estApprenti;
+            candidat.required = estApprenti;
+
+            if (!estApprenti) {
+                candidat.value = '';
+            }
+        }
+
+        profil.addEventListener('change', actualiserCandidat);
+        actualiserCandidat();
+    });
+});
+</script>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\form.html.twig ===
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ edition ? 'Modifier un utilisateur' : 'CrÃ©er un utilisateur' }} - E2C-MENAET
+{% endblock %}
+
+{% block body %}
+<style>
+    .user-page {
+        max-width: 1100px;
+        margin: 25px auto;
+        padding: 0 15px 35px;
+    }
+
+    .user-header {
+        background: linear-gradient(120deg, #174675, #5B9BD5);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 24px rgba(23,70,117,.16);
+    }
+
+    .user-header h1 {
+        color: #fff;
+        font-size: 2.4rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+        letter-spacing: .3px;
+    }
+
+    .user-header p {
+        color: #eef6ff;
+        margin-bottom: 0;
+    }
+
+    .user-card {
+        background: #fff;
+        border: 1px solid #e4eaf1;
+        border-radius: 14px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(20,50,80,.05);
+    }
+
+    .user-card h2 {
+        color: #174675;
+        font-size: 1.15rem;
+        font-weight: 700;
+        padding-bottom: 14px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e8edf3;
+    }
+
+    .user-card h2 i {
+        margin-right: 8px;
+    }
+
+    .form-label {
+        color: #34495e;
+        font-weight: 600;
+        margin-bottom: 7px;
+    }
+
+    .form-control, .form-select {
+        min-height: 45px;
+        border-radius: 8px;
+        border-color: #d7e0ea;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #5B9BD5;
+        box-shadow: 0 0 0 .2rem rgba(91,155,213,.16);
+    }
+
+    .form-help {
+        color: #718096;
+        font-size: .85rem;
+        margin-top: 6px;
+    }
+
+    .user-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    .user-actions .btn {
+        border-radius: 8px;
+        padding: 11px 20px;
+        font-weight: 600;
+    }
+
+    .btn-e2c {
+        background: #174675;
+        color: white;
+        border: 1px solid #174675;
+    }
+
+    .btn-e2c:hover {
+        background: #10365d;
+        color: white;
+    }
+
+    #candidateField {
+        display: none;
+        background: #f1f7fd;
+        border: 1px solid #d5e7f8;
+        border-radius: 10px;
+        padding: 18px;
+        margin-top: 18px;
+    }
+
+    .required-mark {
+        color: #dc3545;
+    }
+
+    @media (max-width: 576px) {
+        .user-header, .user-card {
+            padding: 20px;
+        }
+
+        .user-actions {
+            flex-direction: column;
+        }
+
+        .user-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="user-page">
+
+    <div class="user-header">
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <i class="bi bi-person-plus-fill" style="font-size:2.5rem;"></i>
+            </div>
+            <div>
+                <h1>{{ edition ? 'Modifier un utilisateur' : 'Nouvel utilisateur' }}</h1>
+                <p>
+                    Administration des comptes et attribution des profils
+                    de la plateforme E2C-MENAET.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if erreurs is defined and erreurs is not empty %}
+        <div class="alert alert-danger">
+            <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Veuillez corriger les erreurs suivantes :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}
+                    <li>{{ erreur }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+
+        <div class="user-card">
+            <h2><i class="bi bi-person-vcard"></i> Informations personnelles</h2>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="nom" class="form-label">
+                        Nom <span class="required-mark">*</span>
+                    </label>
+                    <input type="text" id="nom" name="nom"
+                           class="form-control" required
+                           value="{{ utilisateur.nom|default('') }}"
+                           placeholder="Nom de famille">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="prenoms" class="form-label">
+                        PrÃ©noms <span class="required-mark">*</span>
+                    </label>
+                    <input type="text" id="prenoms" name="prenoms"
+                           class="form-control" required
+                           value="{{ utilisateur.prenoms|default('') }}"
+                           placeholder="PrÃ©nom(s)">
+                </div>
+
+                <div class="col-12">
+                    <label for="email" class="form-label">
+                        Adresse e-mail <span class="required-mark">*</span>
+                    </label>
+                    <input type="email" id="email" name="email"
+                           class="form-control" required
+                           value="{{ utilisateur.email|default('') }}"
+                           placeholder="exemple@domaine.ci">
+                    <div class="form-help">Cette adresse sera utilisÃ©e pour la connexion Ã  la plateforme.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <h2><i class="bi bi-person-gear"></i> Profil et affectation</h2>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="profil" class="form-label">
+                        Profil utilisateur <span class="required-mark">*</span>
+                    </label>
+                    <select id="profil" name="profil" class="form-select" required>
+                        <option value="">-- SÃ©lectionner un profil --</option>
+                        {% for code, libelle in profils %}
+                            <option value="{{ code }}"
+                                {% if utilisateur.profil|default('') == code %}selected{% endif %}>
+                                {{ libelle }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">Le profil dÃ©termine les fonctionnalitÃ©s accessibles Ã  l'utilisateur.</div>
+                </div>
+
+                <div class="col-12" id="candidateField">
+                    <label for="candidate_id" class="form-label">
+                        Candidat Ã  rattacher <span class="required-mark">*</span>
+                    </label>
+                    <select id="candidate_id" name="candidate_id" class="form-select">
+                        <option value="">-- SÃ©lectionner un candidat --</option>
+                        {% for candidat in candidats %}
+                            <option value="{{ candidat.id }}"
+                                {% if utilisateur.candidat and utilisateur.candidat.id == candidat.id %}selected{% endif %}>
+                                {{ candidat.nom }} {{ candidat.prenoms }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-help">
+                        Ce rattachement est nÃ©cessaire pour crÃ©er un compte de profil apprenti.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <h2><i class="bi bi-shield-lock"></i> SÃ©curitÃ© du compte</h2>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="password" class="form-label">
+                        {{ edition ? 'Nouveau mot de passe' : 'Mot de passe' }}
+                        {% if not edition %}<span class="required-mark">*</span>{% endif %}
+                    </label>
+                    <input type="password" id="password" name="password"
+                           class="form-control"
+                           {% if not edition %}required{% endif %}
+                           minlength="12"
+                           autocomplete="new-password"
+                           placeholder="{{ edition ? 'Laisser vide pour conserver le mot de passe actuel' : '12 caractÃ¨res minimum' }}">
+                    <div class="form-help">
+                        12 caractÃ¨res minimum. En modification, laissez ce champ vide pour conserver le mot de passe actuel.
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="confirmation_password" class="form-label">
+                            Confirmer le mot de passe
+                            {% if not edition %}<span class="required-mark">*</span>{% endif %}
+                        </label>
+                        <input type="password"
+                               id="confirmation_password"
+                               name="confirmation_password"
+                               class="form-control"
+                               {% if not edition %}required{% endif %}
+                               minlength="12"
+                               autocomplete="new-password"
+                               placeholder="Saisissez Ã  nouveau le mot de passe">
+                        <div class="form-help">
+                            Les deux mots de passe doivent Ãªtre identiques.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="_token"
+               value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="user-actions">
+            <a href="{{ path('admin_users_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour Ã  la liste
+            </a>
+
+            <button type="submit" class="btn btn-e2c">
+                <i class="bi bi-check-circle me-2"></i>
+                {{ edition ? 'Enregistrer les modifications' : 'CrÃ©er le compte utilisateur' }}
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const profil = document.getElementById('profil');
+    const candidateField = document.getElementById('candidateField');
+    const candidateSelect = document.getElementById('candidate_id');
+
+    function updateCandidateField() {
+        const isApprenti = profil.value === 'apprenti';
+
+        candidateField.style.display = isApprenti ? 'block' : 'none';
+        candidateSelect.required = isApprenti;
+
+        if (!isApprenti) {
+            candidateSelect.value = '';
+        }
+    }
+
+    profil.addEventListener('change', updateCandidateField);
+    updateCandidateField();
+});
+</script>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\form.html.twig.bak_20261023_160209 ===
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un utilisateur' : 'CrÃ©er un utilisateur' }} - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="mb-4">
+        <a href="{{ path('admin_users_index') }}" class="text-decoration-none">&larr; Retour Ã  la liste</a>
+        <h1 class="h3 mt-3">{{ edition ? 'Modifier le compte utilisateur' : 'CrÃ©er un utilisateur' }}</h1>
+        <p class="text-muted">Les champs marquÃ©s dâ€™un astÃ©risque sont obligatoires.</p>
+    </div>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <strong>Veuillez corriger les Ã©lÃ©ments suivants :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}<li>{{ erreur }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="_token" value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="nom">Nom *</label>
+                <input class="form-control" id="nom" name="nom" maxlength="120" required value="{{ utilisateur.nom }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="prenoms">PrÃ©noms *</label>
+                <input class="form-control" id="prenoms" name="prenoms" maxlength="120" required value="{{ utilisateur.prenoms }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail *</label>
+                <input class="form-control" type="email" id="email" name="email" maxlength="180" required value="{{ utilisateur.email }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="profil">Profil *</label>
+                <select class="form-select" id="profil" name="profil" required>
+                    {% for cle, libelle in profils %}
+                        <option value="{{ cle }}" {% if utilisateur.profil == cle %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Les profils dâ€™administration avancÃ©e sont rÃ©servÃ©s au super administrateur.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="password">{{ edition ? 'Nouveau mot de passe (facultatif)' : 'Mot de passe initial *' }}</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" {% if not edition %}required{% endif %}>
+                <div class="form-text">12 caractÃ¨res minimum. {% if edition %}Laissez vide pour conserver le mot de passe actuel.{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ edition ? 'Enregistrer les modifications' : 'CrÃ©er le compte' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\form.html.twig.bak_apprenti_20261023_152706 ===
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un utilisateur' : 'CrÃ©er un utilisateur' }} - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="mb-4">
+        <a href="{{ path('admin_users_index') }}" class="text-decoration-none">&larr; Retour Ã  la liste</a>
+        <h1 class="h3 mt-3">{{ edition ? 'Modifier le compte utilisateur' : 'CrÃ©er un utilisateur' }}</h1>
+        <p class="text-muted">Les champs marquÃ©s dâ€™un astÃ©risque sont obligatoires.</p>
+    </div>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <strong>Veuillez corriger les Ã©lÃ©ments suivants :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}<li>{{ erreur }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="_token" value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="nom">Nom *</label>
+                <input class="form-control" id="nom" name="nom" maxlength="120" required value="{{ utilisateur.nom }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="prenoms">PrÃ©noms *</label>
+                <input class="form-control" id="prenoms" name="prenoms" maxlength="120" required value="{{ utilisateur.prenoms }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail *</label>
+                <input class="form-control" type="email" id="email" name="email" maxlength="180" required value="{{ utilisateur.email }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="profil">Profil *</label>
+                <select class="form-select" id="profil" name="profil" required>
+                    {% for cle, libelle in profils %}
+                        <option value="{{ cle }}" {% if utilisateur.profil == cle %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Les profils dâ€™administration avancÃ©e sont rÃ©servÃ©s au super administrateur.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="password">{{ edition ? 'Nouveau mot de passe (facultatif)' : 'Mot de passe initial *' }}</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" {% if not edition %}required{% endif %}>
+                <div class="form-text">12 caractÃ¨res minimum. {% if edition %}Laissez vide pour conserver le mot de passe actuel.{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ edition ? 'Enregistrer les modifications' : 'CrÃ©er le compte' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\form.html.twig.bak_encodage_20261027_135041 ===
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un utilisateur' : 'CrÃƒÂ©er un utilisateur' }} - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="mb-4">
+        <a href="{{ path('admin_users_index') }}" class="text-decoration-none">&larr; Retour ÃƒÂ  la liste</a>
+        <h1 class="h3 mt-3">{{ edition ? 'Modifier le compte utilisateur' : 'CrÃƒÂ©er un utilisateur' }}</h1>
+        <p class="text-muted">Les champs marquÃƒÂ©s dÃ¢â‚¬â„¢un astÃƒÂ©risque sont obligatoires.</p>
+    </div>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <strong>Veuillez corriger les ÃƒÂ©lÃƒÂ©ments suivants :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}<li>{{ erreur }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="_token" value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="nom">Nom *</label>
+                <input class="form-control" id="nom" name="nom" maxlength="120" required value="{{ utilisateur.nom }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="prenoms">PrÃƒÂ©noms *</label>
+                <input class="form-control" id="prenoms" name="prenoms" maxlength="120" required value="{{ utilisateur.prenoms }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail *</label>
+                <input class="form-control" type="email" id="email" name="email" maxlength="180" required value="{{ utilisateur.email }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="profil">Profil *</label>
+                <select class="form-select" id="profil" name="profil" required>
+                    {% for cle, libelle in profils %}
+                        <option value="{{ cle }}" {% if utilisateur.profil == cle %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Les profils dÃ¢â‚¬â„¢administration avancÃƒÂ©e sont rÃƒÂ©servÃƒÂ©s au super administrateur.</div>
+            </div>
+            <div class="col-12">
+            <div class="col-12 {% if utilisateur.profil != 'apprenti' %}d-none{% endif %}" id="bloc-candidat">
+                <label class="form-label" for="candidat_id">Candidat associÃ© au compte apprenti *</label>
+                <select class="form-select" id="candidat_id" name="candidat_id">
+                    <option value="">-- SÃ©lectionner un candidat --</option>
+                    {% for candidat in candidats %}
+                        <option value="{{ candidat.id }}" {% if utilisateur.candidat and utilisateur.candidat.id == candidat.id %}selected{% endif %}>
+                            {{ candidat.numero }} - {{ candidat.nom }} {{ candidat.prenoms }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Un candidat ne peut Ãªtre associÃ© qu'Ã  un seul compte apprenti.</div>
+            </div>
+                <label class="form-label" for="password">{{ edition ? 'Nouveau mot de passe (facultatif)' : 'Mot de passe initial *' }}</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" {% if not edition %}required{% endif %}>
+                <div class="form-text">12 caractÃƒÂ¨res minimum. {% if edition %}Laissez vide pour conserver le mot de passe actuel.{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ edition ? 'Enregistrer les modifications' : 'CrÃƒÂ©er le compte' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script id="association-candidat-script">
+document.addEventListener('DOMContentLoaded', function () {
+    const profil = document.getElementById('profil');
+    const bloc = document.getElementById('bloc-candidat');
+    const candidat = document.getElementById('candidat_id');
+
+    if (!profil || !bloc || !candidat) return;
+
+    function actualiserCandidat() {
+        const estApprenti = profil.value === 'apprenti';
+        bloc.classList.toggle('d-none', !estApprenti);
+        candidat.required = estApprenti;
+        if (!estApprenti) candidat.value = '';
+    }
+
+    profil.addEventListener('change', actualiserCandidat);
+    actualiserCandidat();
+});
+</script>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\form.html.twig.bak_reparation_20261027_135239 ===
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un utilisateur' : 'Cr un utilisateur' }} - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="mb-4">
+        <a href="{{ path('admin_users_index') }}" class="text-decoration-none">&larr; Retour ÃƒÂ  la liste</a>
+        <h1 class="h3 mt-3">{{ edition ? 'Modifier le compte utilisateur' : 'Cr un utilisateur' }}</h1>
+        <p class="text-muted">Les champs marqu sont obligatoires.</p>
+    </div>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <strong>Veuillez corriger les Ã© suivants :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}<li>{{ erreur }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="_token" value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="nom">Nom *</label>
+                <input class="form-control" id="nom" name="nom" maxlength="120" required value="{{ utilisateur.nom }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="prenoms">Pr *</label>
+                <input class="form-control" id="prenoms" name="prenoms" maxlength="120" required value="{{ utilisateur.prenoms }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail *</label>
+                <input class="form-control" type="email" id="email" name="email" maxlength="180" required value="{{ utilisateur.email }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="profil">Profil *</label>
+                <select class="form-select" id="profil" name="profil" required>
+                    {% for cle, libelle in profils %}
+                        <option value="{{ cle }}" {% if utilisateur.profil == cle %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Les profils d au super administrateur.</div>
+            </div>
+            <div class="col-12">
+            <div class="col-12 {% if utilisateur.profil != 'apprenti' %}d-none{% endif %}" id="bloc-candidat">
+                <label class="form-label" for="candidat_id">Candidat associÃ© au compte apprenti *</label>
+                <select class="form-select" id="candidat_id" name="candidat_id">
+                    <option value="">-- SÃ©lectionner un candidat --</option>
+                    {% for candidat in candidats %}
+                        <option value="{{ candidat.id }}" {% if utilisateur.candidat and utilisateur.candidat.id == candidat.id %}selected{% endif %}>
+                            {{ candidat.numero }} - {{ candidat.nom }} {{ candidat.prenoms }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Un candidat ne peut Ãªtre associÃ© qu'Ã  un seul compte apprenti.</div>
+            </div>
+                <label class="form-label" for="password">{{ edition ? 'Nouveau mot de passe (facultatif)' : 'Mot de passe initial *' }}</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" {% if not edition %}required{% endif %}>
+                <div class="form-text">12 caract minimum. {% if edition %}Laissez vide pour conserver le mot de passe actuel.{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ edition ? 'Enregistrer les modifications' : 'Cr le compte' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script id="association-candidat-script">
+document.addEventListener('DOMContentLoaded', function () {
+    const profil = document.getElementById('profil');
+    const bloc = document.getElementById('bloc-candidat');
+    const candidat = document.getElementById('candidat_id');
+
+    if (!profil || !bloc || !candidat) return;
+
+    function actualiserCandidat() {
+        const estApprenti = profil.value === 'apprenti';
+        bloc.classList.toggle('d-none', !estApprenti);
+        candidat.required = estApprenti;
+        if (!estApprenti) candidat.value = '';
+    }
+
+    profil.addEventListener('change', actualiserCandidat);
+    actualiserCandidat();
+});
+</script>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\index.html.twig ===
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - E2C-MENAET{% endblock %}
+
+{% block body %}
+{% set total = utilisateurs|length %}
+{% set actifs = 0 %}
+{% set inactifs = 0 %}
+
+{% for u in utilisateurs %}
+    {% if u.active %}
+        {% set actifs = actifs + 1 %}
+    {% else %}
+        {% set inactifs = inactifs + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% set profils = {
+    'medical': 'Personnel mÃ©dical',
+    'referent': 'RÃ©fÃ©rent de parcours',
+    'referent_parcours': 'RÃ©fÃ©rent de parcours',
+    'gestionnaire': 'Gestionnaire',
+    'jury': 'Membre du jury',
+    'formateur': 'Formateur',
+    'apprenti': 'Apprenti',
+    'administrateur': 'Administrateur',
+    'super_admin': 'Super administrateur',
+    'demandeur': 'Demandeur',
+    'refuse': 'Demande refusÃ©e'
+} %}
+
+<style>
+.users-page {
+    padding: 28px 0 45px;
+}
+.users-header {
+    background: linear-gradient(120deg, #12395f, #174675 58%, #5B9BD5);
+    color: #fff;
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 24px rgba(18,57,95,.16);
+}
+.users-header h1 {
+    color: #fff;
+    font-weight: 750;
+    margin-bottom: 8px;
+}
+.users-header p {
+    color: rgba(255,255,255,.86);
+    margin: 0;
+}
+.users-header .btn {
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 15px;
+}
+.users-stat {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    box-shadow: 0 4px 14px rgba(30,55,80,.045);
+}
+.users-stat-label {
+    color: #6b7785;
+    font-size: .88rem;
+    font-weight: 600;
+}
+.users-stat-number {
+    color: #173e63;
+    font-size: 1.9rem;
+    font-weight: 750;
+    margin-top: 5px;
+}
+.users-stat-icon {
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+.users-panel {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(30,55,80,.05);
+    overflow: hidden;
+}
+.users-panel-heading {
+    padding: 20px 22px;
+    border-bottom: 1px solid #edf0f4;
+}
+.users-panel-heading h2 {
+    color: #173e63;
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin: 0;
+}
+.users-search {
+    background: #f6f8fb;
+    border: 1px solid #e3e9f0;
+    border-radius: 11px;
+    padding: 9px 12px;
+}
+.users-search .form-control {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+.users-table {
+    margin: 0;
+    min-width: 760px;
+}
+.users-table thead th {
+    background: #f3f6fa;
+    color: #536579;
+    font-size: .77rem;
+    text-transform: uppercase;
+    letter-spacing: .045em;
+    padding: 15px 17px;
+    white-space: nowrap;
+}
+.users-table tbody td {
+    padding: 15px 17px;
+    border-color: #edf0f4;
+    vertical-align: middle;
+}
+.users-table tbody tr:hover {
+    background: #f8fbff;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e7f1fb;
+    color: #174675;
+    font-weight: 750;
+    margin-right: 10px;
+}
+.user-name {
+    color: #203b56;
+    font-weight: 700;
+}
+.user-email {
+    color: #718096;
+    font-size: .84rem;
+}
+.user-profile {
+    display: inline-block;
+    background: #edf4fb;
+    color: #24527c;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 650;
+}
+.user-status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 700;
+}
+.user-status.active {
+    color: #147a46;
+    background: #e5f6ed;
+}
+.user-status.inactive {
+    color: #687586;
+    background: #edf0f3;
+}
+.user-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.user-actions .btn {
+    border-radius: 8px;
+    font-size: .82rem;
+}
+.users-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #718096;
+}
+.users-empty i {
+    display: block;
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+    color: #9aafc3;
+}
+@media(max-width:767px) {
+    .users-page { padding-top: 15px; }
+    .users-header { padding: 22px 18px; }
+    .users-header .btn { width: 100%; }
+    .users-panel-heading { padding: 16px; }
+}
+</style>
+
+<div class="container users-page">
+
+    <div class="users-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+            <div>
+                <div class="small text-uppercase fw-bold mb-2" style="letter-spacing: .12em; color:#d8eaff;">
+                    Administration de la plateforme
+                </div>
+                <h1 class="h3">Gestion des utilisateurs</h1>
+                <p>GÃ©rez les comptes, les profils et les accÃ¨s Ã  la plateforme E2C-MENAET.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-warning" href="{{ path('admin_users_demandes') }}">
+                    <i class="bi bi-person-plus me-1"></i> Demandes de comptes
+                </a>
+                <a class="btn btn-light text-primary" href="{{ path('admin_users_new') }}">
+                    <i class="bi bi-plus-circle me-1"></i> Nouvel utilisateur
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'success' ? 'success' : 'info') }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes affichÃ©s</div>
+                        <div class="users-stat-number">{{ total }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e7f1fb;color:#245b8d;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes actifs</div>
+                        <div class="users-stat-number">{{ actifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e5f6ed;color:#198754;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes dÃ©sactivÃ©s</div>
+                        <div class="users-stat-number">{{ inactifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#edf0f3;color:#687586;">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="users-panel">
+        <div class="users-panel-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h2><i class="bi bi-person-lines-fill me-2"></i>Annuaire des utilisateurs</h2>
+                    <div class="text-muted small mt-1">Consultez et gÃ©rez les comptes enregistrÃ©s.</div>
+                </div>
+                <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                    {{ total }} rÃ©sultat(s)
+                </span>
+            </div>
+
+            <form method="get" action="{{ path('admin_users_index') }}" class="row g-2">
+                <div class="col-12 col-md">
+                    <div class="users-search d-flex align-items-center">
+                        <i class="bi bi-search text-secondary ms-1"></i>
+                        <input
+                            class="form-control"
+                            type="search"
+                            name="q"
+                            value="{{ recherche }}"
+                            placeholder="Nom, prÃ©nom, adresse e-mail ou profil..."
+                            aria-label="Rechercher un utilisateur"
+                        >
+                    </div>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search me-1"></i> Rechercher
+                    </button>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> RÃ©initialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table users-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Profil</th>
+                        <th>Statut du compte</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for utilisateur in utilisateurs %}
+                    {% set nomComplet = (utilisateur.nom ~ ' ' ~ utilisateur.prenoms)|trim %}
+                    {% set initiales = (utilisateur.nom|default('U')|slice(0, 1) ~ utilisateur.prenoms|default('')|slice(0, 1))|upper %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar">{{ initiales }}</span>
+                                <div>
+                                    <div class="user-name">{{ nomComplet }}</div>
+                                    <div class="user-email">{{ utilisateur.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="user-profile">
+                                {{ profils[utilisateur.profil]|default(utilisateur.profil|replace({'_':' '})|title) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if utilisateur.active %}
+                                <span class="user-status active">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Actif
+                                </span>
+                            {% else %}
+                                <span class="user-status inactive">
+                                    <i class="bi bi-pause-circle-fill me-1"></i> DÃ©sactivÃ©
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="user-actions">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ path('admin_users_edit', {id: utilisateur.id}) }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Modifier
+                                </a>
+
+                                <form method="post"
+                                      action="{{ path('admin_users_status', {id: utilisateur.id}) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('{{ utilisateur.active ? 'DÃ©sactiver ce compte ?' : 'Activer ce compte ?' }}');">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('user_status_' ~ utilisateur.id) }}">
+
+                                    {% if utilisateur.active %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="bi bi-person-x me-1"></i> DÃ©sactiver
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="bi bi-person-check me-1"></i> Activer
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="users-empty">
+                                <i class="bi bi-people"></i>
+                                <strong class="d-block text-dark mb-1">Aucun utilisateur trouvÃ©</strong>
+                                <span>Modifiez votre recherche ou rÃ©initialisez les filtres.</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-3 border-top d-flex flex-wrap justify-content-between gap-2">
+            <span class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ total }} compte(s) affichÃ©(s)
+            </span>
+            <span class="text-muted small">E2C-MENAET Â· Administration des accÃ¨s</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+=== C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete\templates\admin_user\index.html.twig.bak_apprenti_20261023_152706 ===
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Gestion des utilisateurs</h1>
+            <p class="text-muted mb-0">CrÃ©er et administrer les comptes de la plateforme.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ path('admin_users_new') }}">+ Nouvel utilisateur</a>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'success' ? 'success' : 'info') }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-sm-9">
+            <input class="form-control" type="search" name="q" value="{{ recherche }}" placeholder="Rechercher par nom, prÃ©nom, e-mail ou profil">
+        </div>
+        <div class="col-sm-3 d-grid">
+            <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+        </div>
+    </form>
+
+    <div class="table-responsive bg-white rounded shadow-sm">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom et prÃ©noms</th>
+                    <th>E-mail</th>
+                    <th>Profil</th>
+                    <th>Statut</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for utilisateur in utilisateurs %}
+                <tr>
+                    <td>{{ utilisateur.nom }} {{ utilisateur.prenoms }}</td>
+                    <td>{{ utilisateur.email }}</td>
+                    <td>{{ utilisateur.profil|replace({'_':' '})|title }}</td>
+                    <td>
+                        {% if utilisateur.active %}
+                            <span class="badge text-bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">DÃ©sactivÃ©</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary mb-1" href="{{ path('admin_users_edit', {id: utilisateur.id}) }}">Modifier</a>
+                        <form method="post" action="{{ path('admin_users_status', {id: utilisateur.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('user_status_' ~ utilisateur.id) }}">
+                            {% if utilisateur.active %}
+                                <button class="btn btn-sm btn-outline-danger mb-1" type="submit" onclick="return confirm('DÃ©sactiver ce compte ?')">DÃ©sactiver</button>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-success mb-1" type="submit">Activer</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="text-center py-4">Aucun utilisateur trouvÃ©.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted small mt-3">Nombre de comptes affichÃ©s : {{ utilisateurs|length }}</p>
+</div>
+{% endblock %}
+
+=== MENUS ET ROLES ===
+
+templates\base.html.twig:46:            or is_granted('ROLE_GESTIONNAIRE')
+templates\base.html.twig:56:            is_granted('ROLE_REFERENT_PARCOURS')
+templates\base.html.twig:57:            or is_granted('ROLE_REFERENT')
+templates\base.html.twig:63:            is_granted('ROLE_FORMATEUR')
+templates\base.html.twig:68:            is_granted('ROLE_APPRENTI')
+templates\base.html.twig:109:        {% elseif 'ROLE_GESTIONNAIRE' in 
+rolesUtilisateur or 'GESTIONNAIRE' in rolesUtilisateur %}
+templates\base.html.twig:110:            {% set rolePrincipal = 
+'ROLE_GESTIONNAIRE' %}
+templates\base.html.twig:115:        {% elseif 'ROLE_REFERENT_PARCOURS' in 
+rolesUtilisateur or 'ROLE_REFERENT' in rolesUtilisateur or 'REFERENT_PARCOURS' in 
+rolesUtilisateur or 'REFERENT' in rolesUtilisateur %}
+templates\base.html.twig:116:            {% set rolePrincipal = 
+'ROLE_REFERENT_PARCOURS' %}
+templates\base.html.twig:117:        {% elseif 'ROLE_FORMATEUR' in 
+rolesUtilisateur or 'FORMATEUR' in rolesUtilisateur %}
+templates\base.html.twig:118:            {% set rolePrincipal = 'ROLE_FORMATEUR' 
+%}
+templates\base.html.twig:119:        {% elseif 'ROLE_APPRENTI' in 
+rolesUtilisateur or 'APPRENTI' in rolesUtilisateur %}
+templates\base.html.twig:120:            {% set rolePrincipal = 'ROLE_APPRENTI' %}
+templates\base.html.twig:126:            'ROLE_GESTIONNAIRE': 'Gestionnaire',
+templates\base.html.twig:128:            'ROLE_REFERENT_PARCOURS': 'RÃ©fÃ©rent de 
+parcours',
+templates\base.html.twig:129:            'ROLE_FORMATEUR': 'Formateur',
+templates\base.html.twig:130:            'ROLE_APPRENTI': 'Apprenti',
+templates\annuaire\index.html.twig:336:                                    {% if 
+is_granted('ROLE_GESTIONNAIRE')
+templates\annuaire\index.html.twig:337:                                        or 
+is_granted('ROLE_REFERENT')
+templates\annuaire\index.html.twig:338:                                        or 
+is_granted('ROLE_REFERENT_PARCOURS')
+templates\annuaire\index.html.twig:339:                                        or 
+is_granted('ROLE_FORMATEUR') %}
+templates\dashboard\index.html.twig:156:{% set gestionnaire = 
+is_granted('ROLE_GESTIONNAIRE') %}
+templates\dashboard\index.html.twig:158:{% set referent = 
+is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_REFERENT') %}
+templates\dashboard\index.html.twig:159:{% set formateur = 
+is_granted('ROLE_FORMATEUR') %}
+templates\dashboard\index.html.twig:161:{% set apprenti = 
+is_granted('ROLE_APPRENTI') %}
+templates\dashboard\index_classique.html.twig:18:        or 
+is_granted('ROLE_GESTIONNAIRE')
+templates\dashboard\index_classique.html.twig:19:        or 'ROLE_GESTIONNAIRE' 
+in roles
+templates\dashboard\index_classique.html.twig:30:        
+is_granted('ROLE_REFERENT_PARCOURS')
+templates\dashboard\index_classique.html.twig:31:        or 
+is_granted('ROLE_REFERENT')
+templates\dashboard\index_classique.html.twig:32:        or 
+'ROLE_REFERENT_PARCOURS' in roles
+templates\dashboard\index_classique.html.twig:33:        or 'ROLE_REFERENT' in 
+roles
+templates\dashboard\index_classique.html.twig:39:        
+is_granted('ROLE_FORMATEUR')
+templates\dashboard\index_classique.html.twig:40:        or 'ROLE_FORMATEUR' in 
+roles
+templates\dashboard\index_classique.html.twig:51:        
+is_granted('ROLE_APPRENTI')
+templates\dashboard\index_classique.html.twig:52:        or 'ROLE_APPRENTI' in 
+roles
+templates\dashboard\index_classique.html.twig:136:{% if 
+is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_FORMATEUR') or 
+is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+templates\dashboard\index_classique.html.twig:139:{% if 
+is_granted('ROLE_APPRENTI') %}
+templates\dashboard\index_classique.html.twig:317:{% if 
+is_granted('ROLE_GESTIONNAIRE') %}
+templates\partials\_acces_rapides_roles.html.twig:10:{% elseif 
+is_granted('ROLE_GESTIONNAIRE') %}
+templates\partials\_acces_rapides_roles.html.twig:16:{% elseif 
+is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+templates\partials\_acces_rapides_roles.html.twig:18:{% elseif 
+is_granted('ROLE_FORMATEUR') %}
+templates\partials\_acces_rapides_roles.html.twig:20:{% elseif 
+is_granted('ROLE_APPRENTI') %}
+templates\partials\_acces_rapides_roles.html.twig:83:        {% elseif 
+is_granted('ROLE_ADMIN') or is_granted('ROLE_GESTIONNAIRE') %}
+templates\partials\_acces_rapides_roles.html.twig:153:        {% elseif 
+is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+templates\partials\_acces_rapides_roles.html.twig:171:        {% elseif 
+is_granted('ROLE_FORMATEUR') %}
+templates\partials\_acces_rapides_roles.html.twig:189:        {% elseif 
+is_granted('ROLE_APPRENTI') %}
+templates\partials\_navigation_roles.html.twig:34:        {% elseif 
+is_granted('ROLE_GESTIONNAIRE') %}
+templates\partials\_navigation_roles.html.twig:48:        {% elseif 
+is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+templates\partials\_navigation_roles.html.twig:52:        {% elseif 
+is_granted('ROLE_FORMATEUR') %}
+templates\partials\_navigation_roles.html.twig:56:        {% elseif 
+is_granted('ROLE_APPRENTI') %}
+
+
+
+=== CONFIGURATION SECURITE ===
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+        ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+        ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            user_checker: App\Security\UserChecker
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: dashboard
+            logout:
+                path: app_logout
+
+                target: daip_accueil
+    access_control:
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+        - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+
+        - { path: '^/candidats/[0-9]+$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_FORMATEUR')" }
+        - { path: '^/candidats/[0-9]+/photo-identite$', methods: [GET], allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+        - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+        - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/admissions, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+        - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+        - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+
+        - { path: ^/admin/campagnes, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+        - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+        - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+
+        - { path: ^/creer-compte$, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }

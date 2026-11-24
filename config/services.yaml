@@ -1,0 +1,11 @@
+parameters:
+    app.upload_dir: '%kernel.project_dir%/var/uploads'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude: '../src/{DependencyInjection,Entity,Kernel.php}'

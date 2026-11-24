@@ -1,0 +1,276 @@
+{% extends 'base.html.twig' %}
+{% block title %}Suivi socio-professionnel - E2C MENAET</div>
+{% endblock %}
+{% block body %}
+<style>
+/* ==========================================
+   E2C-MENAET - DESIGN SUIVI PROFESSIONNEL
+   ========================================== */
+
+.e2c-followup-page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 30px 18px 55px;
+    color: #26364d;
+}
+
+/* Bandeau supérieur */
+.e2c-followup-page > .d-flex:first-child {
+    position: relative;
+    overflow: hidden;
+    padding: 30px 32px;
+    margin-bottom: 28px !important;
+    border-radius: 17px;
+    border-bottom: 4px solid #f4b400;
+    background: linear-gradient(125deg, #071a3a, #102d60, #1d5685);
+    box-shadow: 0 12px 30px rgba(7, 26, 58, .13);
+}
+
+.e2c-followup-page > .d-flex:first-child::after {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    right: -65px;
+    top: -115px;
+    border: 25px solid rgba(255,255,255,.07);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.e2c-followup-page > .d-flex:first-child > div {
+    position: relative;
+    z-index: 1;
+}
+
+.e2c-followup-page > .d-flex:first-child span {
+    color: #ffda70 !important;
+    font-size: .78rem;
+    letter-spacing: 1.3px;
+    font-weight: 800;
+}
+
+.e2c-followup-page > .d-flex:first-child h1 {
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    margin-top: 8px;
+}
+
+.e2c-followup-page > .d-flex:first-child p {
+    color: #e1eaf6 !important;
+    line-height: 1.6;
+}
+
+.e2c-followup-page .btn {
+    min-height: 40px;
+    padding: 9px 17px;
+    border-radius: 9px;
+    font-weight: 700;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.e2c-followup-page .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(7,26,58,.15);
+}
+
+.e2c-followup-page > .d-flex:first-child .btn-primary {
+    color: #10213e;
+    border-color: #f4b400;
+    background: #f4b400;
+}
+
+.e2c-followup-page > .d-flex:first-child .btn-primary:hover {
+    background: #ffd15c;
+    border-color: #ffd15c;
+}
+
+.e2c-followup-page > .d-flex:first-child .btn-outline-primary {
+    color: #ffffff;
+    border-color: rgba(255,255,255,.65);
+    background: rgba(255,255,255,.08);
+}
+
+.e2c-followup-page > .d-flex:first-child .btn-outline-primary:hover {
+    color: #102d60;
+    background: #ffffff;
+}
+
+/* Cartes principales */
+.e2c-followup-page .card {
+    overflow: hidden;
+    border: 1px solid #e5ebf3 !important;
+    border-radius: 15px !important;
+    background: #ffffff;
+    box-shadow: 0 7px 24px rgba(20, 45, 75, .07) !important;
+}
+
+.e2c-followup-page .card-header {
+    padding: 19px 22px !important;
+    border-bottom: 1px solid #e8edf4;
+    background: #ffffff !important;
+}
+
+.e2c-followup-page .card-header h2 {
+    color: #102d60;
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+.e2c-followup-page .card-body {
+    padding: 22px;
+}
+
+/* Tableau */
+.e2c-followup-page .table-responsive {
+    border-radius: 0 0 15px 15px;
+}
+
+.e2c-followup-page .table {
+    color: #34445b;
+    font-size: .91rem;
+}
+
+.e2c-followup-page .table thead th {
+    padding: 15px 13px;
+    color: #52657e;
+    background: #f1f5fa;
+    border-bottom: 1px solid #e1e8f0;
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .35px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.e2c-followup-page .table tbody td {
+    padding: 15px 13px;
+    border-color: #edf1f6;
+    vertical-align: middle;
+}
+
+.e2c-followup-page .table tbody tr {
+    transition: background-color .18s ease;
+}
+
+.e2c-followup-page .table tbody tr:hover {
+    background: #f5f8fc;
+}
+
+.e2c-followup-page .table tbody strong {
+    color: #102d60;
+    font-weight: 750;
+}
+
+.e2c-followup-page .table .btn {
+    font-size: .8rem;
+    white-space: nowrap;
+}
+
+/* Statuts */
+.e2c-followup-page .badge {
+    padding: 7px 11px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 750;
+}
+
+/* Suivi dans l'emploi */
+.e2c-followup-page .card-body > .border-bottom {
+    padding: 14px 0 !important;
+    border-color: #e8edf4 !important;
+}
+
+.e2c-followup-page .card-body > .border-bottom:first-child {
+    padding-top: 0 !important;
+}
+
+.e2c-followup-page .card-body > .border-bottom strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #102d60;
+    font-weight: 800;
+}
+
+.e2c-followup-page .card-body > .border-bottom .small {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Répertoire des freins */
+.e2c-followup-page .bg-primary-subtle {
+    border: 1px solid #d7e5f5 !important;
+    border-left: 4px solid #2876b8 !important;
+    background: linear-gradient(135deg, #eff6fd, #e4effb) !important;
+}
+
+.e2c-followup-page .bg-primary-subtle h2 {
+    color: #102d60;
+    font-weight: 800;
+}
+
+.e2c-followup-page .bg-primary-subtle p {
+    color: #52657e;
+    line-height: 1.7;
+}
+
+.e2c-followup-page .bg-primary-subtle .btn {
+    border-color: #2876b8;
+    color: #15558a;
+    background: #ffffff;
+}
+
+.e2c-followup-page .bg-primary-subtle .btn:hover {
+    color: #ffffff;
+    background: #15558a;
+}
+
+/* Adaptation mobile */
+@media (max-width: 767.98px) {
+    .e2c-followup-page {
+        padding: 16px 9px 30px;
+    }
+
+    .e2c-followup-page > .d-flex:first-child {
+        padding: 23px 19px;
+        align-items: flex-start !important;
+    }
+
+    .e2c-followup-page > .d-flex:first-child > div:last-child {
+        width: 100%;
+    }
+
+    .e2c-followup-page > .d-flex:first-child .btn {
+        flex: 1 1 auto;
+        font-size: .83rem;
+    }
+
+    .e2c-followup-page .card-header {
+        padding: 16px !important;
+    }
+
+    .e2c-followup-page .card-body {
+        padding: 17px;
+    }
+
+    .e2c-followup-page .table {
+        min-width: 650px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .e2c-followup-page *,
+    .e2c-followup-page *::before,
+    .e2c-followup-page *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+</style>
+<div class="e2c-followup-page">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"><div><span class="text-primary fw-semibold">ACCOMPAGNEMENT DES APPRENTIS</span><h1 class="h3 mb-1">Suivi pédagogique et socio-professionnel</h1><p class="text-muted mb-0">Entretiens d’accueil, bilans à mi-parcours, sorties et suivi dans l’emploi.</p></div><div class="d-flex flex-wrap gap-2"><a class="btn btn-outline-primary" href="{{ path('followup_directory') }}">Répertoire des difficultés</a><a class="btn btn-primary" href="{{ path('followup_new') }}">+ Nouvel entretien</a></div></div>
+<div class="row g-4"><div class="col-xl-8"><div class="card shadow-sm border-0"><div class="card-header bg-white py-3"><h2 class="h5 mb-0">Entretiens de parcours</h2></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Type</th><th>Bénéficiaire</th><th>Date du RDV</th><th>Statut</th><th></th></tr></thead><tbody>{% for e in entretiens %}<tr><td>{% if e.typeEntretien == 'ACCUEIL' %}Entretien d’accueil{% elseif e.typeEntretien == 'MI_PARCOURS' %}Mi-parcours{% else %}Sortie de formation{% endif %}</td><td>{% if e.candidat %}<strong>{{ e.candidat.nom }} {{ e.candidat.prenoms }}</strong><div class="small text-muted">{{ e.candidat.numero }}</div>{% else %}<span class="text-muted">Bénéficiaire non associé</span>{% endif %}</td><td>{{ e.dateEntretien ? e.dateEntretien|date('d/m/Y') : '—' }}</td><td><span class="badge text-bg-success">{{ e.statut }}</span></td><td><a class="btn btn-sm btn-outline-primary" href="{{ path('followup_edit', {id:e.id}) }}">Ouvrir / modifier</a></td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">Aucun entretien enregistré. Cliquez sur « Nouvel entretien » pour commencer.</td></tr>{% endfor %}</tbody></table></div></div></div>
+<div class="col-xl-4"><div class="card shadow-sm border-0 mb-4"><div class="card-header bg-white py-3"><h2 class="h5 mb-0">Suivi dans l’emploi</h2></div><div class="card-body">{% for e in emplois %}<div class="border-bottom py-2"><strong>{% if e.candidat %}{{ e.candidat.nom }} {{ e.candidat.prenoms }}{% else %}Bénéficiaire non associé{% endif %}</strong><div class="small text-muted">{{ e.employeur|default('Employeur non renseigné') }} · {{ e.poste|default('Poste non renseigné') }}</div><span class="badge text-bg-light">{{ e.statut }}</span></div>{% else %}<p class="text-muted mb-0">Aucun suivi dans l’emploi enregistré.</p>{% endfor %}</div></div><div class="card border-0 bg-primary-subtle"><div class="card-body"><h2 class="h6">Répertoire des freins</h2><p class="small mb-3">Retrouvez les bénéficiaires présentant des freins sociaux ou pédagogiques à mi-parcours ou à la sortie.</p><a class="btn btn-outline-primary btn-sm" href="{{ path('followup_directory') }}">Consulter le répertoire</a></div></div></div></div>
+</div>
+{% endblock %}

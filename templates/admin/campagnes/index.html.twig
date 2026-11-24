@@ -1,0 +1,516 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des campagnes | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .campagne-page {
+        --campagne-blue: #245b91;
+        --campagne-light: #eaf3fb;
+        padding-bottom: 2rem;
+    }
+
+    .campagne-header {
+        background: linear-gradient(120deg, #245b91, #5B9BD5);
+        color: #fff;
+        border-radius: 18px;
+        padding: 28px 30px;
+        box-shadow: 0 8px 24px rgba(25, 75, 125, .16);
+    }
+
+    .campagne-header h1 {
+        color: #fff;
+        font-weight: 750;
+        letter-spacing: -.4px;
+    }
+
+    .campagne-header p {
+        color: rgba(255,255,255,.88);
+    }
+
+    .campagne-header .btn {
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 11px 17px;
+    }
+
+    .campagne-stat {
+        border: 1px solid #e8edf3;
+        border-radius: 15px;
+        background: #fff;
+        padding: 19px;
+        height: 100%;
+        box-shadow: 0 4px 14px rgba(30, 55, 85, .045);
+    }
+
+    .campagne-stat-label {
+        color: #718096;
+        font-size: .83rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .campagne-stat-value {
+        color: #1e344b;
+        font-size: 1.8rem;
+        font-weight: 750;
+        margin-top: 7px;
+    }
+
+    .campagne-stat-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.25rem;
+        background: var(--campagne-light);
+        color: var(--campagne-blue);
+    }
+
+    .campagne-panel {
+        background: #fff;
+        border: 1px solid #e8edf3;
+        border-radius: 16px;
+        box-shadow: 0 5px 18px rgba(30, 55, 85, .05);
+        overflow: hidden;
+    }
+
+    .campagne-panel-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+    .campagne-panel-header h2 {
+        color: #263b50;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .campagne-table {
+        margin-bottom: 0;
+        min-width: 1000px;
+    }
+
+    .campagne-table thead th {
+        background: #f5f8fc;
+        color: #64748b;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .45px;
+        font-weight: 700;
+        padding: 15px 13px;
+        border-bottom: 1px solid #e7edf4;
+        white-space: nowrap;
+    }
+
+    .campagne-table tbody td {
+        padding: 16px 13px;
+        border-color: #edf1f5;
+        vertical-align: middle;
+        color: #394b5d;
+        font-size: .9rem;
+    }
+
+    .campagne-table tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    .campagne-name {
+        color: #203b57;
+        font-weight: 700;
+    }
+
+    .campagne-subtext {
+        color: #8290a0;
+        font-size: .78rem;
+        margin-top: 4px;
+    }
+
+    .campagne-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 30px;
+        padding: 6px 11px;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .campagne-status-active {
+        background: #e6f6ed;
+        color: #187443;
+    }
+
+    .campagne-status-inactive {
+        background: #edf0f4;
+        color: #64748b;
+    }
+
+    .campagne-number {
+        display: inline-flex;
+        min-width: 34px;
+        justify-content: center;
+        padding: 5px 9px;
+        background: #eef4fa;
+        color: #285b89;
+        border-radius: 8px;
+        font-weight: 700;
+    }
+
+    .campagne-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .campagne-actions .btn {
+        border-radius: 8px;
+        font-size: .78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .campagne-filter {
+        background: #f8fafc;
+        border: 1px solid #e8edf3;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .campagne-filter .form-control,
+    .campagne-filter .form-select {
+        min-height: 43px;
+        border-color: #dce4ed;
+        border-radius: 9px;
+    }
+
+    .campagne-info {
+        border: 1px solid #d9e8f7;
+        background: #f1f7fd;
+        color: #385b7c;
+        border-radius: 12px;
+        padding: 15px 18px;
+        font-size: .88rem;
+    }
+
+    .campagne-pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        color: #285b89;
+        border-color: #e1e8f0;
+    }
+
+    .campagne-pagination .active .page-link {
+        background: #285b89;
+        border-color: #285b89;
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .campagne-header {
+            padding: 22px 19px;
+        }
+
+        .campagne-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .campagne-stat {
+            padding: 15px;
+        }
+    }
+</style>
+
+<div class="container-fluid campagne-page">
+
+    <div class="campagne-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="small mb-2 opacity-75">
+                    <i class="bi bi-grid-1x2-fill me-1"></i>
+                    ESPACE ADMINISTRATION
+                </div>
+                <h1 class="h3 mb-2">Gestion des campagnes</h1>
+                <p class="mb-0">
+                    Pilotez les périodes de recrutement, les quotas et les candidatures E2C.
+                </p>
+            </div>
+            <a href="{{ path('admin_campagnes_new') }}" class="btn btn-light text-primary">
+                <i class="bi bi-plus-circle me-2"></i> Nouvelle campagne
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="campagne-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="campagne-stat-label">Total des campagnes</div>
+                        <div class="campagne-stat-value">{{ statistiques.total|default(0) }}</div>
+                    </div>
+                    <div class="campagne-stat-icon">
+                        <i class="bi bi-collection"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="campagne-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="campagne-stat-label">Campagnes actives</div>
+                        <div class="campagne-stat-value text-success">{{ statistiques.actives|default(0) }}</div>
+                    </div>
+                    <div class="campagne-stat-icon" style="background:#e6f6ed;color:#187443;">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="campagne-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="campagne-stat-label">Campagnes inactives</div>
+                        <div class="campagne-stat-value text-secondary">{{ statistiques.inactives|default(0) }}</div>
+                    </div>
+                    <div class="campagne-stat-icon" style="background:#edf0f4;color:#64748b;">
+                        <i class="bi bi-pause-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="campagne-panel mb-4">
+        <div class="campagne-panel-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h2><i class="bi bi-funnel me-2 text-primary"></i>Recherche et filtres</h2>
+                    <div class="text-muted small mt-1">Retrouvez rapidement une campagne.</div>
+                </div>
+                <span class="small text-muted">{{ total }} résultat(s)</span>
+            </div>
+        </div>
+
+        <div class="p-3 p-md-4">
+            <form method="get" action="{{ path('admin_campagnes_index') }}" class="campagne-filter">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-6">
+                        <label for="recherche-campagne" class="form-label fw-semibold small">
+                            Nom de la campagne
+                        </label>
+                        <input
+                            type="search"
+                            id="recherche-campagne"
+                            name="q"
+                            class="form-control"
+                            placeholder="Saisir le nom d'une campagne..."
+                            value="{{ recherche|default('') }}"
+                        >
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label for="statut-campagne" class="form-label fw-semibold small">
+                            Statut
+                        </label>
+                        <select id="statut-campagne" name="statut" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="active" {{ statutFiltre == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ statutFiltre == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-search me-1"></i> Rechercher
+                        </button>
+                        <a href="{{ path('admin_campagnes_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="campagne-panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h2><i class="bi bi-calendar2-week me-2 text-primary"></i>Liste des campagnes</h2>
+                <div class="text-muted small mt-1">
+                    {% if total > 0 %}
+                        Affichage de {{ (page - 1) * limite + 1 }}
+                        à {{ min(page * limite, total) }} sur {{ total }} campagne(s)
+                    {% else %}
+                        Aucune campagne correspondant aux critères.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if campagnes is empty %}
+            <div class="text-center py-5 px-3">
+                <div class="campagne-stat-icon mx-auto mb-3">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+                <h3 class="h5 text-dark">Aucune campagne trouvée</h3>
+                <p class="text-muted mb-3">
+                    Modifiez vos critères de recherche ou créez une nouvelle campagne.
+                </p>
+                <a href="{{ path('admin_campagnes_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Créer une campagne
+                </a>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table campagne-table align-middle" data-responsive-text="E2C_CAMPAGNES_TEXTES_REDUITS">
+                    <thead>
+                        <tr>
+                            <th style="font-size:0.65rem;">Campagne</th>
+                            <th style="font-size:0.65rem;">Période</th>
+                            <th style="font-size:0.65rem;">Âges</th>
+                            <th style="font-size:0.65rem;">Quota global</th>
+                            <th style="font-size:0.65rem;">Quotas métiers</th>
+                            <th style="font-size:0.65rem;">Candidatures</th>
+                            <th style="font-size:0.65rem;">Statut</th>
+                            <th class="text-end" style="font-size:0.65rem;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for campagne in campagnes %}
+                        <tr>
+                            <td style="font-size:0.75rem;">
+                                <div class="campagne-name">{{ campagne.nom }}</div>
+                                <div class="campagne-subtext">Référence #{{ campagne.id }}</div>
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                <div class="fw-semibold">{{ campagne.dateDebut|date('d/m/Y') }}</div>
+                                <div class="campagne-subtext">
+                                    au {{ campagne.dateFin|date('d/m/Y') }}
+                                </div>
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                {% if campagne.ageMin is not null and campagne.ageMax is not null %}
+                                    {{ campagne.ageMin }} à {{ campagne.ageMax }} ans
+                                {% else %}
+                                    <span class="text-muted">Non défini</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold" style="font-size:0.75rem;">
+                                {{ campagne.quotaGlobal is null ? 'Non défini' : campagne.quotaGlobal }}
+                            </td>
+                            <td style="font-size:0.75rem;">{{ campagne.total_quotas|default(0) }}</td>
+                            <td style="font-size:0.75rem;">
+                                <span class="campagne-number">
+                                    {{ campagne.nombre_candidats|default(0) }}
+                                </span>
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                {% if campagne.active %}
+                                    <span class="campagne-status campagne-status-active" style="white-space:nowrap; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-circle-fill" style="font-size:7px;"></i> Active</span>
+                                {% else %}
+                                    <span class="campagne-status campagne-status-inactive">
+                                        <i class="bi bi-circle-fill" style="font-size:7px;"></i> Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.75rem;">
+                                <div class="campagne-actions">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('admin_campagnes_edit', {id: campagne.id}) }}"
+                                       title="Modifier la campagne" style="font-size:0.68rem;">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Modifier
+                                    </a>
+
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       href="{{ path('admin_campagnes_quotas', {id: campagne.id}) }}"
+                                       title="Gérer les quotas" style="font-size:0.68rem;">
+                                        <i class="bi bi-sliders"></i>
+                                        Quotas
+                                    </a>
+
+                                    {% if not campagne.active %}
+                                        <form method="post"
+                                              action="{{ path('admin_campagnes_activate', {id: campagne.id}) }}"
+                                              onsubmit="return confirm('Activer cette campagne et désactiver toute autre campagne active ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('activer_campagne_' ~ campagne.id) }}">
+                                            <button class="btn btn-sm btn-success" type="submit">
+                                                <i class="bi bi-check-circle me-1"></i> Activer
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post"
+                                              action="{{ path('admin_campagnes_close', {id: campagne.id}) }}"
+                                              onsubmit="return confirm('Clôturer cette campagne ? Les candidatures seront conservées.');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('cloturer_campagne_' ~ campagne.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                <i class="bi bi-lock me-1"></i> Clôturer
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if nombrePages > 1 %}
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 border-top">
+                    <div class="small text-muted">
+                        Page {{ page }} sur {{ nombrePages }}
+                    </div>
+
+                    <nav aria-label="Pagination des campagnes">
+                        <ul class="pagination pagination-sm campagne-pagination mb-0">
+                            <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
+                                <a class="page-link"
+                                   href="{{ path('admin_campagnes_index', {q: recherche, statut: statutFiltre, page: page - 1}) }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            {% for numeroPage in 1..nombrePages %}
+                                <li class="page-item {{ numeroPage == page ? 'active' : '' }}">
+                                    <a class="page-link"
+                                       href="{{ path('admin_campagnes_index', {q: recherche, statut: statutFiltre, page: numeroPage}) }}">
+                                        {{ numeroPage }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            <li class="page-item {{ page >= nombrePages ? 'disabled' : '' }}">
+                                <a class="page-link"
+                                   href="{{ path('admin_campagnes_index', {q: recherche, statut: statutFiltre, page: page + 1}) }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="campagne-info">
+        <div class="d-flex gap-2 align-items-start">
+            <i class="bi bi-info-circle-fill mt-1"></i>
+            <div>
+                <strong>Règles de gestion :</strong>
+                une seule campagne peut être active à la fois.
+                La clôture d'une campagne ne supprime ni ses candidats ni son historique.
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

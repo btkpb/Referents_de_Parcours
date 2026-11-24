@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Convocation à un entretien E2C</title>
+</head>
+<body style="margin:0;padding:25px;background-color:#f3f6fa;font-family:Arial,Helvetica,sans-serif;color:#263445;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                       style="max-width:600px;background:#ffffff;border:1px solid #e1e7ef;border-radius:8px;">
+                    <tr>
+                        <td style="background:#164b78;padding:25px 30px;color:#ffffff;text-align:center;">
+                            <h1 style="font-size:21px;margin:0;">MENAET - DAIP</h1>
+                            <p style="margin:8px 0 0;font-size:14px;">
+                                École de la Deuxième Chance
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:30px;">
+                            <h2 style="font-size:20px;color:#164b78;margin-top:0;">
+                                Convocation à un entretien
+                            </h2>
+
+                            <p>Madame, Monsieur,</p>
+
+                            <p>
+                                Dans le cadre du processus de recrutement de l'École
+                                de la Deuxième Chance (E2C), nous vous informons que
+                                vous êtes convoqué(e) à un entretien de sélection.
+                            </p>
+
+                            <p>
+                                <strong>Candidat :</strong>
+                                {{ candidat.prenoms }} {{ candidat.nom }}
+                            </p>
+
+                            <p>
+                                <strong>Numéro de candidature :</strong>
+                                {{ candidat.numero }}
+                            </p>
+
+                            <p>
+                                <strong>Date :</strong>
+                                {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y') : 'À confirmer' }}
+                            </p>
+
+                            <p>
+                                <strong>Heure :</strong>
+                                {{ entretien.dateHeure ? entretien.dateHeure|date('H:i') : 'À confirmer' }}
+                            </p>
+
+                            <p>
+                                <strong>Lieu :</strong>
+                                {{ entretien.lieu }}
+                            </p>
+
+                            <p>
+                                Vous trouverez en pièce jointe votre convocation
+                                officielle au format PDF. Nous vous invitons à la
+                                consulter attentivement et à respecter les indications
+                                qui y figurent.
+                            </p>
+
+                            <p>
+                                Nous vous remercions de votre intérêt pour le
+                                programme E2C.
+                            </p>
+
+                            <p style="margin-top:28px;">
+                                Cordialement,<br>
+                                <strong>Administration</strong><br>
+                                MENAET - DAIP
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f1f4f8;padding:18px 30px;text-align:center;color:#64748b;font-size:12px;">
+                            Message automatique de la plateforme E2C.<br>
+                            Merci de ne pas répondre directement à cet e-mail.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

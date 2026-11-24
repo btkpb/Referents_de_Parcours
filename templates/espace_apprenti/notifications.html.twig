@@ -1,0 +1,248 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes notifications - E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+.e2c-notifications {
+    --notif-blue: #1769aa;
+    --notif-dark: #12365a;
+    --notif-light: #edf5fc;
+    --notif-border: #e3ebf3;
+    color: #26384a;
+    padding-bottom: 42px;
+}
+.e2c-notifications .notif-hero {
+    border-radius: 20px;
+    padding: 34px 36px;
+    margin: 8px 0 24px;
+    color: #fff;
+    background: linear-gradient(120deg, #12365a, #1769aa 65%, #3187c8);
+    box-shadow: 0 12px 30px rgba(18,54,90,.16);
+}
+.e2c-notifications .hero-label {
+    display: inline-block;
+    padding: 7px 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 30px;
+    background: rgba(255,255,255,.10);
+    color: #fff;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+.e2c-notifications .notif-hero h1 {
+    margin: 0 0 10px;
+    color: #fff !important;
+    font-size: clamp(1.7rem,3vw,2.25rem);
+    font-weight: 800;
+}
+.e2c-notifications .notif-hero p {
+    margin: 0;
+    color: rgba(255,255,255,.9);
+    line-height: 1.7;
+}
+.e2c-notifications .notif-section {
+    margin-bottom: 22px;
+    padding: 25px;
+    border: 1px solid var(--notif-border);
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(24,55,85,.045);
+}
+.e2c-notifications .notif-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.e2c-notifications .notif-toolbar h2 {
+    margin: 0;
+    color: var(--notif-dark);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.e2c-notifications .notif-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 19px;
+    margin-bottom: 13px;
+    border: 1px solid var(--notif-border);
+    border-left: 4px solid #aab8c6;
+    border-radius: 13px;
+    background: #fff;
+}
+.e2c-notifications .notif-card.unread {
+    border-left-color: var(--notif-blue);
+    background: #f5faff;
+}
+.e2c-notifications .notif-content {
+    min-width: 0;
+}
+.e2c-notifications .notif-title {
+    margin: 0 0 7px;
+    color: #173d62;
+    font-size: 1rem;
+    font-weight: 800;
+}
+.e2c-notifications .notif-message {
+    margin: 0 0 10px;
+    color: #52677d;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+.e2c-notifications .notif-date {
+    color: #748397;
+    font-size: .82rem;
+}
+.e2c-notifications .notif-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.e2c-notifications .empty-state {
+    padding: 38px 22px;
+    border: 1px dashed #cbd9e7;
+    border-radius: 15px;
+    background: #f8fbfe;
+    text-align: center;
+}
+.e2c-notifications .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+.e2c-notifications .empty-state h3 {
+    color: #173d62;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+.e2c-notifications .empty-state p {
+    max-width: 620px;
+    margin: auto;
+    color: #64768a;
+    line-height: 1.7;
+}
+.e2c-notifications .info-footer {
+    padding: 16px 19px;
+    border: 1px solid #d9e9f7;
+    border-radius: 13px;
+    background: #f0f7fd;
+    color: #315777;
+    font-size: .88rem;
+    line-height: 1.65;
+}
+@media(max-width:767px) {
+    .e2c-notifications .notif-hero {padding:25px 21px}
+    .e2c-notifications .notif-section {padding:18px 14px}
+    .e2c-notifications .notif-card {flex-direction:column}
+    .e2c-notifications .notif-actions {justify-content:flex-start}
+}
+</style>
+
+<div class="container py-4 e2c-notifications">
+
+    <header class="notif-hero">
+        <div class="hero-label">E2C-MENAET · ESPACE APPRENANT</div>
+        <h1>Mes notifications</h1>
+        <p>
+            Retrouvez les informations et communications relatives à votre
+            parcours de formation et à votre accompagnement.
+        </p>
+    </header>
+
+    {% include 'espace_apprenti/_menu.html.twig' with {
+        notificationsNonLues: notificationsNonLues
+    } %}
+
+    <section class="notif-section">
+
+        <div class="notif-toolbar">
+            <div>
+                <h2>Centre de notifications</h2>
+                <div class="text-secondary small mt-1">
+                    {{ notifications|length }} notification(s)
+                    · {{ notificationsNonLues }} non lue(s)
+                </div>
+            </div>
+
+            {% if notificationsNonLues > 0 %}
+                <form method="post"
+                      action="{{ path('apprenti_notifications_tout_lire') }}">
+                    <input type="hidden" name="_token"
+                           value="{{ csrf_token('notifications_tout_lire') }}">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Tout marquer comme lu
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        {% for notification in notifications %}
+            <article class="notif-card {{ notification.isRead ? '' : 'unread' }}">
+                <div class="notif-content">
+                    <h3 class="notif-title">
+                        {{ notification.titre }}
+                        {% if not notification.isRead %}
+                            <span class="badge bg-primary ms-1">Nouveau</span>
+                        {% endif %}
+                    </h3>
+
+                    <p class="notif-message">{{ notification.message }}</p>
+
+                    <div class="notif-date">
+                        {{ notification.createdAt|date('d/m/Y à H:i') }}
+                        · {{ notification.type|replace({'_': ' '}) }}
+                    </div>
+                </div>
+
+                <div class="notif-actions">
+                    {% if not notification.isRead %}
+                        <form method="post"
+                              action="{{ path('apprenti_notification_lire', {id: notification.id}) }}">
+                            <input type="hidden" name="_token"
+                                   value="{{ csrf_token('lire_notification_' ~ notification.id) }}">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                Marquer comme lue
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <form method="post"
+                          action="{{ path('apprenti_notification_archiver', {id: notification.id}) }}"
+                          onsubmit="return confirm('Archiver cette notification ?');">
+                        <input type="hidden" name="_token"
+                               value="{{ csrf_token('archiver_notification_' ~ notification.id) }}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            Archiver
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true">✉</div>
+                <h3>Aucune notification pour le moment</h3>
+                <p>
+                    Vos notifications personnelles apparaîtront ici lorsqu'un
+                    événement ou une information vous concernant sera enregistré
+                    dans la plateforme.
+                </p>
+            </div>
+        {% endfor %}
+
+    </section>
+
+    <div class="info-footer" role="note">
+        <strong>Confidentialité :</strong>
+        cet espace affiche uniquement les notifications destinées à votre compte.
+        Les informations médicales confidentielles ne sont pas diffusées ici.
+    </div>
+
+</div>
+{% endblock %}

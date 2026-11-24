@@ -1,0 +1,58 @@
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+        ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+        ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: dashboard
+            logout:
+                path: app_logout
+
+                target: daip_accueil
+    access_control:
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/uploads, roles: PUBLIC_ACCESS }
+        - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+        - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+
+        - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+        - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+        - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+        - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+
+        - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+        - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+        - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+
+        - { path: ^/, roles: ROLE_USER }

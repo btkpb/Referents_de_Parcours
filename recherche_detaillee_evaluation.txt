@@ -1,0 +1,194 @@
+﻿
+
+Terme   : scoreMotivation
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreMotivation
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreProjet
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreProjet
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreTechnique
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreTechnique
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreCommunication
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreCommunication
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreSocial
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreSocial
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreMobilite
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreMobilite
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreFinances
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreFinances
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreLogement
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreLogement
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : scoreSante
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : scoreSante
+Fichier : migrations\Version20261002122638.php
+Ligne   : 31
+Code    : $this->addSql('CREATE TABLE Evaluation (id INT AUTO_INCREMENT NOT NULL, scoreMotivation DOUBLE PRECISION NOT NULL, scoreProjet DOUBLE PRECISION NOT NULL, scoreTechnique DOUBLE PRECISION NOT NULL, scoreCommunication DOUBLE PRECISION NOT NULL, scoreSocial DOUBLE PRECISION NOT NULL, 
+          scoreMobilite DOUBLE PRECISION NOT NULL, scoreFinances DOUBLE PRECISION NOT NULL, scoreLogement DOUBLE PRECISION NOT NULL, scoreSante DOUBLE PRECISION NOT NULL, decision VARCHAR(20) NOT NULL, observations LONGTEXT DEFAULT NULL, entretien_id INT DEFAULT NULL, UNIQUE INDEX 
+          UNIQ_5C7EA6A5548DCEA2 (entretien_id), PRIMARY KEY (id)) DEFAULT CHARACTER SET utf8mb4');
+
+Terme   : setScores
+Fichier : src\Controller\RecruitmentController.php
+Ligne   : 8
+Code    : class RecruitmentController extends AbstractController { #[Route('/recrutement/entretiens',name:'recruitment_interviews')] public function interviews(EntityManagerInterface $em):Response{return 
+          $this->render('recrutement/entretiens.html.twig',['items'=>$em->getRepository(Entretien::class)->findBy([],['dateHeure'=>'ASC'])]);} #[Route('/recrutement/entretiens/{id}/evaluation',name:'recruitment_eval',methods:['GET','POST'])] public function eval(Entretien $e,Request 
+          $r,EntityManagerInterface $em):Response{$ev=$em->getRepository(Evaluation::class)->findOneBy(['entretien'=>$e])??new 
+          Evaluation();$ev->setEntretien($e);if($r->isMethod('POST')){$d=$r->request->all('evaluation');$ev->setScores($d);$ev->setDecision(($ev->total()>=24)?'APTE':'INAPTE');$em->persist($ev);$em->flush();$this->addFlash('success','Évaluation enregistrée.');return 
+          $this->redirectToRoute('recruitment_interviews');}return $this->render('recrutement/evaluation.html.twig',['entretien'=>$e,'evaluation'=>$ev]);} }
+
+Terme   : setScores
+Fichier : src\Entity\Evaluation.php
+Ligne   : 5
+Code    : class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] 
+          private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] 
+          private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien 
+          $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function 
+          getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public 
+          function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+Terme   : recruitment_eval
+Fichier : src\Controller\RecruitmentController.php
+Ligne   : 8
+Code    : class RecruitmentController extends AbstractController { #[Route('/recrutement/entretiens',name:'recruitment_interviews')] public function interviews(EntityManagerInterface $em):Response{return 
+          $this->render('recrutement/entretiens.html.twig',['items'=>$em->getRepository(Entretien::class)->findBy([],['dateHeure'=>'ASC'])]);} #[Route('/recrutement/entretiens/{id}/evaluation',name:'recruitment_eval',methods:['GET','POST'])] public function eval(Entretien $e,Request 
+          $r,EntityManagerInterface $em):Response{$ev=$em->getRepository(Evaluation::class)->findOneBy(['entretien'=>$e])??new 
+          Evaluation();$ev->setEntretien($e);if($r->isMethod('POST')){$d=$r->request->all('evaluation');$ev->setScores($d);$ev->setDecision(($ev->total()>=24)?'APTE':'INAPTE');$em->persist($ev);$em->flush();$this->addFlash('success','Évaluation enregistrée.');return 
+          $this->redirectToRoute('recruitment_interviews');}return $this->render('recrutement/evaluation.html.twig',['entretien'=>$e,'evaluation'=>$ev]);} }
+
+Terme   : recruitment_eval
+Fichier : templates\recrutement\entretiens.html.twig
+Ligne   : 1
+Code    : {% extends 'base.html.twig' %}{% block body %}<h1>Entretiens physiques / Jury</h1><div class="card shadow-sm mt-3"><div class="table-responsive"><table class="table 
+          table-hover"><thead><tr><th>Candidat</th><th>Date</th><th>Lieu</th><th>Jury</th><th>Statut</th><th></th></tr></thead><tbody>{% for e in items %}<tr><td>{{e.candidat.nom}} {{e.candidat.prenoms}}</td><td>{{e.dateHeure?e.dateHeure|date('d/m/Y 
+          H:i'):''}}</td><td>{{e.lieu}}</td><td>{{e.nombreJury}}</td><td>{{e.statut}}</td><td><a class="btn btn-sm btn-primary" href="{{path('recruitment_eval',{id:e.id})}}">Évaluer</a></td></tr>{% else %}<tr><td colspan="6" class="text-center">Aucun entretien planifié.</td></tr>{% endfor 
+          %}</tbody></table></div></div>{% endblock %}
+
+
+
+

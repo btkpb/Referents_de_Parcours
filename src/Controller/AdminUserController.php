@@ -1,0 +1,489 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\User;
+use App\Entity\Candidat;
+use App\Entity\Admission;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[Route('/admin/utilisateurs', name: 'admin_users_')]
+#[IsGranted('ROLE_ADMINISTRATEUR')]
+class AdminUserController extends AbstractController
+{
+    private const PROFILES = [
+        'gestionnaire' => 'ROLE_GESTIONNAIRE',
+        'jury' => 'ROLE_JURY',
+        'referent' => 'ROLE_REFERENT_PARCOURS',
+        'medical' => 'ROLE_MEDICAL',
+        'formateur' => 'ROLE_FORMATEUR',
+        'apprenti' => 'ROLE_APPRENTI',
+        'maitre_stage' => 'ROLE_MAITRE_STAGE',
+        'administrateur' => 'ROLE_ADMINISTRATEUR',
+        'super_admin' => 'ROLE_SUPER_ADMIN',
+    ];
+
+    private const LABELS = [
+        'gestionnaire' => 'Gestionnaire',
+        'jury' => 'Membre du jury',
+        'referent' => 'Référent de parcours',
+        'medical' => 'Personnel médical',
+        'formateur' => 'Formateur',
+        'apprenti' => 'Apprenti',
+        'maitre_stage' => 'Maître de stage',
+        'administrateur' => 'Administrateur',
+        'super_admin' => 'Super administrateur',
+    ];
+
+    private function profilesAutorises(): array
+    {
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            return self::LABELS;
+        }
+
+        return array_intersect_key(self::LABELS, array_flip([
+            'gestionnaire', 'jury', 'referent', 'medical',
+            'formateur', 'apprenti', 'maitre_stage',
+        ]));
+    }
+
+    private function verifierGestionCible(User $cible): void
+    {
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            return;
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $cible->getRoles(), true)
+            || in_array('ROLE_ADMINISTRATEUR', $cible->getRoles(), true)
+) {
+            throw $this->createAccessDeniedException(
+                'Seul le super administrateur peut gérer ce compte.'
+            );
+        }
+    }
+
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em, Request $request): Response
+    {
+        $recherche = trim((string) $request->query->get('q', ''));
+        $utilisateurs = $em->getRepository(User::class)->findBy([], ['nom' => 'ASC']);
+
+        if ($recherche !== '') {
+            $terme = mb_strtolower($recherche);
+            $utilisateurs = array_values(array_filter(
+                $utilisateurs,
+                static fn (User $u): bool =>
+                    str_contains(mb_strtolower($u->getNom()), $terme)
+                    || str_contains(mb_strtolower($u->getPrenoms()), $terme)
+                    || str_contains(mb_strtolower($u->getEmail()), $terme)
+                    || str_contains(mb_strtolower($u->getProfil()), $terme)
+            ));
+        }
+
+        return $this->render('admin_user/index.html.twig', [
+            'utilisateurs' => $utilisateurs,
+            'recherche' => $recherche,
+            'superAdmin' => $this->isGranted('ROLE_SUPER_ADMIN'),
+        ]);
+    }
+
+    #[Route('/demandes', name: 'demandes', methods: ['GET'])]
+    public function demandes(EntityManagerInterface $em): Response
+    {
+        $demandes = $em->getRepository(User::class)->findBy(
+            ['profil' => 'demandeur', 'active' => false],
+            ['id' => 'DESC']
+        );
+
+        return $this->render('admin_user/demandes.html.twig', [
+            'demandes' => $demandes,
+            'profils' => $this->profilesAutorises(),
+            'candidats' => $this->candidatsDisponibles($em),
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/approuver', name: 'approve', methods: ['POST'])]
+    public function approuver(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->verifierGestionCible($user);
+
+        if (!$this->isCsrfTokenValid(
+            'approve_user_'.$user->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Jeton de sécurité invalide.');
+        }
+
+        if ($user->getProfil() !== 'demandeur' || $user->isActive()) {
+            $this->addFlash('danger', 'Cette demande a déjà été traitée ou ne peut pas être approuvée.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $profil = (string) $request->request->get('profil', '');
+
+        if (!array_key_exists($profil, $this->profilesAutorises())) {
+            $this->addFlash('danger', 'Profil non autorisé.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $candidat = null;
+
+        if ($profil === 'apprenti') {
+            $candidatId = trim((string) $request->request->get('candidat_id', ''));
+
+            if ($candidatId === '' || !ctype_digit($candidatId)) {
+                $this->addFlash('danger', 'Sélectionnez un candidat valide pour ce compte apprenti.');
+                return $this->redirectToRoute('admin_users_demandes');
+            }
+
+            $candidat = $em->getRepository(Candidat::class)->find((int) $candidatId);
+
+            if (!$candidat || !$this->candidatEstDisponible($em, $candidat, $user)) {
+                $this->addFlash('danger', 'Le candidat est introuvable ou déjà associé à un autre compte.');
+                return $this->redirectToRoute('admin_users_demandes');
+            }
+        }
+
+        $user
+            ->setProfil($profil)
+            ->setRoles([self::PROFILES[$profil]])
+            ->setCandidat($candidat)
+            ->setActive(true);
+
+        $em->flush();
+
+        $this->addFlash('success', 'Le compte a été approuvé et activé avec le profil '.$this->profilesAutorises()[$profil].'.');
+
+        return $this->redirectToRoute('admin_users_demandes');
+    }
+
+    #[Route('/{id<\d+>}/refuser', name: 'refuse', methods: ['POST'])]
+    public function refuser(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->verifierGestionCible($user);
+
+        if (!$this->isCsrfTokenValid(
+            'refuse_user_'.$user->getId(),
+            (string) $request->request->get('_token')
+        )) {
+            throw $this->createAccessDeniedException('Jeton de sécurité invalide.');
+        }
+
+        if ($user->getProfil() !== 'demandeur' || $user->isActive()) {
+            $this->addFlash('danger', 'Cette demande a déjà été traitée ou ne peut pas être refusée.');
+            return $this->redirectToRoute('admin_users_demandes');
+        }
+
+        $user
+            ->setProfil('refuse')
+            ->setRoles([])
+            ->setCandidat(null)
+            ->setActive(false);
+
+        $em->flush();
+
+        $this->addFlash('success', 'La demande a été refusée. Le compte est conservé et reste désactivé.');
+
+        return $this->redirectToRoute('admin_users_demandes');
+    }
+    #[Route('/nouveau', name: 'new', methods: ['GET', 'POST'])]
+    public function nouveau(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $user = new User();
+        $erreurs = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('user_create', (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Jeton de sécurité invalide.');
+            }
+
+            $email = mb_strtolower(trim((string) $request->request->get('email', '')));
+            $nom = trim((string) $request->request->get('nom', ''));
+            $prenoms = trim((string) $request->request->get('prenoms', ''));
+            $profil = (string) $request->request->get('profil', '');
+            $password = (string) $request->request->get('password', '');
+            $confirmation = (string) $request->request->get('confirmation_password', '');
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $erreurs[] = 'Adresse e-mail invalide.';
+            } elseif ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
+                $erreurs[] = 'Cette adresse e-mail est dÃ©jÃ  utilisÃ©e.';
+            }
+
+            if ($nom === '' || $prenoms === '') {
+                $erreurs[] = 'Le nom et les prénoms sont obligatoires.';
+            }
+
+            if (!array_key_exists($profil, $this->profilesAutorises())) {
+                $erreurs[] = 'Vous ne pouvez pas attribuer ce profil.';
+            }
+
+            if (strlen($password) < 12) {
+                $erreurs[] = 'Le mot de passe doit contenir au moins 12 caractÃ¨res.';
+            }
+            if ($password !== $confirmation) {
+                $erreurs[] = 'Les deux mots de passe ne sont pas identiques.';
+            }
+
+                        $candidatIdBrut = trim((string) $request->request->get('candidat_id', ''));
+                        $candidatChoisi = null;
+            
+                        if ($profil === 'apprenti') {
+                            if ($candidatIdBrut === '') {
+                                $erreurs[] = 'Sélectionnez le candidat associé au compte apprenti.';
+                            } elseif (!ctype_digit($candidatIdBrut) || (int) $candidatIdBrut < 1) {
+                                $erreurs[] = 'Le candidat sélectionné est invalide.';
+                            } else {
+                                $candidatChoisi = $em->getRepository(Candidat::class)->find((int) $candidatIdBrut);
+            
+                                if (!$candidatChoisi) {
+                                    $erreurs[] = 'Le candidat sélectionné est introuvable.';
+                                } elseif (!$this->candidatEstDisponible($em, $candidatChoisi, $user)) {
+                                    $erreurs[] = 'Ce candidat est déjà associé à un autre compte.';
+                                    $candidatChoisi = null;
+                                }
+                            }
+                        }
+            
+                        $user->setCandidat($profil === 'apprenti' ? $candidatChoisi : null);
+                        if (!$erreurs) {
+                $user->setEmail($email);
+                $user->setNom($nom);
+                $user->setPrenoms($prenoms);
+                $user->setProfil($profil);
+                $user->setRoles([self::PROFILES[$profil]]);
+                $user->setActive(true);
+                $user->setPassword($hasher->hashPassword($user, $password));
+
+                $em->persist($user);
+                $em->flush();
+
+                $this->addFlash('success', 'Le compte utilisateur a été créé.');
+                return $this->redirectToRoute('admin_users_index');
+            }
+
+            $user->setEmail($email);
+            $user->setNom($nom);
+            $user->setPrenoms($prenoms);
+            $user->setProfil($profil);
+        }
+
+        return $this->render('admin_user/form.html.twig', [
+            'utilisateur' => $user,
+            'profils' => $this->profilesAutorises(),
+            'erreurs' => $erreurs,
+            'candidats' => $this->candidatsDisponibles($em, $user),
+            'edition' => false,
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/modifier', name: 'edit', methods: ['GET', 'POST'])]
+    public function modifier(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $this->verifierGestionCible($user);
+        $erreurs = [];
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('user_edit_'.$user->getId(), (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Jeton de sécurité invalide.');
+            }
+
+            $email = mb_strtolower(trim((string) $request->request->get('email', '')));
+            $nom = trim((string) $request->request->get('nom', ''));
+            $prenoms = trim((string) $request->request->get('prenoms', ''));
+            $profil = (string) $request->request->get('profil', '');
+            $password = (string) $request->request->get('password', '');
+            $confirmation = (string) $request->request->get('confirmation_password', '');
+
+            $doublon = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $erreurs[] = 'Adresse e-mail invalide.';
+            } elseif ($doublon && $doublon->getId() !== $user->getId()) {
+                $erreurs[] = 'Cette adresse e-mail est dÃ©jÃ  utilisÃ©e.';
+            }
+
+            if ($nom === '' || $prenoms === '') {
+                $erreurs[] = 'Le nom et les prénoms sont obligatoires.';
+            }
+
+            if (!array_key_exists($profil, $this->profilesAutorises())) {
+                $erreurs[] = 'Vous ne pouvez pas attribuer ce profil.';
+            }
+
+            if ($password !== '' && strlen($password) < 12) {
+                $erreurs[] = 'Le nouveau mot de passe doit contenir au moins 12 caractÃ¨res.';
+            }
+            if ($password !== $confirmation) {
+                $erreurs[] = 'Les deux mots de passe ne sont pas identiques.';
+            }
+
+                        $candidatIdBrut = trim((string) $request->request->get('candidat_id', ''));
+                        $candidatChoisi = null;
+            
+                        if ($profil === 'apprenti') {
+                            if ($candidatIdBrut === '') {
+                                $erreurs[] = 'Sélectionnez le candidat associé au compte apprenti.';
+                            } elseif (!ctype_digit($candidatIdBrut) || (int) $candidatIdBrut < 1) {
+                                $erreurs[] = 'Le candidat sélectionné est invalide.';
+                            } else {
+                                $candidatChoisi = $em->getRepository(Candidat::class)->find((int) $candidatIdBrut);
+            
+                                if (!$candidatChoisi) {
+                                    $erreurs[] = 'Le candidat sélectionné est introuvable.';
+                                } elseif (!$this->candidatEstDisponible($em, $candidatChoisi, $user)) {
+                                    $erreurs[] = 'Ce candidat est déjà associé à un autre compte.';
+                                    $candidatChoisi = null;
+                                }
+                            }
+                        }
+            
+                        $user->setCandidat($profil === 'apprenti' ? $candidatChoisi : null);
+                        if (!$erreurs) {
+                $user->setEmail($email);
+                $user->setNom($nom);
+                $user->setPrenoms($prenoms);
+                $user->setProfil($profil);
+                $user->setRoles([self::PROFILES[$profil]]);
+
+                if ($password !== '') {
+                    $user->setPassword($hasher->hashPassword($user, $password));
+                }
+
+                $em->flush();
+                $this->addFlash('success', 'Le compte utilisateur a été modifié.');
+
+                return $this->redirectToRoute('admin_users_index');
+            }
+
+            $user->setEmail($email);
+            $user->setNom($nom);
+            $user->setPrenoms($prenoms);
+            $user->setProfil($profil);
+        }
+
+        return $this->render('admin_user/form.html.twig', [
+            'utilisateur' => $user,
+            'profils' => $this->profilesAutorises(),
+            'erreurs' => $erreurs,
+            'candidats' => $this->candidatsDisponibles($em, $user),
+            'edition' => true,
+        ]);
+    }
+
+    #[Route('/{id<\d+>}/statut', name: 'status', methods: ['POST'])]
+    public function statut(
+        User $user,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->verifierGestionCible($user);
+
+        if (!$this->isCsrfTokenValid('user_status_'.$user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de sécurité invalide.');
+        }
+
+        if ($this->getUser() instanceof User
+            && $this->getUser()->getId() === $user->getId()
+            && $user->isActive()) {
+            $this->addFlash('danger', 'Vous ne pouvez pas désactiver votre propre compte.');
+            return $this->redirectToRoute('admin_users_index');
+        }
+
+        if ($user->isActive() && in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)) {
+            $superAdminsActifs = array_filter(
+                $em->getRepository(User::class)->findAll(),
+                static fn (User $u): bool =>
+                    $u->isActive() && in_array('ROLE_SUPER_ADMIN', $u->getRoles(), true)
+            );
+
+            if (count($superAdminsActifs) <= 1) {
+                $this->addFlash('danger', 'Impossible de désactiver le dernier super administrateur actif.');
+                return $this->redirectToRoute('admin_users_index');
+            }
+        }
+
+        $user->setActive(!$user->isActive());
+        $em->flush();
+
+        $this->addFlash('success', 'Le statut du compte a été mis à jour.');
+        return $this->redirectToRoute('admin_users_index');
+    }
+
+    /**
+     * Vérifie qu'un candidat n'est pas déjà lié à un autre compte utilisateur.
+     */
+    /**
+     * Vérifie qu'un candidat est admis et n'est pas déjà lié à un autre compte.
+     */
+    private function candidatEstDisponible(
+        EntityManagerInterface $em,
+        Candidat $candidat,
+        ?User $utilisateur = null
+    ): bool {
+        $admission = $em->getRepository(Admission::class)->findOneBy([
+            'candidat' => $candidat,
+            'decision' => 'ADMIS',
+        ]);
+
+        if ($admission === null) {
+            return false;
+        }
+
+        foreach ($em->getRepository(User::class)->findAll() as $compte) {
+            if ($utilisateur !== null && $compte->getId() === $utilisateur->getId()) {
+                continue;
+            }
+
+            $candidatLie = $compte->getCandidat();
+
+            if ($candidatLie !== null && $candidatLie->getId() === $candidat->getId()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Liste uniquement les candidats admis et non liés à un autre compte.
+     */
+    private function candidatsDisponibles(
+        EntityManagerInterface $em,
+        ?User $utilisateur = null
+    ): array {
+        $candidats = $em->getRepository(Candidat::class)->findAll();
+
+        $candidats = array_values(array_filter(
+            $candidats,
+            fn (Candidat $candidat): bool =>
+                $this->candidatEstDisponible($em, $candidat, $utilisateur)
+        ));
+
+        usort(
+            $candidats,
+            fn (Candidat $a, Candidat $b): int => strcmp($a->getNumero(), $b->getNumero())
+        );
+
+        return $candidats;
+    }
+}

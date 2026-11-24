@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/styles/login.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="login-shell reset-shell">
+
+    <section class="login-presentation">
+
+        <div class="login-brand">
+            <img src="{{ asset('images/logo DAIP.png') }}"
+                 alt="Logo DAIP" class="login-logo">
+            <div>
+                <span class="brand-small">RÉPUBLIQUE DE CÔTE D'IVOIRE</span>
+                <strong>DAIP · E2C</strong>
+                <span class="brand-subtitle">Formation et insertion professionnelle</span>
+            </div>
+        </div>
+
+        <div class="presentation-content">
+            <span class="presentation-tag">ASSISTANCE ET SÉCURITÉ</span>
+
+            <h1>
+                Une étape de plus.
+                <span>Votre compte est protégé.</span>
+            </h1>
+
+            <p class="presentation-description">
+                La procédure de récupération de votre compte
+                a été prise en compte. Consultez votre messagerie
+                pour poursuivre les étapes.
+            </p>
+
+            <div class="presentation-features">
+                <div class="feature-item">
+                    <span class="feature-number">01</span>
+                    <div>
+                        <strong>Consultez votre messagerie</strong>
+                        <small>Vérifiez votre boîte de réception.</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-number">02</span>
+                    <div>
+                        <strong>Ouvrez le lien sécurisé</strong>
+                        <small>Utilisez le lien reçu pour continuer.</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-number">03</span>
+                    <div>
+                        <strong>Choisissez votre mot de passe</strong>
+                        <small>Retrouvez l'accès à votre espace personnel.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="presentation-footer">
+            <span>CONFIDENTIALITÉ</span>
+            <span class="footer-dot"></span>
+            <span>SÉCURITÉ</span>
+            <span class="footer-dot"></span>
+            <span>FIABILITÉ</span>
+        </div>
+
+    </section>
+
+    <section class="login-form-section">
+
+        <div class="login-form-container reset-confirmation">
+
+            <div class="reset-success-icon">
+                <span>✓</span>
+            </div>
+
+            <div class="form-heading">
+                <span class="form-eyebrow">DEMANDE TRAITÉE</span>
+                <h2>Vérifiez votre messagerie</h2>
+                <p>
+                    Votre demande de réinitialisation a été prise en compte.
+                </p>
+            </div>
+
+            <div class="reset-information">
+                <span class="reset-information-icon">i</span>
+                <p>
+                    Si un compte correspondant à l'adresse renseignée
+                    existe et est actif, un courriel contenant un lien
+                    de réinitialisation lui a été envoyé.
+                </p>
+            </div>
+
+            <div class="reset-alert reset-alert-info">
+                <strong>Information importante</strong>
+                <p>
+                    Le lien est valable pendant 30 minutes.
+                    Pensez également à vérifier vos courriers indésirables.
+                </p>
+            </div>
+
+            <div class="reset-actions">
+                <a href="{{ path('app_forgot_password_request') }}"
+                   class="login-submit reset-submit">
+                    <span>Demander un nouveau lien</span>
+                    <span class="submit-arrow">→</span>
+                </a>
+
+                <a href="{{ path('app_login') }}"
+                   class="reset-secondary-link">
+                    ← Retour à la connexion
+                </a>
+            </div>
+
+            <div class="login-security-note">
+                <span class="security-icon">✓</span>
+                <span>Votre sécurité est notre priorité.</span>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

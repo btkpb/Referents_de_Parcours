@@ -1,0 +1,1005 @@
+﻿=== LISTE DES ENTITES ===
+Admission.php
+AffectationChantier.php
+Campagne.php
+Candidat.php
+Chantier.php
+DocumentApprenti.php
+Emploi.php
+Entretien.php
+EntretienParcours.php
+Evaluation.php
+MetierCatalogue.php
+QuotaMetier.php
+ResetPasswordRequest.php
+User.php
+VisiteMedicale.php
+
+=== RELATIONS ENTRE ENTITES ===
+
+src\Entity\Admission.php:11:class Admission
+src\Entity\Admission.php:18:    #[ORM\OneToOne]
+src\Entity\Admission.php:48:    #[ORM\ManyToOne(targetEntity: User::class)]
+src\Entity\Admission.php:49:    #[ORM\JoinColumn(name: 'arbitre_id', 
+referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+src\Entity\AffectationChantier.php:5:class AffectationChantier { 
+#[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] 
+private ?Candidat $candidat=null; #[ORM\ManyToOne] private ?Chantier 
+$chantier=null; #[ORM\Column(type:'date')] private ?\DateTimeInterface 
+$dateDebut=null; #[ORM\Column(type:'date',nullable:true)] private 
+?\DateTimeInterface $dateFin=null; #[ORM\Column(length:30)] private string 
+$statut='EN_COURS'; public function getId():?int{return $this->id;} public 
+function getCandidat():?Candidat{return $this->candidat;} public function 
+setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function 
+getChantier():?Chantier{return $this->chantier;} public function 
+setChantier(?Chantier $v):self{$this->chantier=$v;return $this;} public function 
+getDateDebut():?\DateTimeInterface{return $this->dateDebut;} public function 
+setDateDebut(?\DateTimeInterface $v):self{$this->dateDebut=$v;return $this;} 
+public function getDateFin():?\DateTimeInterface{return $this->dateFin;} public 
+function setDateFin(?\DateTimeInterface $v):self{$this->dateFin=$v;return $this;} 
+public function getStatut():string{return $this->statut;} public function 
+setStatut(string $v):self{$this->statut=$v;return $this;} }
+src\Entity\Campagne.php:9:class Campagne
+src\Entity\Candidat.php:12:class Candidat
+src\Entity\Candidat.php:94:    #[ORM\ManyToOne]
+src\Entity\Chantier.php:5:class Chantier { 
+#[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; 
+#[ORM\Column(length:160)] private string $nom=''; #[ORM\Column(length:180)] 
+private string $localisation=''; #[ORM\Column(length:160,nullable:true)] private 
+?string $entreprise=null; #[ORM\Column(length:40)] private string 
+$statut='ACTIF'; public function getId():?int{return $this->id;} public function 
+getNom():string{return $this->nom;} public function setNom(string 
+$v):self{$this->nom=$v;return $this;} public function 
+getLocalisation():string{return $this->localisation;} public function 
+setLocalisation(string $v):self{$this->localisation=$v;return $this;} public 
+function getEntreprise():?string{return $this->entreprise;} public function 
+setEntreprise(?string $v):self{$this->entreprise=$v;return $this;} public 
+function getStatut():string{return $this->statut;} public function 
+setStatut(string $v):self{$this->statut=$v;return $this;} }
+src\Entity\DocumentApprenti.php:17:class DocumentApprenti
+src\Entity\DocumentApprenti.php:24:    #[ORM\ManyToOne(targetEntity: 
+Candidat::class)]
+src\Entity\DocumentApprenti.php:25:    #[ORM\JoinColumn(name: 'candidat_id', 
+nullable: false, onDelete: 'CASCADE')]
+src\Entity\Emploi.php:5:class Emploi { #[ORM\Id,ORM\GeneratedValue,ORM\Column] 
+private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; 
+#[ORM\Column(type:'date',nullable:true)] private ?\DateTimeInterface 
+$dateInsertion=null; #[ORM\Column(length:180,nullable:true)] private ?string 
+$employeur=null; #[ORM\Column(length:120,nullable:true)] private ?string 
+$poste=null; #[ORM\Column(length:30)] private string $statut='EN_RECHERCHE'; 
+#[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; 
+public function getId():?int{return $this->id;} public function 
+getCandidat():?Candidat{return $this->candidat;} public function 
+setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function 
+getDateInsertion():?\DateTimeInterface{return $this->dateInsertion;} public 
+function setDateInsertion(?\DateTimeInterface 
+$v):self{$this->dateInsertion=$v;return $this;} public function 
+getEmployeur():?string{return $this->employeur;} public function 
+setEmployeur(?string $v):self{$this->employeur=$v;return $this;} public function 
+getPoste():?string{return $this->poste;} public function setPoste(?string 
+$v):self{$this->poste=$v;return $this;} public function getStatut():string{return 
+$this->statut;} public function setStatut(string $v):self{$this->statut=$v;return 
+$this;} public function getObservations():?string{return $this->observations;} 
+public function setObservations(?string $v):self{$this->observations=$v;return 
+$this;} }
+src\Entity\Entretien.php:12:class Entretien
+src\Entity\Entretien.php:19:    #[ORM\ManyToOne]
+src\Entity\Entretien.php:40:    #[ORM\ManyToMany(targetEntity: User::class)]
+src\Entity\Entretien.php:43:        joinColumns: [
+src\Entity\Entretien.php:44:            new ORM\JoinColumn(
+src\Entity\Entretien.php:50:        inverseJoinColumns: [
+src\Entity\Entretien.php:51:            new ORM\JoinColumn(
+src\Entity\EntretienParcours.php:10:class EntretienParcours
+src\Entity\EntretienParcours.php:15:    #[ORM\ManyToOne]
+src\Entity\EntretienParcours.php:16:    #[ORM\JoinColumn(nullable: true)]
+src\Entity\Evaluation.php:15:class Evaluation
+src\Entity\Evaluation.php:34:    #[ORM\ManyToOne(targetEntity: Entretien::class)]
+src\Entity\Evaluation.php:35:    #[ORM\JoinColumn(nullable: false, onDelete: 
+'CASCADE')]
+src\Entity\Evaluation.php:38:    #[ORM\ManyToOne(targetEntity: User::class)]
+src\Entity\Evaluation.php:39:    #[ORM\JoinColumn(name: 'jury_id', 
+referencedColumnName: 'id', nullable: false, onDelete: 'RESTRICT')]
+src\Entity\MetierCatalogue.php:23:class MetierCatalogue
+src\Entity\QuotaMetier.php:13:class QuotaMetier
+src\Entity\QuotaMetier.php:20:    #[ORM\ManyToOne(targetEntity: Campagne::class)]
+src\Entity\QuotaMetier.php:21:    #[ORM\JoinColumn(nullable: false, onDelete: 
+'CASCADE')]
+src\Entity\QuotaMetier.php:24:    #[ORM\ManyToOne(targetEntity: 
+MetierCatalogue::class)]
+src\Entity\QuotaMetier.php:25:    #[ORM\JoinColumn(nullable: false, onDelete: 
+'RESTRICT')]
+src\Entity\ResetPasswordRequest.php:11:class ResetPasswordRequest implements 
+ResetPasswordRequestInterface
+src\Entity\ResetPasswordRequest.php:20:    #[ORM\ManyToOne]
+src\Entity\ResetPasswordRequest.php:21:    #[ORM\JoinColumn(nullable: false)]
+src\Entity\User.php:11:class User implements UserInterface, 
+PasswordAuthenticatedUserInterface
+src\Entity\User.php:45:    #[ORM\OneToOne(targetEntity: Candidat::class)]
+src\Entity\User.php:46:    #[ORM\JoinColumn(
+src\Entity\VisiteMedicale.php:5:class VisiteMedicale { 
+#[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] 
+private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private 
+?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string 
+$centre=''; #[ORM\Column(length:20)] private string $aptitude='EN_ATTENTE'; 
+#[ORM\Column(length:255,nullable:true)] private ?string $certificat=null; 
+#[ORM\Column(length:255,nullable:true)] private ?string $photo=null; 
+#[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; 
+public function getId():?int{return $this->id;} public function 
+getCandidat():?Candidat{return $this->candidat;} public function 
+setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function 
+getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function 
+setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} 
+public function getCentre():string{return $this->centre;} public function 
+setCentre(string $v):self{$this->centre=$v;return $this;} public function 
+getAptitude():string{return $this->aptitude;} public function setAptitude(string 
+$v):self{$this->aptitude=$v;return $this;} public function setCertificat(?string 
+$v):self{$this->certificat=$v;return $this;} public function 
+getCertificat():?string{return $this->certificat;} public function 
+setPhoto(?string $v):self{$this->photo=$v;return $this;} public function 
+getPhoto():?string{return $this->photo;} public function setObservations(?string 
+$v):self{$this->observations=$v;return $this;} public function 
+getObservations():?string{return $this->observations;} }
+
+
+
+=== ROUTES DES CONTROLEURS ===
+
+src\Controller\AdminUserController.php:15:#[Route('/admin/utilisateurs', name: 
+'admin_users_')]
+src\Controller\AdminUserController.php:22:        'referent' => 'ROLE_REFERENT',
+src\Controller\AdminUserController.php:24:        'formateur' => 'ROLE_FORMATEUR',
+src\Controller\AdminUserController.php:25:        'apprenti' => 'ROLE_APPRENTI',
+src\Controller\AdminUserController.php:68:    #[Route('', name: 'index', methods: 
+['GET'])]
+src\Controller\AdminUserController.php:93:    #[Route('/demandes', name: 
+'demandes', methods: ['GET'])]
+src\Controller\AdminUserController.php:108:    #[Route('/{id<\d+>}/approuver', 
+name: 'approve', methods: ['POST'])]
+src\Controller\AdminUserController.php:164:    #[Route('/{id<\d+>}/refuser', 
+name: 'refuse', methods: ['POST'])]
+src\Controller\AdminUserController.php:194:    #[Route('/nouveau', name: 'new', 
+methods: ['GET', 'POST'])]
+src\Controller\AdminUserController.php:288:    #[Route('/{id<\d+>}/modifier', 
+name: 'edit', methods: ['GET', 'POST'])]
+src\Controller\AdminUserController.php:386:    #[Route('/{id<\d+>}/statut', name: 
+'status', methods: ['POST'])]
+src\Controller\AdmissionController.php:22:    #[Route('/recrutement/admissions', 
+name: 'recruitment_admissions', methods: ['GET'])]
+src\Controller\AdmissionController.php:73:    #[Route(
+src\Controller\AnnuaireController.php:17:    #[Route('/annuaire', name: 
+'annuaire', methods: ['GET'])]
+src\Controller\CampagneAdminController.php:13:#[Route('/admin/campagnes', name: 
+'admin_campagnes_')]
+src\Controller\CampagneAdminController.php:21:    #[Route('', name: 'index', 
+methods: ['GET'])]
+src\Controller\CampagneAdminController.php:114:    #[Route('/nouvelle', name: 
+'new', methods: ['GET', 'POST'])]
+src\Controller\CampagneAdminController.php:122:    #[Route('/{id}/modifier', 
+name: 'edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+src\Controller\CampagneAdminController.php:271:    #[Route('/{id}/activer', name: 
+'activate', requirements: ['id' => '\d+'], methods: ['POST'])]
+src\Controller\CampagneAdminController.php:302:    #[Route('/{id}/cloturer', 
+name: 'close', requirements: ['id' => '\d+'], methods: ['POST'])]
+src\Controller\CampagneAdminController.php:330:    #[Route('/{id}/quotas', name: 
+'quotas', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+src\Controller\CandidatController.php:30:    #[Route('/candidats', name: 
+'candidat_index', methods: ['GET'])]
+src\Controller\CandidatController.php:110:    #[Route('/candidats/{id}', name: 
+'candidat_show', methods: ['GET'])]
+src\Controller\CandidatController.php:115:            && 
+!$this->isGranted('ROLE_REFERENT')
+src\Controller\CandidatController.php:116:            && 
+!$this->isGranted('ROLE_REFERENT_PARCOURS')
+src\Controller\CandidatController.php:117:            && 
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\CandidatController.php:157:    #[Route(
+src\Controller\CandidatController.php:271:    #[Route(
+src\Controller\CandidatController.php:313:    #[Route(
+src\Controller\CandidatController.php:381:    #[Route(
+src\Controller\CandidatController.php:392:            && 
+!$this->isGranted('ROLE_REFERENT')
+src\Controller\CandidatController.php:393:            && 
+!$this->isGranted('ROLE_REFERENT_PARCOURS')
+src\Controller\CandidatController.php:394:            && 
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\CandidatController.php:395:            && 
+!$this->isGranted('ROLE_APPRENTI')
+src\Controller\CandidatController.php:446:    #[Route(
+src\Controller\CatalogueAdminController.php:14:#[Route('/admin/catalogue', name: 
+'admin_catalogue_')]
+src\Controller\CatalogueAdminController.php:17:    #[Route('', name: 'index', 
+methods: ['GET'])]
+src\Controller\CatalogueAdminController.php:36:    
+#[Route('/etablissements/nouveau', name: 'etablissement_new', methods: ['GET', 
+'POST'])]
+src\Controller\CatalogueAdminController.php:44:    
+#[Route('/etablissements/{id}/modifier', name: 'etablissement_edit', 
+requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+src\Controller\CatalogueAdminController.php:128:    
+#[Route('/etablissements/{id}/supprimer', name: 'etablissement_delete', 
+requirements: ['id' => '\d+'], methods: ['POST'])]
+src\Controller\CatalogueAdminController.php:156:    #[Route('/metiers/nouveau', 
+name: 'metier_new', methods: ['GET', 'POST'])]
+src\Controller\CatalogueAdminController.php:164:    
+#[Route('/metiers/{id}/modifier', name: 'metier_edit', requirements: ['id' => 
+'\d+'], methods: ['GET', 'POST'])]
+src\Controller\CatalogueAdminController.php:248:    
+#[Route('/metiers/{id}/supprimer', name: 'metier_delete', requirements: ['id' => 
+'\d+'], methods: ['POST'])]
+src\Controller\CatalogueController.php:16:    #[Route('/etablissements', name: 
+'app_etablissements_list', methods: ['GET'])]
+src\Controller\CatalogueController.php:22:    #[Route('/metiers', name: 
+'app_metiers_list', methods: ['GET'])]
+src\Controller\CatalogueController.php:28:    #[Route('/load-etablissements', 
+name: 'load_etablissements', methods: ['GET'])]
+src\Controller\CatalogueController.php:75:    #[Route('/load-metiers', name: 
+'load_metiers', methods: ['GET'])]
+src\Controller\DaipHomeController.php:17:    #[Route('/accueil', name: 
+'daip_accueil', methods: ['GET'])]
+src\Controller\DashboardController.php:17:    #[Route('/', name: 'dashboard')]
+src\Controller\EspaceApprentiController.php:18:#[Route('/espace-apprenti', name: 
+'apprenti_')]
+src\Controller\EspaceApprentiController.php:19:#[IsGranted('ROLE_APPRENTI')]
+src\Controller\EspaceApprentiController.php:38:    #[Route('', name: 'accueil', 
+methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:52:    #[Route('/profil', name: 
+'profil', methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:66:    #[Route('/rendez-vous', name: 
+'rendez_vous', methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:85:    #[Route('/parcours', name: 
+'parcours', methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:110:    #[Route('/evaluations', name: 
+'evaluations', methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:133:    #[Route('/accompagnement', 
+name: 'accompagnement', methods: ['GET'])]
+src\Controller\EspaceApprentiController.php:150:    #[Route('/notifications', 
+name: 'notifications', methods: ['GET'])]
+src\Controller\EvaluationApprentiController.php:30:            && 
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:31:            && 
+!$this->isGranted('ROLE_REFERENT')
+src\Controller\EvaluationApprentiController.php:41:            && 
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:66:        return 
+$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:70:    
+#[Route('/evaluations-apprentis', name: 'evaluation_apprenti_index', methods: 
+['GET'])]
+src\Controller\EvaluationApprentiController.php:88:        } elseif 
+($this->isGranted('ROLE_FORMATEUR')) {
+src\Controller\EvaluationApprentiController.php:110:                
+$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:122:            'peutCreer' => 
+$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:127:    
+#[Route('/evaluations-apprentis/nouvelle', name: 'evaluation_apprenti_new', 
+methods: ['GET', 'POST'])]
+src\Controller\EvaluationApprentiController.php:132:            
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:145:    
+#[Route('/evaluations-apprentis/{id}/modifier', name: 'evaluation_apprenti_edit', 
+requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+src\Controller\EvaluationApprentiController.php:150:            
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:353:    
+#[Route('/evaluations-apprentis/{id}/publier', name: 
+'evaluation_apprenti_publish', requirements: ['id' => '\d+'], methods: ['POST'])]
+src\Controller\EvaluationApprentiController.php:358:            
+!$this->isGranted('ROLE_FORMATEUR')
+src\Controller\EvaluationApprentiController.php:411:    
+#[Route('/espace-apprenti/evaluations-pedagogiques', name: 
+'apprenti_evaluations_pedagogiques', methods: ['GET'])]
+src\Controller\EvaluationApprentiController.php:414:        
+$this->denyAccessUnlessGranted('ROLE_APPRENTI');
+src\Controller\FollowupController.php:18:        'ROLE_GESTIONNAIRE', 
+'ROLE_REFERENT_PARCOURS', 'ROLE_REFERENT',
+src\Controller\FollowupController.php:19:        'ROLE_FORMATEUR',
+src\Controller\FollowupController.php:33:    #[Route('/suivi', name: 
+'followup_index', methods: ['GET'])]
+src\Controller\FollowupController.php:43:    #[Route('/suivi/nouveau', name: 
+'followup_new', methods: ['GET', 'POST'])]
+src\Controller\FollowupController.php:51:    #[Route('/suivi/{id}/modifier', 
+name: 'followup_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
+src\Controller\FollowupController.php:121:    #[Route('/suivi/repertoire', name: 
+'followup_directory', methods: ['GET'])]
+src\Controller\MedicalController.php:43:    #[Route('/medical', name: 
+'medical_index', methods: ['GET'])]
+src\Controller\MedicalController.php:119:    #[Route('/medical/nouvelle', name: 
+'medical_nouvelle', methods: ['POST'])]
+src\Controller\MedicalController.php:222:    #[Route(
+src\Controller\MedicalController.php:410:    #[Route(
+src\Controller\PublicAccountController.php:15:    #[Route('/creer-compte', name: 
+'public_compte_creer', methods: ['GET', 'POST'])]
+src\Controller\PublicController.php:20:    #[Route('/inscription', name: 
+'public_inscription', methods: ['GET', 'POST'])]
+src\Controller\PublicController.php:191:    #[Route(
+src\Controller\PublicController.php:222:    #[Route(
+src\Controller\RecruitmentController.php:21:    #[Route(
+src\Controller\RecruitmentController.php:265:    #[Route(
+src\Controller\RecruitmentController.php:408:    #[Route(
+src\Controller\ResetPasswordController.php:23:#[Route('/reset-password')]
+src\Controller\ResetPasswordController.php:34:    #[Route('', name: 
+'app_forgot_password_request')]
+src\Controller\ResetPasswordController.php:58:    #[Route('/check-email', name: 
+'app_check_email')]
+src\Controller\ResetPasswordController.php:70:    #[Route('/reset/{token}', name: 
+'app_reset_password')]
+src\Controller\SecurityController.php:7:class SecurityController extends 
+AbstractController { #[Route('/login',name:'app_login')] public function 
+login(AuthenticationUtils $a):Response{return $this->render('security/login.html.t
+wig',['last_username'=>$a->getLastUsername(),'error'=>$a->getLastAuthenticationErr
+or()]);} #[Route('/logout',name:'app_logout')] public function 
+logout():void{throw new \LogicException('Intercepted by firewall.');} }
+
+
+
+=== NAVIGATION PRINCIPALE ===
+{% if app.user %}
+<nav class="border-bottom bg-light" aria-label="Navigation selon le profil">
+    <div class="container-fluid px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+        <span class="small fw-bold text-secondary me-1">NAVIGATION</span>
+
+        <a class="btn btn-sm btn-outline-secondary" href="{{ path('dashboard') }}">Tableau de bord</a>
+
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_users_index') }}">Utilisateurs</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_GESTIONNAIRE') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('candidat_index') }}">Candidatures</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_catalogue_index') }}">Etablissements et metiers</a>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('recruitment_interviews') }}">Entretiens</a>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('medical_index') }}">Visites medicales</a>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Entretiens et suivis</a>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('annuaire') }}">Annuaire des apprentis</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('followup_index') }}">Suivi</a>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_profil') }}">Mon profil</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_rendez_vous') }}">Mes rendez-vous</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_parcours') }}">Mon parcours</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_evaluations') }}">Mes evaluations</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_accompagnement') }}">Mon accompagnement</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('apprenti_notifications') }}">Notifications</a>
+        {% endif %}
+
+        <a class="btn btn-sm btn-outline-dark ms-auto" href="{{ path('app_logout') }}">Deconnexion</a>
+    </div>
+</nav>
+{% endif %}
+
+=== ACCES RAPIDES ===
+{% if app.user %}
+{% set profilRapide = 'Espace utilisateur' %}
+
+{% if is_granted('ROLE_SUPER_ADMIN') %}
+    {% set profilRapide = 'Super administrateur' %}
+{% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+    {% set profilRapide = 'Administrateur' %}
+{% elseif is_granted('ROLE_ADMIN') %}
+    {% set profilRapide = 'Administrateur operationnel' %}
+{% elseif is_granted('ROLE_GESTIONNAIRE') %}
+    {% set profilRapide = 'Gestionnaire' %}
+{% elseif is_granted('ROLE_JURY') %}
+    {% set profilRapide = 'Membre du jury' %}
+{% elseif is_granted('ROLE_MEDICAL') %}
+    {% set profilRapide = 'Personnel medical' %}
+{% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+    {% set profilRapide = 'Referent de parcours' %}
+{% elseif is_granted('ROLE_FORMATEUR') %}
+    {% set profilRapide = 'Formateur / maitre de stage' %}
+{% elseif is_granted('ROLE_APPRENTI') %}
+    {% set profilRapide = 'Apprenti' %}
+{% endif %}
+
+<section class="container-fluid px-3 px-lg-4 mt-4 mb-4" id="acces-rapides-par-role">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Acces rapides</h2>
+            <p class="text-muted mb-0">Raccourcis adaptes a votre profil : {{ profilRapide }}.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% if is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_users_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Gestion des utilisateurs</h3>
+                        <p class="text-muted small mb-0">Comptes et habilitations autorisees.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Administrer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Consulter les dossiers de recrutement autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter le planning et les evaluations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les visites selon les habilitations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Acceder au module de suivi existant.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_ADMIN') or is_granted('ROLE_GESTIONNAIRE') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Rechercher et consulter un candidat.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter les entretiens planifies.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les dossiers medicaux autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les apprentis admis.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Gerer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes entretiens</h3>
+                        <p class="text-muted small mb-0">Acceder au module des entretiens.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Enregistrer et consulter les visites autorisees.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Retrouver les apprentis a accompagner.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens et suivis</h3>
+                        <p class="text-muted small mb-0">Renseigner les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Rechercher un apprenti.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis accessibles.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_profil') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon profil</h3>
+                        <p class="text-muted small mb-0">Consulter mes informations personnelles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_rendez_vous') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes rendez-vous</h3>
+                        <p class="text-muted small mb-0">Consulter mes prochains rendez-vous.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_parcours') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon parcours</h3>
+                        <p class="text-muted small mb-0">Suivre les etapes de mon parcours.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_evaluations') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes evaluations</h3>
+                        <p class="text-muted small mb-0">Consulter mes evaluations disponibles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_accompagnement') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon accompagnement</h3>
+                        <p class="text-muted small mb-0">Consulter les informations de suivi.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_notifications') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Notifications</h3>
+                        <p class="text-muted small mb-0">Lire mes notifications.</p>
+                    </div>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+=== TABLEAU DE BORD ===
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .e2c-dashboard {
+            --navy: #12345a;
+            --blue: #2563a6;
+            color: #26384d;
+        }
+
+        .e2c-dashboard .hero {
+            background: linear-gradient(120deg, #102b4e, #2563a6);
+            color: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(16,43,78,.15);
+        }
+
+        .e2c-dashboard .eyebrow {
+            font-size: .75rem;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            opacity: .8;
+            font-weight: 700;
+        }
+
+        .e2c-dashboard .hero h1 {
+            color: #ffffff !important;
+            font-weight: 800;
+            letter-spacing: -.03em;
+        }
+
+        .e2c-dashboard .switch-design {
+            display: inline-block;
+            padding: 11px 15px;
+            border: 1px solid rgba(255,255,255,.6);
+            border-radius: 10px;
+            color: white;
+            background: rgba(255,255,255,.12);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .e2c-dashboard .switch-design:hover {
+            background: white;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .section-title {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .e2c-dashboard .stat-card {
+            height: 100%;
+            padding: 21px;
+            background: white;
+            border: 1px solid #e6edf5;
+            border-radius: 16px;
+            box-shadow: 0 5px 18px rgba(25,50,80,.05);
+        }
+
+        .e2c-dashboard .stat-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            background: #eaf2fb;
+            color: #225b91;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .e2c-dashboard .stat-number {
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .stat-label {
+            font-size: .86rem;
+            color: #718096;
+        }
+
+        .e2c-dashboard .action-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            height: 100%;
+            padding: 15px;
+            border: 1px solid #e6edf5;
+            border-radius: 14px;
+            background: #fff;
+            color: #26384d;
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+        .e2c-dashboard .action-card:hover {
+            transform: translateY(-3px);
+            border-color: #8bb9e1;
+            background: #f7fbff;
+            box-shadow: 0 8px 20px rgba(25,50,80,.07);
+        }
+
+        .e2c-dashboard .action-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: grid;
+            place-items: center;
+            background: #edf4fc;
+            border-radius: 12px;
+            font-size: 1.15rem;
+        }
+
+        .e2c-dashboard .action-title {
+            display: block;
+            font-weight: 700;
+            font-size: .92rem;
+        }
+
+        .e2c-dashboard .action-description {
+            display: block;
+            margin-top: 3px;
+            color: #7b899b;
+            font-size: .77rem;
+        }
+
+        .e2c-dashboard .footer-note {
+            color: #8290a0;
+            font-size: .8rem;
+        }
+
+        @media(max-width: 576px) {
+            .e2c-dashboard .hero { padding: 22px; }
+            .e2c-dashboard .hero h1 {
+            color: #ffffff !important; font-size: 1.6rem; }
+        }
+
+        @media(prefers-reduced-motion: reduce) {
+            .e2c-dashboard * { transition: none !important; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{% set admin = is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_SUPER_ADMIN') %}
+{% set gestionnaire = is_granted('ROLE_GESTIONNAIRE') %}
+{% set jury = is_granted('ROLE_JURY') %}
+{% set referent = is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_REFERENT') %}
+{% set formateur = is_granted('ROLE_FORMATEUR') %}
+{% set medical = is_granted('ROLE_MEDICAL') %}
+{% set apprenti = is_granted('ROLE_APPRENTI') %}
+{% set responsable = admin or gestionnaire %}
+
+{% set roleLabel = 'Utilisateur' %}
+{% if admin %}
+    {% set roleLabel = 'Administrateur' %}
+{% elseif gestionnaire %}
+    {% set roleLabel = 'Gestionnaire' %}
+{% elseif jury %}
+    {% set roleLabel = 'Membre du jury' %}
+{% elseif referent %}
+    {% set roleLabel = 'RÃ©fÃ©rent de parcours' %}
+{% elseif formateur %}
+    {% set roleLabel = 'Formateur' %}
+{% elseif medical %}
+    {% set roleLabel = 'Personnel mÃ©dical' %}
+{% elseif apprenti %}
+    {% set roleLabel = 'Apprenti' %}
+{% endif %}
+
+<div class="e2c-dashboard">
+<section class="hero mb-4">
+        <div class="eyebrow mb-2">E2C-MENAET Â· Formation et insertion</div>
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <h1 class="mb-2">Bienvenue dans votre espace</h1>
+                <p class="mb-2 opacity-75" style="color: #ffffff !important;">
+                    Retrouvez vos outils de travail et pilotez vos activitÃ©s.
+                </p>
+                <div class="small">
+                    <strong>{{ roleLabel }}</strong>
+                    {% if app.user %} Â· {{ app.user.userIdentifier }}{% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a class="switch-design" href="{{ path('dashboard', {design: 'classique'}) }}">
+                    â†¶ Utiliser le design classique
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% if responsable %}
+        <h2 class="section-title h5 mb-3">Vue d'ensemble</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">â™™</div>
+                    <div class="stat-number">{{ stats.candidats|default(0) }}</div>
+                    <div class="stat-label">Candidats enregistrÃ©s</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">â–£</div>
+                    <div class="stat-number">{{ stats.entretiens|default(0) }}</div>
+                    <div class="stat-label">Entretiens enregistrÃ©s</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">âœš</div>
+                    <div class="stat-number">{{ stats.visites|default(0) }}</div>
+                    <div class="stat-label">Visites mÃ©dicales enregistrÃ©es</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">âœ“</div>
+                    <div class="stat-number">{{ stats.admissions|default(0) }}</div>
+                    <div class="stat-label">Candidats admis</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <h2 class="section-title h5 mb-3">Mes accÃ¨s rapides</h2>
+    <div class="row g-3">
+
+        {% if responsable %}
+            {% set links = [
+                {route:'candidat_index', icon:'â™™', title:'Candidatures', desc:'Gestion des candidats'},
+                {route:'admin_campagnes_index', icon:'â–¦', title:'Campagnes', desc:'ParamÃ¨tres de recrutement'},
+                {route:'recruitment_interviews', icon:'â–£', title:'Entretiens', desc:'Planification et Ã©valuations'},
+                {route:'medical_index', icon:'âœš', title:'Visites mÃ©dicales', desc:'Gestion des aptitudes'},
+                {route:'recruitment_admissions', icon:'âœ“', title:'Admissions', desc:'DÃ©cisions dâ€™admission'},
+                {route:'annuaire', icon:'â˜·', title:'Annuaire des admis', desc:'RÃ©pertoire des apprentis'},
+                {route:'followup_index', icon:'âŒ', title:'Suivi des parcours', desc:'Accompagnement des apprentis'},
+                {route:'app_etablissements_list', icon:'âŒ‚', title:'Ã‰tablissements', desc:'Centres de formation'},
+                {route:'app_metiers_list', icon:'âš’', title:'MÃ©tiers', desc:'Catalogue des mÃ©tiers'},
+                {route:'evaluation_apprenti_index', icon:'â˜…', title:'Ã‰valuations', desc:'Bilans pÃ©dagogiques'},
+                {route:'admin_catalogue_index', icon:'â–¤', title:'Catalogue', desc:'Administration des rÃ©fÃ©rentiels'},
+                {route:'public_inscription', icon:'ï¼‹', title:'Inscription publique', desc:'Formulaire de candidature'}
+            ] %}
+            {% for link in links %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(link.route) }}">
+                        <span class="action-icon">{{ link.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ link.title }}</span>
+                            <span class="action-description">{{ link.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+
+            {% if admin %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path('admin_users_index') }}">
+                        <span class="action-icon">â™§</span>
+                        <span>
+                            <span class="action-title">Utilisateurs et accÃ¨s</span>
+                            <span class="action-description">Gestion des comptes et profils</span>
+                        </span>
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if jury %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('recruitment_interviews') }}">
+                    <span class="action-icon">â–£</span>
+                    <span>
+                        <span class="action-title">Mes entretiens</span>
+                        <span class="action-description">Candidats affectÃ©s et Ã©valuations</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if referent or formateur %}
+            {% for item in [
+                {route:'annuaire', icon:'â˜·', title:'Annuaire des apprentis', desc:'Consulter les apprentis'},
+                {route:'followup_index', icon:'âŒ', title:'Suivi des parcours', desc:'Bilans et accompagnement'},
+                {route:'evaluation_apprenti_index', icon:'â˜…', title:'Ã‰valuations', desc:'Suivi pÃ©dagogique'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if medical %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('medical_index') }}">
+                    <span class="action-icon">âœš</span>
+                    <span>
+                        <span class="action-title">Espace mÃ©dical</span>
+                        <span class="action-description">AccÃ¨s aux dossiers mÃ©dicaux autorisÃ©s</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if apprenti %}
+            {% for item in [
+                {route:'apprenti_accueil', icon:'âŒ‚', title:'Mon espace apprenti', desc:'Mon espace personnel'},
+                {route:'apprenti_profil', icon:'â™™', title:'Mon profil', desc:'Mes informations'},
+                {route:'apprenti_parcours', icon:'âŒ', title:'Mon parcours', desc:'Ma progression'},
+                {route:'apprenti_rendez_vous', icon:'â–£', title:'Mes rendez-vous', desc:'Mes prochains rendez-vous'},
+                {route:'apprenti_evaluations', icon:'â˜…', title:'Mes Ã©valuations', desc:'Mes rÃ©sultats'},
+                {route:'apprenti_accompagnement', icon:'â™¡', title:'Mon accompagnement', desc:'Mon suivi personnel'},
+                {route:'apprenti_notifications', icon:'â™¢', title:'Mes notifications', desc:'Mes alertes et informations'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+
+    {% if not responsable and not jury and not referent and not formateur and not medical and not apprenti %}
+        <div class="alert alert-info mt-4">
+            Votre espace est en cours de configuration. Contactez un administrateur si un accÃ¨s vous manque.
+        </div>
+    {% endif %}
+
+    <div class="footer-note text-center mt-4">
+        E2C-MENAET Â· Centraliser Â· Former Â· Accompagner Â· InsÃ©rer
+    </div>
+</div>
+{% endblock %}

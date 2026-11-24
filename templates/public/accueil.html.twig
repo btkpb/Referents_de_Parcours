@@ -1,0 +1,50 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - MENAET E2C{% endblock %}
+
+{% block body %}
+    <section class="hero rounded-4 p-4 p-md-5 mb-4">
+        <span class="badge text-bg-warning mb-3">Formation et apprentissage</span>
+        <h1 class="display-5 fw-bold">
+            Bienvenue sur la plateforme MENAET – E2C
+        </h1>
+        <p class="lead mt-3">
+            Une plateforme dédiée au recrutement, à la formation et à
+            l'accompagnement socioprofessionnel des apprentis.
+        </p>
+        <a href="{{ path('app_inscription') }}" class="btn btn-warning btn-lg mt-3">
+            Commencer mon inscription
+        </a>
+        <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-lg mt-3 ms-md-2">
+            Espace de connexion
+        </a>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">01. Recrutement</h2>
+                    <p>Constituez votre dossier de candidature en ligne.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">02. Sélection</h2>
+                    <p>Suivez les étapes d'entretien et de sélection.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">03. Accompagnement</h2>
+                    <p>Bénéficiez d'un suivi pédagogique et professionnel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

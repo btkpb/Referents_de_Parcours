@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier un utilisateur' : 'Cr un utilisateur' }} - E2C-MTFPA{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width: 850px;">
+    <div class="mb-4">
+        <a href="{{ path('admin_users_index') }}" class="text-decoration-none">&larr; Retour Ã  la liste</a>
+        <h1 class="h3 mt-3">{{ edition ? 'Modifier le compte utilisateur' : 'Cr un utilisateur' }}</h1>
+        <p class="text-muted">Les champs marqu sont obligatoires.</p>
+    </div>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <strong>Veuillez corriger les é suivants :</strong>
+            <ul class="mb-0 mt-2">
+                {% for erreur in erreurs %}<li>{{ erreur }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="card card-body shadow-sm">
+        <input type="hidden" name="_token" value="{{ csrf_token(edition ? 'user_edit_' ~ utilisateur.id : 'user_create') }}">
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="nom">Nom *</label>
+                <input class="form-control" id="nom" name="nom" maxlength="120" required value="{{ utilisateur.nom }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="prenoms">Pr *</label>
+                <input class="form-control" id="prenoms" name="prenoms" maxlength="120" required value="{{ utilisateur.prenoms }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail *</label>
+                <input class="form-control" type="email" id="email" name="email" maxlength="180" required value="{{ utilisateur.email }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="profil">Profil *</label>
+                <select class="form-select" id="profil" name="profil" required>
+                    {% for cle, libelle in profils %}
+                        <option value="{{ cle }}" {% if utilisateur.profil == cle %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Les profils d au super administrateur.</div>
+            </div>
+            <div class="col-12">
+            <div class="col-12 {% if utilisateur.profil != 'apprenti' %}d-none{% endif %}" id="bloc-candidat">
+                <label class="form-label" for="candidat_id">Candidat associé au compte apprenti *</label>
+                <select class="form-select" id="candidat_id" name="candidat_id">
+                    <option value="">-- Sélectionner un candidat --</option>
+                    {% for candidat in candidats %}
+                        <option value="{{ candidat.id }}" {% if utilisateur.candidat and utilisateur.candidat.id == candidat.id %}selected{% endif %}>
+                            {{ candidat.numero }} - {{ candidat.nom }} {{ candidat.prenoms }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Un candidat ne peut être associé qu'à un seul compte apprenti.</div>
+            </div>
+                <label class="form-label" for="password">{{ edition ? 'Nouveau mot de passe (facultatif)' : 'Mot de passe initial *' }}</label>
+                <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" {% if not edition %}required{% endif %}>
+                <div class="form-text">12 caract minimum. {% if edition %}Laissez vide pour conserver le mot de passe actuel.{% endif %}</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ edition ? 'Enregistrer les modifications' : 'Cr le compte' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script id="association-candidat-script">
+document.addEventListener('DOMContentLoaded', function () {
+    const profil = document.getElementById('profil');
+    const bloc = document.getElementById('bloc-candidat');
+    const candidat = document.getElementById('candidat_id');
+
+    if (!profil || !bloc || !candidat) return;
+
+    function actualiserCandidat() {
+        const estApprenti = profil.value === 'apprenti';
+        bloc.classList.toggle('d-none', !estApprenti);
+        candidat.required = estApprenti;
+        if (!estApprenti) candidat.value = '';
+    }
+
+    profil.addEventListener('change', actualiserCandidat);
+    actualiserCandidat();
+});
+</script>
+{% endblock %}

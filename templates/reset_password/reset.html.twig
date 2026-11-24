@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau mot de passe | E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/styles/login.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="login-shell reset-shell">
+
+    <section class="login-presentation">
+
+        <div class="login-brand">
+            <img src="{{ asset('images/logo DAIP.png') }}"
+                 alt="Logo DAIP" class="login-logo">
+            <div>
+                <span class="brand-small">RÉPUBLIQUE DE CÔTE D'IVOIRE</span>
+                <strong>DAIP · E2C</strong>
+                <span class="brand-subtitle">Formation et insertion professionnelle</span>
+            </div>
+        </div>
+
+        <div class="presentation-content">
+            <span class="presentation-tag">SÉCURISATION DU COMPTE</span>
+
+            <h1>
+                Un nouveau départ.
+                <span>Un accès sécurisé.</span>
+            </h1>
+
+            <p class="presentation-description">
+                Choisissez un nouveau mot de passe pour retrouver
+                votre espace personnel sur la plateforme E2C-MENAET.
+            </p>
+
+            <div class="presentation-features">
+                <div class="feature-item">
+                    <span class="feature-number">01</span>
+                    <div>
+                        <strong>Un mot de passe robuste</strong>
+                        <small>Utilisez une combinaison difficile à deviner.</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-number">02</span>
+                    <div>
+                        <strong>Protection renforcée</strong>
+                        <small>Ne partagez jamais votre nouveau mot de passe.</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-number">03</span>
+                    <div>
+                        <strong>Accès personnel</strong>
+                        <small>Retrouvez votre espace de travail habituel.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="presentation-footer">
+            <span>CONFIDENTIALITÉ</span>
+            <span class="footer-dot"></span>
+            <span>SÉCURITÉ</span>
+            <span class="footer-dot"></span>
+            <span>FIABILITÉ</span>
+        </div>
+
+    </section>
+
+    <section class="login-form-section">
+
+        <div class="login-form-container">
+
+            <div class="form-heading">
+                <span class="form-eyebrow">NOUVEAU MOT DE PASSE</span>
+                <h2>Réinitialiser mon accès</h2>
+                <p>
+                    Définissez un nouveau mot de passe pour sécuriser
+                    votre espace personnel.
+                </p>
+            </div>
+
+            {{ form_start(resetForm, {
+                attr: {class: 'login-form reset-form'}
+            }) }}
+
+                {{ form_row(resetForm.plainPassword, {
+                    label: 'Nouveau mot de passe',
+                    attr: {
+                        class: 'form-control',
+                        autocomplete: 'new-password',
+                        placeholder: 'Saisissez votre nouveau mot de passe'
+                    }
+                }) }}
+
+                <div class="reset-information">
+                    <span class="reset-information-icon">i</span>
+                    <p>
+                        Votre mot de passe doit contenir au minimum
+                        12 caractères. Choisissez une combinaison
+                        difficile à deviner.
+                    </p>
+                </div>
+
+                <button type="submit" class="login-submit reset-submit">
+                    <span>Enregistrer mon nouveau mot de passe</span>
+                    <span class="submit-arrow">→</span>
+                </button>
+
+            {{ form_end(resetForm) }}
+
+            <div class="text-center mt-4">
+                <a href="{{ path('app_login') }}" class="reset-secondary-link">
+                    ← Retour à la connexion
+                </a>
+            </div>
+
+            <div class="login-security-note">
+                <span class="security-icon">✓</span>
+                <span>Votre mot de passe est traité de manière sécurisée.</span>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

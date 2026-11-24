@@ -1,0 +1,564 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Évaluations pédagogiques des apprentis{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4 e2c-evaluations-page">
+
+    <style>
+        .e2c-evaluations-page {
+            --eval-navy: #142b49;
+            --eval-navy-light: #203e61;
+            --eval-gold: #d6ad55;
+            --eval-muted: #718096;
+            color: #243247;
+        }
+
+        .e2c-evaluations-page .eval-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            padding: 28px 30px;
+            color: #fff;
+            background: linear-gradient(120deg, var(--eval-navy), var(--eval-navy-light));
+            box-shadow: 0 8px 24px rgba(20, 43, 73, .14);
+        }
+
+        .e2c-evaluations-page .eval-hero::after {
+            content: "";
+            position: absolute;
+            width: 210px;
+            height: 210px;
+            right: -65px;
+            top: -105px;
+            border: 30px solid rgba(214, 173, 85, .13);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .e2c-evaluations-page .eval-hero h1 {
+            font-weight: 750;
+            letter-spacing: -.5px;
+            color: #fff;
+        }
+
+        .e2c-evaluations-page .eval-hero p {
+            color: rgba(255,255,255,.78);
+        }
+
+        .e2c-evaluations-page .eval-accent {
+            width: 58px;
+            height: 4px;
+            margin-top: 15px;
+            border-radius: 5px;
+            background: var(--eval-gold);
+        }
+
+        .e2c-evaluations-page .eval-primary-btn {
+            background: var(--eval-gold);
+            border: 1px solid var(--eval-gold);
+            color: #172b45;
+            font-weight: 700;
+            border-radius: 9px;
+            padding: 11px 17px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .e2c-evaluations-page .eval-primary-btn:hover {
+            background: #e6c477;
+            border-color: #e6c477;
+            color: #142b49;
+        }
+
+        .e2c-evaluations-page .eval-stat-card {
+            height: 100%;
+            border: 1px solid #e8edf3;
+            border-radius: 14px;
+            background: #fff;
+            padding: 19px;
+            box-shadow: 0 4px 14px rgba(25, 45, 70, .045);
+        }
+
+        .e2c-evaluations-page .eval-stat-label {
+            color: var(--eval-muted);
+            font-size: .82rem;
+            font-weight: 650;
+            text-transform: uppercase;
+            letter-spacing: .45px;
+        }
+
+        .e2c-evaluations-page .eval-stat-value {
+            color: var(--eval-navy);
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-top: 7px;
+        }
+
+        .e2c-evaluations-page .eval-stat-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #edf3f9;
+            color: var(--eval-navy);
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .e2c-evaluations-page .eval-panel {
+            background: #fff;
+            border: 1px solid #e7edf3;
+            border-radius: 15px;
+            box-shadow: 0 5px 18px rgba(25, 45, 70, .05);
+            overflow: hidden;
+        }
+
+        .e2c-evaluations-page .eval-panel-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .e2c-evaluations-page .eval-panel-header h2 {
+            color: var(--eval-navy);
+            font-size: 1.08rem;
+            font-weight: 750;
+            margin: 0;
+        }
+
+        .e2c-evaluations-page .eval-toolbar {
+            padding: 17px 22px;
+            background: #fbfcfe;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .e2c-evaluations-page .form-control,
+        .e2c-evaluations-page .form-select {
+            min-height: 43px;
+            border-radius: 9px;
+            border-color: #dce4ed;
+            font-size: .91rem;
+        }
+
+        .e2c-evaluations-page .form-control:focus,
+        .e2c-evaluations-page .form-select:focus {
+            border-color: #829bb8;
+            box-shadow: 0 0 0 .2rem rgba(32, 62, 97, .10);
+        }
+
+        .e2c-evaluations-page .eval-table {
+            margin-bottom: 0;
+        }
+
+        .e2c-evaluations-page .eval-table thead th {
+            padding: 14px 13px;
+            background: #f1f5f9;
+            color: #52647a;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .45px;
+            font-weight: 750;
+            white-space: nowrap;
+            border-bottom: 1px solid #e3eaf1;
+        }
+
+        .e2c-evaluations-page .eval-table tbody td {
+            padding: 15px 13px;
+            vertical-align: middle;
+            border-color: #edf1f5;
+            font-size: .9rem;
+        }
+
+        .e2c-evaluations-page .eval-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .e2c-evaluations-page .eval-apprenti {
+            color: var(--eval-navy);
+            font-weight: 750;
+        }
+
+        .e2c-evaluations-page .eval-reference {
+            color: #7b8999;
+            font-size: .78rem;
+            margin-top: 3px;
+        }
+
+        .e2c-evaluations-page .eval-score {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 75px;
+            padding: 7px 10px;
+            border-radius: 9px;
+            background: #edf3f9;
+            color: var(--eval-navy);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .e2c-evaluations-page .eval-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 30px;
+            font-size: .78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .e2c-evaluations-page .eval-status-published {
+            color: #176344;
+            background: #e7f5ed;
+        }
+
+        .e2c-evaluations-page .eval-status-draft {
+            color: #75551b;
+            background: #fff4dc;
+        }
+
+        .e2c-evaluations-page .eval-action {
+            border-radius: 7px;
+            font-size: .8rem;
+            font-weight: 650;
+            padding: 6px 10px;
+            margin: 2px;
+        }
+
+        .e2c-evaluations-page .eval-empty {
+            padding: 55px 20px;
+            text-align: center;
+            color: var(--eval-muted);
+        }
+
+        .e2c-evaluations-page .eval-empty-icon {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+        }
+
+        .e2c-evaluations-page .eval-count {
+            color: var(--eval-muted);
+            font-size: .83rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .e2c-evaluations-page {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .e2c-evaluations-page .eval-hero {
+                padding: 22px 19px;
+            }
+
+            .e2c-evaluations-page .eval-hero h1 {
+                font-size: 1.45rem;
+            }
+
+            .e2c-evaluations-page .eval-toolbar {
+                padding: 15px;
+            }
+
+            .e2c-evaluations-page .eval-panel-header {
+                padding: 17px 15px;
+            }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .e2c-evaluations-page .eval-stat-card,
+            .e2c-evaluations-page .eval-primary-btn {
+                transition: transform .18s ease, box-shadow .18s ease;
+            }
+
+            .e2c-evaluations-page .eval-stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(25, 45, 70, .09);
+            }
+        }
+    </style>
+
+    {% set stats = {'total': 0, 'publiees': 0, 'brouillons': 0, 'score': 0} %}
+    {% for e in evaluations %}
+        {% set stats = stats|merge({
+            'total': stats.total + 1,
+            'publiees': stats.publiees + (e.statut == 'PUBLIEE' ? 1 : 0),
+            'brouillons': stats.brouillons + (e.statut == 'BROUILLON' ? 1 : 0),
+            'score': stats.score + e.total
+        }) %}
+    {% endfor %}
+
+    <div class="eval-hero mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 position-relative">
+            <div>
+                <div class="small text-uppercase fw-bold mb-2" style="color:#e7c77f;letter-spacing:1.2px;">
+                    E2C · Suivi pédagogique
+                </div>
+                <h1 class="h2 mb-2">Évaluations pédagogiques</h1>
+                <p class="mb-0">Évaluation des compétences, suivi des résultats et progression des apprentis.</p>
+                <div class="eval-accent"></div>
+            </div>
+
+            {% if peutCreer %}
+                <a class="btn eval-primary-btn" href="{{ path('evaluation_apprenti_new') }}">
+                    <span class="me-1">+</span> Nouvelle évaluation
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="eval-stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="eval-stat-label">Évaluations</div>
+                    <span class="eval-stat-icon">≡</span>
+                </div>
+                <div class="eval-stat-value">{{ stats.total }}</div>
+                <div class="small text-muted mt-1">Enregistrements visibles</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="eval-stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="eval-stat-label">Publiées</div>
+                    <span class="eval-stat-icon">✓</span>
+                </div>
+                <div class="eval-stat-value">{{ stats.publiees }}</div>
+                <div class="small text-muted mt-1">Communiquées aux apprentis</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="eval-stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="eval-stat-label">Brouillons</div>
+                    <span class="eval-stat-icon">✎</span>
+                </div>
+                <div class="eval-stat-value">{{ stats.brouillons }}</div>
+                <div class="small text-muted mt-1">En attente de publication</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="eval-stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="eval-stat-label">Moyenne générale</div>
+                    <span class="eval-stat-icon">★</span>
+                </div>
+                <div class="eval-stat-value">
+                    {% if stats.total > 0 %}
+                        {{ (stats.score / stats.total)|number_format(1, ',', ' ') }}<span class="fs-6">/100</span>
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="small text-muted mt-1">Sur les évaluations visibles</div>
+            </div>
+        </div>
+    </div>
+
+    <section class="eval-panel">
+        <div class="eval-panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2>Registre des évaluations</h2>
+                <div class="eval-count mt-1">Consultez et filtrez les évaluations pédagogiques.</div>
+            </div>
+            <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                {{ stats.total }} résultat(s)
+            </span>
+        </div>
+
+        {% if evaluations is not empty %}
+            <div class="eval-toolbar">
+                <div class="row g-2">
+                    <div class="col-12 col-lg-6">
+                        <label class="form-label small fw-semibold" for="evalSearch">Recherche</label>
+                        <input type="search" id="evalSearch" class="form-control"
+                               placeholder="Nom, prénom, numéro, évaluateur...">
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label small fw-semibold" for="evalType">Type d'évaluation</label>
+                        <select id="evalType" class="form-select">
+                            <option value="">Tous les types</option>
+                            <option value="DEBUT">Début</option>
+                            <option value="PERIODIQUE">Périodique</option>
+                            <option value="STAGE">Stage</option>
+                            <option value="FINALE">Finale</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <label class="form-label small fw-semibold" for="evalStatus">État</label>
+                        <select id="evalStatus" class="form-select">
+                            <option value="">Tous les états</option>
+                            <option value="PUBLIEE">Publiées</option>
+                            <option value="BROUILLON">Brouillons</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table eval-table" id="evalTable">
+                    <thead>
+                        <tr>
+                            <th>Apprenti</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Résultat</th>
+                            <th>Évaluateur</th>
+                            <th>État</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in evaluations %}
+                            <tr data-type="{{ e.type_evaluation|e('html_attr') }}"
+                                data-status="{{ e.statut|e('html_attr') }}">
+                                <td>
+                                    <div class="eval-apprenti">{{ e.candidat_nom }} {{ e.candidat_prenoms }}</div>
+                                    <div class="eval-reference">{{ e.candidat_numero|default('Référence non renseignée') }}</div>
+                                </td>
+                                <td class="text-nowrap">{{ e.date_evaluation|date('d/m/Y') }}</td>
+                                <td>
+                                    {% if e.type_evaluation == 'DEBUT' %}
+                                        Début
+                                    {% elseif e.type_evaluation == 'PERIODIQUE' %}
+                                        Périodique
+                                    {% elseif e.type_evaluation == 'STAGE' %}
+                                        Stage
+                                    {% else %}
+                                        Finale
+                                    {% endif %}
+                                </td>
+                                <td><span class="eval-score">{{ e.total|number_format(2, ',', ' ') }}/100</span></td>
+                                <td>
+                                    {{ e.auteur_prenoms|default('') }} {{ e.auteur_nom|default('') }}
+                                    {% if e.auteur_nom is empty and e.auteur_prenoms is empty %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if e.statut == 'PUBLIEE' %}
+                                        <span class="eval-status eval-status-published">● Publiée</span>
+                                    {% else %}
+                                        <span class="eval-status eval-status-draft">● Brouillon</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    {% if e.peutModifier %}
+                                        <a class="btn btn-sm btn-outline-primary eval-action"
+                                           href="{{ path('evaluation_apprenti_edit', {id: e.id}) }}">
+                                            Modifier
+                                        </a>
+                                    {% endif %}
+
+                                    {% if e.peutPublier %}
+                                        <form method="post" class="d-inline"
+                                              action="{{ path('evaluation_apprenti_publish', {id: e.id}) }}"
+                                              onsubmit="return confirm('Publier cette évaluation dans l’espace de l’apprenti ?');">
+                                            <input type="hidden" name="_token"
+                                                   value="{{ csrf_token('publier_evaluation_' ~ e.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-success eval-action">
+                                                Publier
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if not e.peutModifier and not e.peutPublier %}
+                                        <span class="text-muted small">Consultation</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div id="evalNoResult" class="eval-empty d-none">
+                    <div class="eval-empty-icon">⌕</div>
+                    <div class="fw-bold text-dark">Aucun résultat correspondant</div>
+                    <div class="small">Modifiez votre recherche ou vos filtres.</div>
+                </div>
+            </div>
+
+            <div class="px-3 py-3 border-top d-flex justify-content-between flex-wrap gap-2">
+                <span class="eval-count" id="evalVisibleCount">
+                    {{ stats.total }} évaluation(s) affichée(s)
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="evalReset">
+                    Réinitialiser les filtres
+                </button>
+            </div>
+        {% else %}
+            <div class="eval-empty">
+                <div class="eval-empty-icon">📋</div>
+                <h3 class="h5 text-dark fw-bold">Aucune évaluation disponible</h3>
+                <p class="mb-0">Aucune évaluation pédagogique n’est actuellement accessible pour votre profil.</p>
+                {% if peutCreer %}
+                    <a class="btn btn-primary mt-3" href="{{ path('evaluation_apprenti_new') }}">
+                        Créer une évaluation
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+{% if evaluations is not empty %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const search = document.getElementById('evalSearch');
+    const type = document.getElementById('evalType');
+    const status = document.getElementById('evalStatus');
+    const reset = document.getElementById('evalReset');
+    const rows = Array.from(document.querySelectorAll('#evalTable tbody tr'));
+    const noResult = document.getElementById('evalNoResult');
+    const visibleCount = document.getElementById('evalVisibleCount');
+
+    function filtrerEvaluations() {
+        const terme = (search.value || '').trim().toLocaleLowerCase('fr');
+        const typeChoisi = type.value;
+        const statutChoisi = status.value;
+        let visibles = 0;
+
+        rows.forEach(function (row) {
+            const texte = row.textContent.toLocaleLowerCase('fr');
+            const correspondRecherche = !terme || texte.includes(terme);
+            const correspondType = !typeChoisi || row.dataset.type === typeChoisi;
+            const correspondStatut = !statutChoisi || row.dataset.status === statutChoisi;
+            const afficher = correspondRecherche && correspondType && correspondStatut;
+
+            row.hidden = !afficher;
+            if (afficher) visibles++;
+        });
+
+        noResult.classList.toggle('d-none', visibles !== 0);
+        visibleCount.textContent = visibles + ' évaluation(s) affichée(s) sur ' + rows.length;
+    }
+
+    search.addEventListener('input', filtrerEvaluations);
+    type.addEventListener('change', filtrerEvaluations);
+    status.addEventListener('change', filtrerEvaluations);
+
+    reset.addEventListener('click', function () {
+        search.value = '';
+        type.value = '';
+        status.value = '';
+        filtrerEvaluations();
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

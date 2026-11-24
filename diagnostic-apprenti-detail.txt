@@ -1,0 +1,909 @@
+﻿DIAGNOSTIC DETAILLE - ESPACE APPRENTI
+
+
+===========================================================================
+FICHIER : src\Entity\User.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+#[ORM\Entity]
+#[ORM\Table(name:'app_user')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface {
+ #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null;
+ #[ORM\Column(length:180,unique:true)] private string $email='';
+ #[ORM\Column] private array $roles=[];
+ #[ORM\Column] private string $password='';
+ #[ORM\Column(length:120)] private string $nom='';
+ #[ORM\Column(length:120)] private string $prenoms='';
+ #[ORM\Column(length:40)] private string $profil='gestionnaire';
+ #[ORM\Column] private bool $active=true;
+ public function getId():?int{return $this->id;} public function getEmail():string{return $this->email;} public function setEmail(string $v):self{$this->email=$v;return $this;} public function getUserIdentifier():string{return $this->email;} public function getRoles():array{return array_values(array_unique(array_merge($this->roles,['ROLE_USER'])));} public function setRoles(array $v):self{$this->roles=$v;return $this;} public function getPassword():string{return $this->password;} public function setPassword(string $v):self{$this->password=$v;return $this;} public function eraseCredentials():void{} public function getNom():string{return $this->nom;} public function setNom(string $v):self{$this->nom=$v;return $this;} public function getPrenoms():string{return $this->prenoms;} public function setPrenoms(string $v):self{$this->prenoms=$v;return $this;} public function getProfil():string{return $this->profil;} public function setProfil(string $v):self{$this->profil=$v;return $this;} public function isActive():bool{return $this->active;} public function setActive(bool $v):self{$this->active=$v;return $this;}
+}
+
+
+===========================================================================
+FICHIER : src\Entity\Candidat.php
+===========================================================================
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
+class Candidat
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 30, unique: true)]
+    private string $numero = '';
+
+    #[ORM\Column(length: 100)]
+    private string $nom = '';
+
+    #[ORM\Column(length: 160)]
+    private string $prenoms = '';
+
+    #[ORM\Column(length: 10)]
+    private string $sexe = '';
+
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $dateNaissance = null;
+
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $lieuNaissance = null;
+
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $lieuResidence = null;
+
+    #[ORM\Column(length: 100)]
+    private string $nationalite = 'Ivoirienne';
+
+    #[ORM\Column(length: 30)]
+    private string $telephone = '';
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $telephoneAlt = null;
+
+    #[ORM\Column(length: 40)]
+    private string $pieceIdentite = 'Aucun';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $pieceIdentiteFichier = null;
+
+    #[ORM\Column(length: 40)]
+    private string $niveau = '';
+
+    #[ORM\Column(length: 50)]
+    private string $diplome = 'Aucun';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $diplomeFichier = null;
+
+    #[ORM\Column(length: 80)]
+    private string $metier = '';
+
+    #[ORM\Column(length: 80)]
+    private string $ancienMetier = 'Aucun';
+
+    #[ORM\Column(length: 30)]
+    private string $disponibilite = 'Oui';
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $disponibleLe = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $contactUrgenceNom = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $contactUrgenceTel = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $contactUrgenceLien = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $experience = null;
+
+    #[ORM\Column(length: 30)]
+    private string $statut = 'INSCRIT';
+
+    #[ORM\ManyToOne]
+    private ?Campagne $campagne = null;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
+    public function __construct()
+    {
+        $this->numero = 'CAND-' . date('YmdHis') . '-' . random_int(100, 999);
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function touch(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNumero(): string
+    {
+        return $this->numero;
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $v): self
+    {
+        $this->nom = $v;
+        return $this;
+    }
+
+    public function getPrenoms(): string
+    {
+        return $this->prenoms;
+    }
+
+    public function setPrenoms(string $v): self
+    {
+        $this->prenoms = $v;
+        return $this;
+    }
+
+    public function getSexe(): string
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(string $v): self
+    {
+        $this->sexe = $v;
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(?\DateTimeInterface $v): self
+    {
+        $this->dateNaissance = $v;
+        return $this;
+    }
+
+    public function getLieuNaissance(): ?string
+    {
+        return $this->lieuNaissance;
+    }
+
+    public function setLieuNaissance(?string $v): self
+    {
+        $this->lieuNaissance = $v;
+        return $this;
+    }
+
+    public function getLieuResidence(): ?string
+    {
+        return $this->lieuResidence;
+    }
+
+    public function setLieuResidence(?string $v): self
+    {
+        $this->lieuResidence = $v;
+        return $this;
+    }
+
+    public function getNationalite(): string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(string $v): self
+    {
+        $this->nationalite = $v;
+        return $this;
+    }
+
+    public function getTelephone(): string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(string $v): self
+    {
+        $this->telephone = $v;
+        return $this;
+    }
+
+    public function getTelephoneAlt(): ?string
+    {
+        return $this->telephoneAlt;
+    }
+
+    public function setTelephoneAlt(?string $v): self
+    {
+        $this->telephoneAlt = $v;
+        return $this;
+    }
+
+    public function getPieceIdentite(): string
+    {
+        return $this->pieceIdentite;
+    }
+
+    public function setPieceIdentite(string $v): self
+    {
+        $this->pieceIdentite = $v;
+        return $this;
+    }
+
+    public function getPieceIdentiteFichier(): ?string
+    {
+        return $this->pieceIdentiteFichier;
+    }
+
+    public function setPieceIdentiteFichier(?string $v): self
+    {
+        $this->pieceIdentiteFichier = $v;
+        return $this;
+    }
+
+    public function getNiveau(): string
+    {
+        return $this->niveau;
+    }
+
+    public function setNiveau(string $v): self
+    {
+        $this->niveau = $v;
+        return $this;
+    }
+
+    public function getDiplome(): string
+    {
+        return $this->diplome;
+    }
+
+    public function setDiplome(string $v): self
+    {
+        $this->diplome = $v;
+        return $this;
+    }
+
+    public function getDiplomeFichier(): ?string
+    {
+        return $this->diplomeFichier;
+    }
+
+    public function setDiplomeFichier(?string $v): self
+    {
+        $this->diplomeFichier = $v;
+        return $this;
+    }
+
+    public function getMetier(): string
+    {
+        return $this->metier;
+    }
+
+    public function setMetier(string $v): self
+    {
+        $this->metier = $v;
+        return $this;
+    }
+
+    public function getAncienMetier(): string
+    {
+        return $this->ancienMetier;
+    }
+
+    public function setAncienMetier(string $v): self
+    {
+        $this->ancienMetier = $v;
+        return $this;
+    }
+
+    public function getDisponibilite(): string
+    {
+        return $this->disponibilite;
+    }
+
+    public function setDisponibilite(string $v): self
+    {
+        $this->disponibilite = $v;
+        return $this;
+    }
+
+    public function getDisponibleLe(): ?\DateTimeInterface
+    {
+        return $this->disponibleLe;
+    }
+
+    public function setDisponibleLe(?\DateTimeInterface $v): self
+    {
+        $this->disponibleLe = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceNom(): ?string
+    {
+        return $this->contactUrgenceNom;
+    }
+
+    public function setContactUrgenceNom(?string $v): self
+    {
+        $this->contactUrgenceNom = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceTel(): ?string
+    {
+        return $this->contactUrgenceTel;
+    }
+
+    public function setContactUrgenceTel(?string $v): self
+    {
+        $this->contactUrgenceTel = $v;
+        return $this;
+    }
+
+    public function getContactUrgenceLien(): ?string
+    {
+        return $this->contactUrgenceLien;
+    }
+
+    public function setContactUrgenceLien(?string $v): self
+    {
+        $this->contactUrgenceLien = $v;
+        return $this;
+    }
+
+    public function getExperience(): ?string
+    {
+        return $this->experience;
+    }
+
+    public function setExperience(?string $v): self
+    {
+        $this->experience = $v;
+        return $this;
+    }
+
+    public function getStatut(): string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(string $v): self
+    {
+        $this->statut = $v;
+        return $this;
+    }
+
+    public function getCampagne(): ?Campagne
+    {
+        return $this->campagne;
+    }
+
+    public function setCampagne(?Campagne $v): self
+    {
+        $this->campagne = $v;
+        return $this;
+    }
+
+    public function getAge(): ?int
+    {
+        return $this->dateNaissance
+            ? (new \DateTimeImmutable())->diff($this->dateNaissance)->y
+            : null;
+    }
+}
+
+
+===========================================================================
+FICHIER : src\Entity\Admission.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Admission { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Candidat $candidat=null; #[ORM\Column(length:30)] private string $decision='EN_ATTENTE'; #[ORM\Column(length:120,nullable:true)] private ?string $metierAffecte=null; #[ORM\Column(type:'datetime',nullable:true)] private ?\DateTimeInterface $dateAdmission=null; #[ORM\Column(length:40,nullable:true)] private ?string $codeAdmission=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function getMetierAffecte():?string{return $this->metierAffecte;} public function setMetierAffecte(?string $v):self{$this->metierAffecte=$v;return $this;} public function getDateAdmission():?\DateTimeInterface{return $this->dateAdmission;} public function setDateAdmission(?\DateTimeInterface $v):self{$this->dateAdmission=$v;return $this;} public function getCodeAdmission():?string{return $this->codeAdmission;} public function setCodeAdmission(?string $v):self{$this->codeAdmission=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Entity\Entretien.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Entretien { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $lieu=''; #[ORM\Column] private int $nombreJury=1; #[ORM\Column(length:30)] private string $statut='PLANIFIE'; #[ORM\Column(nullable:true)] private ?string $juryNoms=null; #[ORM\Column(nullable:true)] private ?string $convocationEnvoyeeAt=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getLieu():string{return $this->lieu;} public function setLieu(string $v):self{$this->lieu=$v;return $this;} public function getNombreJury():int{return $this->nombreJury;} public function setNombreJury(int $v):self{$this->nombreJury=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} public function getJuryNoms():?string{return $this->juryNoms;} public function setJuryNoms(?string $v):self{$this->juryNoms=$v;return $this;} public function getConvocationEnvoyeeAt():?string{return $this->convocationEnvoyeeAt;} public function setConvocationEnvoyeeAt(?string $v):self{$this->convocationEnvoyeeAt=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Entity\Evaluation.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Entity\EntretienParcours.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class EntretienParcours { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(length:40)] private string $typeEntretien='ACCUEIL'; #[ORM\Column(type:'date')] private ?\DateTimeInterface $dateEntretien=null; #[ORM\Column(type:'text',nullable:true)] private ?string $synthese=null; #[ORM\Column(type:'text',nullable:true)] private ?string $planAction=null; #[ORM\Column(length:30)] private string $statut='REALISE'; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getTypeEntretien():string{return $this->typeEntretien;} public function setTypeEntretien(string $v):self{$this->typeEntretien=$v;return $this;} public function getDateEntretien():?\DateTimeInterface{return $this->dateEntretien;} public function setDateEntretien(?\DateTimeInterface $v):self{$this->dateEntretien=$v;return $this;} public function getSynthese():?string{return $this->synthese;} public function setSynthese(?string $v):self{$this->synthese=$v;return $this;} public function getPlanAction():?string{return $this->planAction;} public function setPlanAction(?string $v):self{$this->planAction=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Entity\AffectationChantier.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class AffectationChantier { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\ManyToOne] private ?Chantier $chantier=null; #[ORM\Column(type:'date')] private ?\DateTimeInterface $dateDebut=null; #[ORM\Column(type:'date',nullable:true)] private ?\DateTimeInterface $dateFin=null; #[ORM\Column(length:30)] private string $statut='EN_COURS'; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getChantier():?Chantier{return $this->chantier;} public function setChantier(?Chantier $v):self{$this->chantier=$v;return $this;} public function getDateDebut():?\DateTimeInterface{return $this->dateDebut;} public function setDateDebut(?\DateTimeInterface $v):self{$this->dateDebut=$v;return $this;} public function getDateFin():?\DateTimeInterface{return $this->dateFin;} public function setDateFin(?\DateTimeInterface $v):self{$this->dateFin=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Entity\Emploi.php
+===========================================================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Emploi { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'date',nullable:true)] private ?\DateTimeInterface $dateInsertion=null; #[ORM\Column(length:180,nullable:true)] private ?string $employeur=null; #[ORM\Column(length:120,nullable:true)] private ?string $poste=null; #[ORM\Column(length:30)] private string $statut='EN_RECHERCHE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateInsertion():?\DateTimeInterface{return $this->dateInsertion;} public function setDateInsertion(?\DateTimeInterface $v):self{$this->dateInsertion=$v;return $this;} public function getEmployeur():?string{return $this->employeur;} public function setEmployeur(?string $v):self{$this->employeur=$v;return $this;} public function getPoste():?string{return $this->poste;} public function setPoste(?string $v):self{$this->poste=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} public function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+
+===========================================================================
+FICHIER : src\Controller\DashboardController.php
+===========================================================================
+<?php
+namespace App\Controller;
+use App\Entity\{Candidat,Entretien,VisiteMedicale,Admission};
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+class DashboardController extends AbstractController { #[Route('/',name:'dashboard')] public function index(EntityManagerInterface $em):\Symfony\Component\HttpFoundation\Response { return $this->render('dashboard/index.html.twig',['stats'=>['candidats'=>$em->getRepository(Candidat::class)->count([]),'entretiens'=>$em->getRepository(Entretien::class)->count([]),'visites'=>$em->getRepository(VisiteMedicale::class)->count([]),'admissions'=>$em->getRepository(Admission::class)->count(['decision'=>'ADMIS'])]]); } }
+
+
+===========================================================================
+FICHIER : src\Controller\CandidatController.php
+===========================================================================
+<?php
+namespace App\Controller;
+use App\Entity\Candidat;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Response;
+class CandidatController extends AbstractController { #[Route('/candidats',name:'candidat_index')] public function index(EntityManagerInterface $em):Response{return $this->render('candidat/index.html.twig',['candidats'=>$em->getRepository(Candidat::class)->findBy([],['id'=>'DESC'])]);} #[Route('/candidats/{id}',name:'candidat_show')] public function show(Candidat $c):Response{return $this->render('candidat/show.html.twig',['candidat'=>$c]);} }
+
+
+===========================================================================
+FICHIER : src\Controller\RecruitmentController.php
+===========================================================================
+<?php
+namespace App\Controller;
+use App\Entity\{Candidat,Entretien,Evaluation};
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\{Request,Response};
+class RecruitmentController extends AbstractController { #[Route('/recrutement/entretiens',name:'recruitment_interviews')] public function interviews(EntityManagerInterface $em):Response{return $this->render('recrutement/entretiens.html.twig',['items'=>$em->getRepository(Entretien::class)->findBy([],['dateHeure'=>'ASC'])]);} #[Route('/recrutement/entretiens/{id}/evaluation',name:'recruitment_eval',methods:['GET','POST'])] public function eval(Entretien $e,Request $r,EntityManagerInterface $em):Response{$ev=$em->getRepository(Evaluation::class)->findOneBy(['entretien'=>$e])??new Evaluation();$ev->setEntretien($e);if($r->isMethod('POST')){$d=$r->request->all('evaluation');$ev->setScores($d);$ev->setDecision(($ev->total()>=24)?'APTE':'INAPTE');$em->persist($ev);$em->flush();$this->addFlash('success','Ã‰valuation enregistrÃ©e.');return $this->redirectToRoute('recruitment_interviews');}return $this->render('recrutement/evaluation.html.twig',['entretien'=>$e,'evaluation'=>$ev]);} }
+
+
+===========================================================================
+FICHIER : src\Controller\FollowupController.php
+===========================================================================
+<?php
+namespace App\Controller;
+use App\Entity\{EntretienParcours,Emploi}; use Doctrine\ORM\EntityManagerInterface; use Symfony\Bundle\FrameworkBundle\Controller\AbstractController; use Symfony\Component\Routing\Attribute\Route; use Symfony\Component\HttpFoundation\Response;
+class FollowupController extends AbstractController { #[Route('/suivi',name:'followup_index')] public function index(EntityManagerInterface $em):Response{return $this->render('followup/index.html.twig',['entretiens'=>$em->getRepository(EntretienParcours::class)->findBy([],['dateEntretien'=>'DESC']),'emplois'=>$em->getRepository(Emploi::class)->findBy([],['id'=>'DESC'])]);} }
+
+
+===========================================================================
+FICHIER : templates\base.html.twig
+===========================================================================
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}MENAET - E2C{% endblock %}</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="{{ asset('assets/styles/app.css') }}">
+
+    {% block stylesheets %}{% endblock %}
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+<nav class="daip-navbar">
+    <div class="daip-nav-container">
+
+        <a class="daip-brand" href="{{ path('daip_accueil') }}">
+            <img
+                src="{{ asset('images/logo DAIP.png') }}"
+                alt="Logo DAIP"
+                class="daip-logo"
+            >
+        </a>
+
+        {% set roles = app.user ? app.user.roles : [] %}
+
+        {% set estAdmin =
+            is_granted('ROLE_ADMIN')
+            or is_granted('ROLE_ADMINISTRATEUR')
+            or is_granted('ROLE_SUPER_ADMIN')
+            or 'ADMIN' in roles
+            or 'ROLE_ADMINISTRATEUR' in roles
+        %}
+
+        {% set estGestionnaire =
+            estAdmin
+            or is_granted('ROLE_GESTIONNAIRE')
+            or 'GESTIONNAIRE' in roles
+        %}
+
+        {% set estJury =
+            is_granted('ROLE_JURY')
+            or 'JURY' in roles
+        %}
+
+        {% set estReferent =
+            is_granted('ROLE_REFERENT_PARCOURS')
+            or is_granted('ROLE_REFERENT')
+            or 'REFERENT_PARCOURS' in roles
+            or 'REFERENT' in roles
+        %}
+
+        {% set estFormateur =
+            is_granted('ROLE_FORMATEUR')
+            or 'FORMATEUR' in roles
+        %}
+
+        {% set estApprenti =
+            is_granted('ROLE_APPRENTI')
+            or 'APPRENTI' in roles
+        %}
+
+        <button
+            class="daip-menu-toggle"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#daipNavigation"
+            aria-controls="daipNavigation"
+            aria-expanded="false"
+            aria-label="Afficher ou masquer le menu"
+        >
+            ÃƒÂ¢Ã‹Å“Ã‚Â° Menu
+        </button>
+
+        <div class="daip-navigation-collapse" id="daipNavigation">
+
+            <div class="daip-nav-links">
+                {% if app.user and estAdmin %}
+                    <a href="{{ path('admin_users_index') }}">Gestion des utilisateurs</a>
+                {% endif %}
+
+                {% if not app.user %}
+                    <a href="{{ path('daip_accueil') }}">Accueil</a>
+                {% endif %}
+
+                {% if not app.user %}
+
+                    <a href="{{ path('public_inscription') }}">
+                        Inscription
+                    </a>
+
+                    <a href="{{ path('daip_accueil') }}#contact">
+                        Contacts
+                    </a>
+
+                {% else %}
+
+                    {% if estAdmin %}
+
+                        <a href="/candidats">Candidatures</a>
+                        <a href="/recrutement/entretiens">Entretiens</a>
+                        <a href="/medical">Visites mÃ©dicales</a>
+                        <a href="/annuaire">Admissions et annuaire</a>
+                        <a href="/suivi">Suivi des apprentis</a>
+                        <a href="/etablissements">Ã‰tablissements</a>
+                        <a href="/metiers">MÃ©tiers</a>
+
+                    {% elseif estGestionnaire %}
+
+                        <a href="/candidats">Candidatures</a>
+                        <a href="/recrutement/entretiens">Planification des entretiens</a>
+                        <a href="/medical">Visites mÃ©dicales</a>
+                        <a href="/annuaire">Admissions et annuaire</a>
+                        <a href="/etablissements">Ã‰tablissements</a>
+                        <a href="/metiers">MÃ©tiers</a>
+
+                    {% elseif estJury %}
+
+                        <a href="/recrutement/entretiens">Mes entretiens</a>
+
+                    {% elseif estReferent %}
+
+                        <a href="/annuaire">Annuaire des apprentis</a>
+                        <a href="/suivi">Suivi des parcours</a>
+
+                    {% elseif estFormateur %}
+
+                        <a href="/suivi">Suivi des apprentis</a>
+
+                    {% elseif estApprenti %}
+
+                        <a href="/annuaire">Annuaire</a>
+
+                    {% else %}
+
+                        <a href="{{ path('daip_accueil') }}#contact">
+                            Contacts
+                        </a>
+
+                    {% endif %}
+
+                    {% if estAdmin or estGestionnaire or estJury
+                        or estReferent or estFormateur or estApprenti %}
+                        <a href="{{ path('daip_accueil') }}#contact">
+                            Contacts
+                        </a>
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+            <div class="daip-nav-login">
+
+    {% if app.user %}
+        <span class="daip-user-label">
+            {{ app.user.userIdentifier }}
+        </span>
+
+        {% set rolesUtilisateur = app.user.roles|default([]) %}
+        {% set rolePrincipal = 'ROLE_UTILISATEUR' %}
+
+        {% if 'ROLE_SUPER_ADMIN' in rolesUtilisateur or is_granted('ROLE_SUPER_ADMIN') %}
+            {% set rolePrincipal = 'ROLE_SUPER_ADMIN' %}
+        {% elseif 'ROLE_ADMINISTRATEUR' in rolesUtilisateur or 'ROLE_ADMIN' in rolesUtilisateur or is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_ADMIN') %}
+            {% set rolePrincipal = 'ROLE_ADMIN' %}
+        {% elseif 'ROLE_GESTIONNAIRE' in rolesUtilisateur or 'GESTIONNAIRE' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_GESTIONNAIRE' %}
+        {% elseif 'ROLE_JURY' in rolesUtilisateur or 'JURY' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_JURY' %}
+        {% elseif 'ROLE_REFERENT_PARCOURS' in rolesUtilisateur or 'ROLE_REFERENT' in rolesUtilisateur or 'REFERENT_PARCOURS' in rolesUtilisateur or 'REFERENT' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_REFERENT_PARCOURS' %}
+        {% elseif 'ROLE_FORMATEUR' in rolesUtilisateur or 'FORMATEUR' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_FORMATEUR' %}
+        {% elseif 'ROLE_APPRENTI' in rolesUtilisateur or 'APPRENTI' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_APPRENTI' %}
+        {% endif %}
+
+        {% set libellesRoles = {
+            'ROLE_SUPER_ADMIN': 'Super administrateur',
+            'ROLE_ADMIN': 'Administrateur',
+            'ROLE_GESTIONNAIRE': 'Gestionnaire',
+            'ROLE_JURY': 'Membre du jury',
+            'ROLE_REFERENT_PARCOURS': 'R&eacute;f&eacute;rent de parcours',
+            'ROLE_FORMATEUR': 'Formateur',
+            'ROLE_APPRENTI': 'Apprenti',
+            'ROLE_UTILISATEUR': 'Utilisateur'
+        } %}
+
+        <span class="badge rounded-pill bg-primary ms-2"
+              id="role-utilisateur-connecte"
+              title="R&ocirc;le de votre espace">
+            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
+            {{ libellesRoles[rolePrincipal]|default('Utilisateur') }}
+        </span>
+
+        <a class="daip-login-btn" href="{{ path('app_logout') }}">
+            D&eacute;connexion
+        </a>
+    {% else %}
+        <a class="daip-login-btn" href="{{ path('app_login') }}">
+            Connexion
+        </a>
+    {% endif %}
+
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4 daip-main">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% block body %}{% endblock %}
+
+</main>
+
+<footer class="daip-footer">
+    <small>
+        MENAET - E2C | Formation, apprentissage et insertion
+    </small>
+</footer>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+{% block javascripts %}{% endblock %}
+
+</body>
+</html>
+
+
+
+
+===========================================================================
+FICHIER : templates\dashboard\index.html.twig
+===========================================================================
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set roles = app.user ? app.user.roles : [] %}
+
+    {% set estAdmin =
+        is_granted('ROLE_ADMIN')
+        or is_granted('ROLE_ADMINISTRATEUR')
+        or is_granted('ROLE_SUPER_ADMIN')
+        or 'ROLE_ADMIN' in roles
+        or 'ROLE_ADMINISTRATEUR' in roles
+        or 'ROLE_SUPER_ADMIN' in roles
+    %}
+
+    {% set estGestionnaire =
+        estAdmin
+        or is_granted('ROLE_GESTIONNAIRE')
+        or 'ROLE_GESTIONNAIRE' in roles
+        or 'GESTIONNAIRE' in roles
+    %}
+
+    {% set estApprenti =
+        is_granted('ROLE_APPRENTI')
+        or 'ROLE_APPRENTI' in roles
+        or 'APPRENTI' in roles
+    %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p class="text-muted">
+                Pilotage du recrutement et de l'accompagnement socioprofessionnel.
+            </p>
+        </div>
+    </div>
+
+    {# Indicateurs existants #}
+    <div class="row g-3">
+        {% for k, v in stats %}
+            <div class="col-md-3">
+                <div class="card metric shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted text-uppercase small">{{ k }}</div>
+                        <div class="display-6 fw-bold">{{ v }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-4 g-3">
+        {# Vue synthÃ©tique du parcours #}
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Vue synthÃ©tique du parcours</h5>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar" style="width: 72%">
+                            Recrutement
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-warning text-dark" style="width: 54%">
+                            Visites mÃ©dicales
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-success" style="width: 38%">
+                            Suivi
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-0">
+                        Ces indicateurs visuels sont illustratifs.
+                        Ils ne reprÃ©sentent pas nÃ©cessairement les statistiques rÃ©elles.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {# Raccourcis rÃ©servÃ©s aux actions distinctes des modules de navigation #}
+        <div class="col-lg-4">
+            {% if estGestionnaire %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5>Actions rapides</h5>
+                        <p class="text-muted small">
+                            AccÃ©dez directement aux opÃ©rations courantes.
+                        </p>
+
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('public_inscription') }}">
+                            <i class="bi bi-person-plus me-1"></i>
+                            Ouvrir une inscription
+                        </a>
+                    </div>
+                </div>
+
+            {% elseif estApprenti %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5>DÃ©couvrir la formation</h5>
+                        <p class="text-muted small">
+                            Consultez les informations utiles Ã  votre parcours.
+                        </p>
+
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('app_metiers_list') }}">
+                            Consulter les mÃ©tiers
+                        </a>
+
+                        <a class="btn btn-outline-primary w-100"
+                           href="{{ path('app_etablissements_list') }}">
+                            Consulter les Ã©tablissements
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

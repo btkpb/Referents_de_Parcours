@@ -1,0 +1,530 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon accompagnement - E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+.e2c-accompagnement {
+    --acc-blue: #145da0;
+    --acc-navy: #10365c;
+    --acc-light: #eaf4ff;
+    --acc-border: #e2eaf3;
+    --acc-text: #263d55;
+    --acc-muted: #718096;
+    color: var(--acc-text);
+}
+
+.e2c-accompagnement .acc-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 34px 36px;
+    margin-bottom: 25px;
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(120deg, #10365c 0%, #145da0 65%, #287fc0 100%);
+    box-shadow: 0 12px 30px rgba(16,54,92,.16);
+}
+
+.e2c-accompagnement .acc-hero::after {
+    content: "";
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    right: -65px;
+    top: -105px;
+    border: 35px solid rgba(255,255,255,.08);
+    border-radius: 50%;
+}
+
+.e2c-accompagnement .acc-eyebrow {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 30px;
+    background: rgba(255,255,255,.10);
+    color: #fff;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.e2c-accompagnement .acc-hero h1 {
+    margin: 0 0 10px;
+    color: #fff !important;
+    font-size: clamp(1.65rem, 3vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+}
+
+.e2c-accompagnement .acc-hero p {
+    max-width: 690px;
+    margin: 0;
+    color: rgba(255,255,255,.88);
+    font-size: .98rem;
+    line-height: 1.7;
+}
+
+.e2c-accompagnement .acc-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.e2c-accompagnement .acc-stat {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 105px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--acc-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(31,67,105,.045);
+}
+
+.e2c-accompagnement .acc-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--acc-light);
+    color: var(--acc-blue);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-stat-label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--acc-muted);
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.e2c-accompagnement .acc-stat-value {
+    display: block;
+    color: var(--acc-navy);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-section {
+    margin-bottom: 18px;
+    padding: 25px;
+    border: 1px solid var(--acc-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(31,67,105,.045);
+}
+
+.e2c-accompagnement .acc-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.e2c-accompagnement .acc-section-heading h2 {
+    margin: 0 0 5px;
+    color: var(--acc-navy);
+    font-size: 1.18rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-section-heading p {
+    margin: 0;
+    color: var(--acc-muted);
+    font-size: .88rem;
+}
+
+.e2c-accompagnement .acc-count {
+    padding: 7px 13px;
+    border-radius: 30px;
+    background: var(--acc-light);
+    color: var(--acc-blue);
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.e2c-accompagnement .acc-timeline {
+    position: relative;
+    display: grid;
+    gap: 18px;
+}
+
+.e2c-accompagnement .acc-item {
+    position: relative;
+    padding: 0 0 0 22px;
+    border-left: 3px solid #d8e9f8;
+}
+
+.e2c-accompagnement .acc-item:last-child {
+    border-left-color: transparent;
+}
+
+.e2c-accompagnement .acc-item::before {
+    content: "";
+    position: absolute;
+    top: 21px;
+    left: -8px;
+    width: 13px;
+    height: 13px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: var(--acc-blue);
+    box-shadow: 0 0 0 2px #b9d8f2;
+}
+
+.e2c-accompagnement .acc-card {
+    overflow: hidden;
+    border: 1px solid var(--acc-border);
+    border-radius: 15px;
+    background: #fff;
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.e2c-accompagnement .acc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 24px rgba(31,67,105,.09);
+}
+
+.e2c-accompagnement .acc-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 17px 20px;
+    background: #f7faff;
+    border-bottom: 1px solid var(--acc-border);
+}
+
+.e2c-accompagnement .acc-type {
+    color: var(--acc-navy);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-date {
+    color: #526a82;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.e2c-accompagnement .acc-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 11px;
+    border-radius: 30px;
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+.e2c-accompagnement .status-realise {
+    color: #17633c;
+    background: #e4f5eb;
+}
+
+.e2c-accompagnement .status-planifie {
+    color: #145da0;
+    background: #e7f2ff;
+}
+
+.e2c-accompagnement .status-encours {
+    color: #875a08;
+    background: #fff3d7;
+}
+
+.e2c-accompagnement .status-autre {
+    color: #586779;
+    background: #edf1f5;
+}
+
+.e2c-accompagnement .acc-card-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    padding: 21px;
+}
+
+.e2c-accompagnement .acc-info {
+    min-width: 0;
+    padding: 17px;
+    border: 1px solid #edf1f6;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.e2c-accompagnement .acc-info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--acc-blue);
+    font-size: .82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+}
+
+.e2c-accompagnement .acc-info-content {
+    color: #43566b;
+    font-size: .91rem;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+}
+
+.e2c-accompagnement .acc-empty {
+    padding: 42px 22px;
+    text-align: center;
+    border: 1px dashed #cbdced;
+    border-radius: 16px;
+    background: #f8fbff;
+}
+
+.e2c-accompagnement .acc-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin-bottom: 15px;
+    border-radius: 18px;
+    background: #e7f2ff;
+    color: var(--acc-blue);
+    font-size: 1.7rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-empty h3 {
+    margin-bottom: 8px;
+    color: var(--acc-navy);
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+.e2c-accompagnement .acc-empty p {
+    max-width: 520px;
+    margin: 0 auto;
+    color: var(--acc-muted);
+    font-size: .9rem;
+    line-height: 1.7;
+}
+
+.e2c-accompagnement .acc-footer-note {
+    margin-top: 20px;
+    padding: 15px 18px;
+    border-left: 4px solid #4c91c8;
+    border-radius: 9px;
+    background: #f0f7fd;
+    color: #526a82;
+    font-size: .86rem;
+    line-height: 1.65;
+}
+
+@media (max-width: 700px) {
+    .e2c-accompagnement .acc-hero {
+        padding: 26px 22px;
+        border-radius: 16px;
+    }
+
+    .e2c-accompagnement .acc-summary {
+        grid-template-columns: 1fr;
+        gap: 11px;
+    }
+
+    .e2c-accompagnement .acc-section {
+        padding: 17px;
+    }
+
+    .e2c-accompagnement .acc-card-body {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .e2c-accompagnement .acc-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .e2c-accompagnement .acc-item {
+        padding-left: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .e2c-accompagnement .acc-card {
+        transition: none;
+    }
+
+    .e2c-accompagnement .acc-card:hover {
+        transform: none;
+    }
+}
+</style>
+
+<div class="container py-4 e2c-accompagnement">
+
+    <section class="acc-hero">
+        <span class="acc-eyebrow">E2C-MENAET · Espace apprenti</span>
+        <h1>Mon accompagnement socioprofessionnel</h1>
+        <p>
+            Retrouvez les différentes étapes de votre accompagnement,
+            les synthèses de vos entretiens et les actions prévues
+            pour favoriser votre progression et votre insertion professionnelle.
+        </p>
+    </section>
+
+    {% include 'espace_apprenti/_menu.html.twig' %}
+
+    <section class="acc-summary" aria-label="Résumé de l'accompagnement">
+        <div class="acc-stat">
+            <div class="acc-stat-icon" aria-hidden="true">01</div>
+            <div>
+                <span class="acc-stat-label">Entretiens enregistrés</span>
+                <strong class="acc-stat-value">{{ entretiensParcours|length }}</strong>
+            </div>
+        </div>
+
+        <div class="acc-stat">
+            <div class="acc-stat-icon" aria-hidden="true">02</div>
+            <div>
+                <span class="acc-stat-label">Suivi de votre parcours</span>
+                <strong class="acc-stat-value">
+                    {{ entretiensParcours is empty ? 'À venir' : 'Historique disponible' }}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="acc-section">
+        <div class="acc-section-heading">
+            <div>
+                <h2>Historique de mon accompagnement</h2>
+                <p>Les entretiens sont présentés du plus récent au plus ancien.</p>
+            </div>
+            <span class="acc-count">
+                {{ entretiensParcours|length }} entretien(s)
+            </span>
+        </div>
+
+        {% if entretiensParcours is empty %}
+
+            <div class="acc-empty">
+                <div class="acc-empty-icon" aria-hidden="true">i</div>
+                <h3>Votre accompagnement débutera ici</h3>
+                <p>
+                    Aucun entretien d'accompagnement n'est actuellement enregistré
+                    dans votre dossier. Les informations apparaîtront ici
+                    dès qu'un entretien aura été enregistré par votre équipe de suivi.
+                </p>
+            </div>
+
+        {% else %}
+
+            {% set typeLabels = {
+                'ACCUEIL': 'Entretien d’accueil et d’entrée en parcours',
+                'MI_PARCOURS': 'Entretien de suivi à mi-parcours',
+                'SORTIE': 'Entretien de sortie de parcours'
+            } %}
+
+            <div class="acc-timeline">
+                {% for suivi in entretiensParcours %}
+
+                    {% set type = suivi.typeEntretien|upper %}
+                    {% set statut = suivi.statut|upper %}
+
+                    <article class="acc-item">
+                        <div class="acc-card">
+
+                            <header class="acc-card-header">
+                                <div>
+                                    <div class="acc-type">
+                                        {{ typeLabels[type]|default('Entretien de parcours') }}
+                                    </div>
+                                    <div class="acc-date mt-2">
+                                        {% if suivi.dateEntretien %}
+                                            {{ suivi.dateEntretien|date('d/m/Y') }}
+                                        {% else %}
+                                            Date non précisée
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if statut == 'REALISE' %}
+                                    <span class="acc-status status-realise">Réalisé</span>
+                                {% elseif statut == 'PLANIFIE' %}
+                                    <span class="acc-status status-planifie">Planifié</span>
+                                {% elseif statut == 'EN_COURS' %}
+                                    <span class="acc-status status-encours">En cours</span>
+                                {% else %}
+                                    <span class="acc-status status-autre">
+                                        {{ statut|replace({'_': ' '}) }}
+                                    </span>
+                                {% endif %}
+                            </header>
+
+                            <div class="acc-card-body">
+
+                                <section class="acc-info">
+                                    <div class="acc-info-label">
+                                        <span aria-hidden="true">✦</span>
+                                        Synthèse de l'entretien
+                                    </div>
+                                    <div class="acc-info-content">
+                                        {% if suivi.synthese %}
+                                            {{ suivi.synthese|nl2br }}
+                                        {% else %}
+                                            <span class="text-muted">
+                                                Aucune synthèse renseignée pour cet entretien.
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </section>
+
+                                <section class="acc-info">
+                                    <div class="acc-info-label">
+                                        <span aria-hidden="true">✓</span>
+                                        Plan d'action
+                                    </div>
+                                    <div class="acc-info-content">
+                                        {% if suivi.planAction %}
+                                            {{ suivi.planAction|nl2br }}
+                                        {% else %}
+                                            <span class="text-muted">
+                                                Aucun plan d'action renseigné pour cet entretien.
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </section>
+
+                            </div>
+                        </div>
+                    </article>
+
+                {% endfor %}
+            </div>
+
+        {% endif %}
+    </section>
+
+    <div class="acc-footer-note">
+        <strong>Information :</strong>
+        Votre espace présente les informations d'accompagnement enregistrées
+        dans votre dossier. Pour toute question concernant votre suivi,
+        rapprochez-vous de votre référent de parcours.
+    </div>
+
+</div>
+{% endblock %}

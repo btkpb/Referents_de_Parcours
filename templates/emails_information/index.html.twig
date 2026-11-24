@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}E-mails d'information{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(120deg,#164b78,#2878b8);color:white;">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h1 class="h3 mb-2 text-white">E-mails d'information</h1>
+                    <p class="mb-0 text-white">Communication avec les candidats et les apprentis</p>
+                </div>
+                <a href="{{ path('email_information_history') }}" class="btn btn-light">
+                    <i class="bi bi-clock-history me-1"></i> Historique des envois
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ path('email_information_index') }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Destinataires</label>
+                    <select name="audience" class="form-select">
+                        <option value="candidat" {{ audience == 'CANDIDAT' ? 'selected' : '' }}>Candidats</option>
+                        <option value="apprenti" {{ audience == 'APPRENTI' ? 'selected' : '' }}>Apprentis</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Campagne</label>
+                    <select name="campagne_id" class="form-select">
+                        <option value="">Toutes les campagnes</option>
+                        {% for campagne in campagnes %}
+                            <option value="{{ campagne.id }}" {{ filtres.campagne_id == campagne.id ? 'selected' : '' }}>
+                                {{ campagne.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Métier</label>
+                    <select name="metier" class="form-select">
+                        <option value="">Tous les métiers</option>
+                        {% for metier in metiers %}
+                            <option value="{{ metier }}" {{ filtres.metier == metier ? 'selected' : '' }}>
+                                {{ metier }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select name="statut" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="A_VERIFIER" {{ filtres.statut == 'A_VERIFIER' ? 'selected' : '' }}>À vérifier</option>
+                        <option value="ELIGIBLE" {{ filtres.statut == 'ELIGIBLE' ? 'selected' : '' }}>Éligible</option>
+                        <option value="ADMIS" {{ filtres.statut == 'ADMIS' ? 'selected' : '' }}>Admis</option>
+                        <option value="EN_ATTENTE" {{ filtres.statut == 'EN_ATTENTE' ? 'selected' : '' }}>En attente</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary" type="submit">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="post" action="{{ path('email_information_preview') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('email_information_preview') }}">
+        <input type="hidden" name="audience" value="{{ audience }}">
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h2 class="h5 mb-0">
+                    {% if audience == 'CANDIDAT' %}Liste des candidats{% else %}Liste des apprentis{% endif %}
+                </h2>
+                <span class="badge bg-primary">{{ destinataires|length }} destinataire(s) trouvé(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:55px;">Choix</th>
+                            <th>Nom et prénoms</th>
+                            <th>E-mail</th>
+                            <th>Campagne</th>
+                            <th>Métier</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for destinataire in destinataires %}
+                        <tr>
+                            <td>
+                                {% if destinataire.email_valide %}
+                                    <input class="form-check-input" type="checkbox"
+                                           name="destinataires[]"
+                                           value="{{ destinataire.destinataire_id }}">
+                                {% else %}
+                                    <input class="form-check-input" type="checkbox" disabled>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold">{{ destinataire.nom_complet }}</td>
+                            <td>
+                                {% if destinataire.email_valide %}
+                                    {{ destinataire.email }}
+                                {% else %}
+                                    <span class="text-danger">Adresse absente ou invalide</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ destinataire.campagne|default('—') }}</td>
+                            <td>{{ destinataire.metier|default('—') }}</td>
+                            <td>{{ destinataire.statut|default('—') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Aucun destinataire ne correspond aux filtres.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h2 class="h5 mb-0">Rédiger le message</h2>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="sujet" class="form-label fw-semibold">Objet de l'e-mail</label>
+                    <input type="text" id="sujet" name="sujet" class="form-control"
+                           maxlength="255" required placeholder="Objet du message">
+                </div>
+                <div class="mb-3">
+                    <label for="contenu" class="form-label fw-semibold">Contenu du message</label>
+                    <textarea id="contenu" name="contenu" class="form-control"
+                              rows="8" maxlength="10000" required
+                              placeholder="Rédigez votre message d'information..."></textarea>
+                </div>
+                <div class="alert alert-info mb-3">
+                    Les destinataires sans adresse e-mail valide seront exclus automatiquement.
+                    Une prévisualisation sera affichée avant toute confirmation d'envoi.
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Prévisualiser le message
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

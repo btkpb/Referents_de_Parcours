@@ -1,0 +1,637 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des entretiens | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .interviews-page {
+        --e2c-blue: #245b91;
+        --e2c-sky: #5B9BD5;
+        padding: 28px 0 45px;
+        background: #f4f7fb;
+        min-height: 75vh;
+    }
+
+    .interviews-header {
+        background: linear-gradient(120deg, #173f68, #245b91 58%, #5B9BD5);
+        color: white;
+        padding: 30px;
+        border-radius: 18px;
+        box-shadow: 0 10px 28px rgba(27, 70, 112, .16);
+        margin-bottom: 25px;
+    }
+
+    .interviews-header h1 {
+        font-weight: 800;
+        letter-spacing: -.4px;
+    }
+
+    .interviews-header p {
+        color: rgba(255,255,255,.82);
+    }
+
+    .interviews-header .btn {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 11px 17px;
+    }
+
+    .interview-stat {
+        border: 0;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 4px 18px rgba(30, 55, 90, .06);
+        height: 100%;
+    }
+
+    .interview-stat .stat-icon {
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        font-size: 21px;
+    }
+
+    .interview-stat .stat-number {
+        font-size: 27px;
+        font-weight: 800;
+        color: #193b5b;
+        line-height: 1.2;
+    }
+
+    .interview-stat .stat-label {
+        color: #718096;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .interviews-panel {
+        background: white;
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 5px 22px rgba(30, 55, 90, .06);
+        overflow: hidden;
+    }
+
+    .interviews-panel-heading {
+        padding: 21px 23px;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+    .interviews-panel-heading h2 {
+        color: #193b5b;
+        font-size: 18px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .interviews-filters {
+        padding: 18px 23px;
+        background: #fbfcfe;
+        border-bottom: 1px solid #edf1f5;
+    }
+
+    .interviews-filters .form-control,
+    .interviews-filters .form-select {
+        min-height: 43px;
+        border-radius: 9px;
+        border-color: #dce4ed;
+    }
+
+    .interviews-table {
+        margin: 0;
+    }
+
+    .interviews-table thead th {
+        background: #f2f6fa;
+        color: #53677d;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: .55px;
+        font-weight: 800;
+        padding: 15px 16px;
+        border-bottom: 1px solid #e5ebf2;
+        white-space: nowrap;
+    }
+
+    .interviews-table tbody td {
+        padding: 17px 16px;
+        border-color: #edf1f5;
+        vertical-align: middle;
+        color: #34465a;
+    }
+
+    .interviews-table tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    .candidate-name {
+        color: #193b5b;
+        font-weight: 750;
+    }
+
+    .candidate-number {
+        font-size: 12px;
+        color: #8492a3;
+        margin-top: 4px;
+    }
+
+    .interview-date {
+        font-weight: 700;
+        color: #294b6b;
+        white-space: nowrap;
+    }
+
+    .interview-place {
+        min-width: 130px;
+        max-width: 230px;
+    }
+
+    .jury-count {
+        display: inline-flex;
+        min-width: 29px;
+        height: 29px;
+        align-items: center;
+        justify-content: center;
+        background: #e6f2fc;
+        color: #245b91;
+        border-radius: 9px;
+        font-weight: 800;
+    }
+
+    .jury-names {
+        font-size: 12px;
+        color: #7b8999;
+        margin-top: 5px;
+        max-width: 210px;
+    }
+
+    .status-pill {
+        display: inline-block;
+        border-radius: 30px;
+        padding: 6px 11px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .status-planned {
+        color: #155b9a;
+        background: #e4f1fc;
+    }
+
+    .status-evaluated {
+        color: #167044;
+        background: #e2f5eb;
+    }
+
+    .status-pending {
+        color: #98630b;
+        background: #fff3d8;
+    }
+
+    .status-neutral {
+        color: #667487;
+        background: #edf0f4;
+    }
+
+    .interview-action {
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        padding: 8px 12px;
+    }
+
+    .interviews-empty {
+        padding: 55px 20px !important;
+        text-align: center;
+    }
+
+    .interviews-empty .empty-icon {
+        font-size: 35px;
+        color: #a8bfd4;
+        margin-bottom: 12px;
+    }
+
+    .interviews-footer {
+        padding: 17px 23px;
+        border-top: 1px solid #edf1f5;
+        background: #fbfcfe;
+    }
+
+    .interviews-footer .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        color: #245b91;
+    }
+
+    .interviews-footer .page-item.active .page-link {
+        background: #245b91;
+        border-color: #245b91;
+    }
+
+    @media (max-width: 767px) {
+        .interviews-page { padding-top: 15px; }
+        .interviews-header { padding: 22px 18px; }
+        .interviews-header h1 { font-size: 23px; }
+        .interviews-panel-heading,
+        .interviews-filters { padding: 16px; }
+    }
+</style>
+
+<div class="interviews-page">
+    <div class="container-fluid px-3 px-lg-4">
+
+        <div class="interviews-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="small fw-bold text-uppercase mb-2" style="letter-spacing:1.5px;color:#d8eaff;">
+                        E2C-MENAET · Recrutement
+                    </div>
+                    <h1 class="text-white h3 mb-2">
+                        <i class="bi bi-people-fill me-2"></i>
+                        Gestion des entretiens physiques
+                    </h1>
+                    <p class="mb-0">
+                        Planification, affectation des jurys et suivi des évaluations des candidats.
+                    </p>
+                </div>
+
+                {% if estGestionnaire %}
+                    <a href="{{ path('recruitment_planifier') }}" class="btn btn-light text-primary">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Planifier un entretien
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-4">
+                <div class="card interview-stat">
+                    <div class="card-body d-flex align-items-center gap-3 p-3 p-lg-4">
+                        <div class="stat-icon" style="background:#e6f2fc;color:#245b91;">
+                            <i class="bi bi-calendar2-week"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number">{{ statistiques.total|default(0) }}</div>
+                            <div class="stat-label">Entretiens concernés</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-4">
+                <div class="card interview-stat">
+                    <div class="card-body d-flex align-items-center gap-3 p-3 p-lg-4">
+                        <div class="stat-icon" style="background:#e2f5eb;color:#16804b;">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number">{{ statistiques.planifies|default(0) }}</div>
+                            <div class="stat-label">Entretiens planifiés</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-4">
+                <div class="card interview-stat">
+                    <div class="card-body d-flex align-items-center gap-3 p-3 p-lg-4">
+                        <div class="stat-icon" style="background:#fff3d8;color:#a56b0a;">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number">{{ items|length }}</div>
+                            <div class="stat-label">Entretiens sur cette page</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="interviews-panel">
+            <div class="interviews-panel-heading d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h2><i class="bi bi-clipboard2-check me-2"></i>Liste des entretiens</h2>
+                    <div class="small text-muted mt-1">
+                        {{ total }} résultat(s) · 10 entretiens maximum par page
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                        {% if estGestionnaire %}Vue gestionnaire{% else %}Vue membre du jury{% endif %}
+                    </span>
+
+                    {% if estGestionnaire %}
+                        <a href="{{ path('recruitment_convocation_history') }}"
+                           class="btn btn-sm btn-outline-primary interview-action">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Historique
+                        </a>
+
+                        <button type="submit"
+                                form="convocationGroupForm"
+                                class="btn btn-sm btn-primary interview-action"
+                                onclick="return confirm('Confirmez-vous l’envoi des convocations pour les entretiens sélectionnés ?');">
+                            <i class="bi bi-envelope-paper me-1"></i>
+                            Envoyer la sélection
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form method="get" action="{{ path('recruitment_interviews') }}" class="interviews-filters">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-lg-7">
+                        <label for="rechercheEntretien" class="form-label small fw-bold text-secondary">
+                            Rechercher un entretien
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search text-secondary"></i>
+                            </span>
+                            <input
+                                type="search"
+                                id="rechercheEntretien"
+                                name="q"
+                                class="form-control"
+                                value="{{ recherche }}"
+                                placeholder="Nom, prénom, numéro, lieu ou jury..."
+                            >
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-3">
+                        <label for="filtreStatut" class="form-label small fw-bold text-secondary">
+                            Statut
+                        </label>
+                        <select id="filtreStatut" name="statut" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="PLANIFIE" {% if statutFiltre == 'PLANIFIE' %}selected{% endif %}>
+                                Planifiés
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-lg-1">
+                        <button type="submit" class="btn btn-primary w-100" title="Rechercher">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+
+                    <div class="col-6 col-lg-1">
+                        <a href="{{ path('recruitment_interviews') }}" class="btn btn-outline-secondary w-100" title="Réinitialiser">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            {% if estGestionnaire %}
+                <form id="convocationGroupForm"
+                      method="post"
+                      action="{{ path('recruitment_convocation_send_group') }}">
+                    <input type="hidden"
+                           name="_token"
+                           value="{{ csrf_token('convocation_send_group') }}">
+                </form>
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table interviews-table align-middle">
+                    <thead>
+                        <tr>
+                            {% if estGestionnaire %}
+                                <th scope="col" style="width:45px;">
+                                    <span class="visually-hidden">Sélection</span>
+                                    <i class="bi bi-check2-square" title="Sélection des entretiens"></i>
+                                </th>
+                            {% endif %}
+                            <th>Candidat</th>
+                            <th>Date et heure</th>
+                            <th>Lieu</th>
+                            <th>Jury</th>
+                            <th>Suivi</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for e in items %}
+                        <tr>
+                            {% if estGestionnaire %}
+                                <td>
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           form="convocationGroupForm"
+                                           name="entretien_ids[]"
+                                           value="{{ e.id }}"
+                                           aria-label="Sélectionner l’entretien numéro {{ e.id }}">
+                                </td>
+                            {% endif %}
+                            <td>
+                                {% if e.candidat %}
+                                    <div class="candidate-name">
+                                        {{ e.candidat.nom }} {{ e.candidat.prenoms }}
+                                    </div>
+                                    <div class="candidate-number">
+                                        <i class="bi bi-person-badge me-1"></i>{{ e.candidat.numero }}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Candidat indisponible</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="interview-date">
+                                    <i class="bi bi-calendar3 me-1 text-primary"></i>
+                                    {{ e.dateHeure ? e.dateHeure|date('d/m/Y') : 'Non définie' }}
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ e.dateHeure ? e.dateHeure|date('H:i') : '--:--' }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="interview-place">
+                                    <i class="bi bi-geo-alt me-1 text-secondary"></i>
+                                    {{ e.lieu ?: 'Non renseigné' }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="jury-count">{{ e.nombreJury }}</span>
+                                <div class="jury-names">
+                                    {{ e.juryNoms ?: 'Jury non renseigné' }}
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if e.statut == 'PLANIFIE' %}
+                                    <span class="status-pill status-planned">
+                                        <i class="bi bi-calendar-check me-1"></i>Planifié
+                                    </span>
+                                {% else %}
+                                    <span class="status-pill status-neutral">
+                                        {{ e.statut }}
+                                    </span>
+                                {% endif %}
+
+                                {% if is_granted('ROLE_JURY') and e.jurys.contains(juryConnecte) %}
+                                    {% if evaluationsIds[e.id] is defined %}
+                                        <div class="mt-2">
+                                            <span class="status-pill status-evaluated">
+                                                <i class="bi bi-check-circle me-1"></i>Déjà évalué
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <div class="mt-2">
+                                            <span class="status-pill status-pending">
+                                                <i class="bi bi-hourglass-split me-1"></i>À évaluer
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                {% elseif estGestionnaire %}
+                                    {% if entretiensAvecEvaluationsIds[e.id] is defined %}
+                                        <div class="mt-2">
+                                            <span class="status-pill status-evaluated">
+                                                <i class="bi bi-check-circle me-1"></i>Évaluation reçue
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <div class="mt-2">
+                                            <span class="status-pill status-neutral">Non évalué</span>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                {% if is_granted('ROLE_JURY') and e.jurys.contains(juryConnecte) %}
+                                    <a
+                                        class="btn btn-sm btn-outline-primary interview-action"
+                                        href="{{ path('recruitment_eval', {id: e.id}) }}"
+                                    >
+                                        {% if evaluationsIds[e.id] is defined %}
+                                            <i class="bi bi-pencil-square me-1"></i>Modifier
+                                        {% else %}
+                                            <i class="bi bi-clipboard-check me-1"></i>Évaluer
+                                        {% endif %}
+                                    </a>
+                                {% elseif estGestionnaire %}
+                                    <a
+        class="btn btn-sm btn-outline-secondary interview-action"
+        href="{{ path('recruitment_convocation_preview', {id: e.id}) }}"
+        target="_blank"
+        rel="noopener"
+    >
+        <i class="bi bi-file-earmark-pdf me-1"></i>Prévisualiser PDF
+    </a>
+                                    <form method="post"
+                                          action="{{ path('recruitment_convocation_send', {id: e.id}) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Confirmez-vous l’envoi de la convocation à ce candidat ?');">
+                                        <input type="hidden"
+                                               name="_token"
+                                               value="{{ csrf_token('convocation_send_' ~ e.id) }}">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-success interview-action mt-1">
+                                            <i class="bi bi-envelope me-1"></i>
+                                            Envoyer
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="{% if estGestionnaire %}7{% else %}6{% endif %}" class="interviews-empty">
+                                <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+                                <h3 class="h6 fw-bold text-secondary">Aucun entretien trouvé</h3>
+                                <p class="small text-muted mb-3">
+                                    Aucun entretien ne correspond à votre recherche ou à vos critères.
+                                </p>
+                                {% if recherche or statutFiltre %}
+                                    <a href="{{ path('recruitment_interviews') }}" class="btn btn-sm btn-outline-primary">
+                                        Effacer les filtres
+                                    </a>
+                                {% elseif estGestionnaire %}
+                                    <a href="{{ path('recruitment_planifier') }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-calendar-plus me-1"></i>Planifier un entretien
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if nombrePages > 1 %}
+                <div class="interviews-footer d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="small text-muted">
+                        Page {{ page }} sur {{ nombrePages }}
+                    </div>
+
+                    <nav aria-label="Pagination des entretiens">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                                <a class="page-link" href="{{ path('recruitment_interviews', {q: recherche, statut: statutFiltre, page: page - 1}) }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            {% for numeroPage in 1..nombrePages %}
+                                <li class="page-item {% if numeroPage == page %}active{% endif %}">
+                                    <a class="page-link" href="{{ path('recruitment_interviews', {q: recherche, statut: statutFiltre, page: numeroPage}) }}">
+                                        {{ numeroPage }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            <li class="page-item {% if page >= nombrePages %}disabled{% endif %}">
+                                <a class="page-link" href="{{ path('recruitment_interviews', {q: recherche, statut: statutFiltre, page: page + 1}) }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="small text-muted mt-3 px-1">
+            <i class="bi bi-shield-check me-1"></i>
+            Les entretiens affichés respectent les droits d'accès de votre profil.
+        </div>
+    </div>
+</div>
+{% endblock %}

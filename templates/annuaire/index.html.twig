@@ -1,0 +1,380 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Annuaire des admis{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .annuaire-page {
+        padding: 24px 0 40px;
+    }
+
+    .annuaire-header {
+        background: linear-gradient(135deg, #174a75, #287db5);
+        color: #fff;
+        border-radius: 14px;
+        padding: 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 5px 18px rgba(0,0,0,.10);
+    }
+
+    .annuaire-header h1,
+    .annuaire-header p,
+    .annuaire-header p strong {
+        color: #ffffff !important;
+    }
+
+    .annuaire-header h1 {
+        font-size: 1.65rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .annuaire-header p {
+        margin-bottom: 0;
+        opacity: .92;
+    }
+
+    .annuaire-stat {
+        border: 1px solid #dce7f1;
+        border-left: 5px solid #287db5;
+        border-radius: 10px;
+        padding: 17px;
+        background: #fff;
+        height: 100%;
+        box-shadow: 0 3px 10px rgba(0,0,0,.04);
+    }
+
+    .annuaire-stat .stat-label {
+        color: #637587;
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+    .annuaire-stat .stat-value {
+        color: #174a75;
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    .annuaire-panel {
+        background: #fff;
+        border: 1px solid #dce5ed;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 12px rgba(0,0,0,.04);
+    }
+
+    .annuaire-panel h2 {
+        color: #174a75;
+        font-size: 1.08rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+
+    .annuaire-table {
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+
+    .annuaire-table thead th {
+        background: #174a75;
+        color: #fff;
+        font-size: .84rem;
+        white-space: nowrap;
+        padding: 13px 10px;
+    }
+
+    .annuaire-table tbody td {
+        padding: 12px 10px;
+        font-weight: 600;
+        color: #243746;
+    }
+
+    .annuaire-table tbody tr:nth-child(odd) {
+        background: #eaf4fc;
+    }
+
+    .annuaire-table tbody tr:nth-child(even) {
+        background: #fff;
+    }
+
+    .annuaire-table tbody tr:hover {
+        background: #d5eafa;
+    }
+
+    .annuaire-code {
+        color: #174a75;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .annuaire-metier {
+        display: inline-block;
+        background: #e7f1fa;
+        color: #174a75;
+        border-radius: 20px;
+        padding: 5px 10px;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .annuaire-filter label {
+        font-weight: 700;
+        color: #40576a;
+        font-size: .88rem;
+        margin-bottom: 6px;
+    }
+
+    .annuaire-filter .form-control,
+    .annuaire-filter .form-select {
+        min-height: 42px;
+    }
+
+    .annuaire-total-metier {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 12px;
+        border-bottom: 1px solid #e7edf2;
+        font-weight: 600;
+    }
+
+    .annuaire-total-metier:last-child {
+        border-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+        .annuaire-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .annuaire-panel {
+            padding: 13px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid annuaire-page">
+
+    <div class="annuaire-header">
+        <h1>Annuaire des admis</h1>
+        <p>
+            {% if campagne %}
+                Campagne active : <strong>{{ campagne.nom }}</strong>
+            {% else %}
+                Aucune campagne active n'est actuellement configurée.
+            {% endif %}
+        </p>
+    </div>
+
+    {% if campagne %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="annuaire-stat">
+                    <div class="stat-label">Total des admis de la campagne active</div>
+                    <div class="stat-value">{{ totalCampagne }}</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="annuaire-stat">
+                    <div class="stat-label">Résultats correspondant aux filtres</div>
+                    <div class="stat-value">{{ totalFiltres }}</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="annuaire-stat">
+                    <div class="stat-label">Métiers représentés dans les résultats</div>
+                    <div class="stat-value">{{ nombreMetiers }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="annuaire-panel annuaire-filter">
+            <h2>Recherche et filtres</h2>
+
+            <form method="get" action="{{ path('annuaire') }}">
+                <div class="row g-3">
+
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label for="q">Recherche</label>
+                        <input
+                            type="search"
+                            id="q"
+                            name="q"
+                            class="form-control"
+                            value="{{ recherche }}"
+                            placeholder="Numéro, nom ou prénoms..."
+                        >
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="metier">Métier</label>
+                        <select id="metier" name="metier" class="form-select">
+                            <option value="">Tous les métiers</option>
+                            {% for nomMetier in metiers %}
+                                <option value="{{ nomMetier }}" {% if metier == nomMetier %}selected{% endif %}>
+                                    {{ nomMetier }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-6 col-lg-2">
+                        <label for="dateDebut">Admission du</label>
+                        <input
+                            type="date"
+                            id="dateDebut"
+                            name="dateDebut"
+                            class="form-control"
+                            value="{{ dateDebut }}"
+                        >
+                    </div>
+
+                    <div class="col-6 col-md-6 col-lg-3">
+                        <label for="dateFin">Admission au</label>
+                        <input
+                            type="date"
+                            id="dateFin"
+                            name="dateFin"
+                            class="form-control"
+                            value="{{ dateFin }}"
+                        >
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label for="tri">Trier par</label>
+                        <select id="tri" name="tri" class="form-select">
+                            <option value="date" {% if tri == 'date' %}selected{% endif %}>Date d'admission</option>
+                            <option value="numero" {% if tri == 'numero' %}selected{% endif %}>Numéro candidat</option>
+                            <option value="nom" {% if tri == 'nom' %}selected{% endif %}>Nom</option>
+                            <option value="prenoms" {% if tri == 'prenoms' %}selected{% endif %}>Prénoms</option>
+                            <option value="metier" {% if tri == 'metier' %}selected{% endif %}>Métier</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="ordre">Ordre de tri</label>
+                        <select id="ordre" name="ordre" class="form-select">
+                            <option value="DESC" {% if ordre == 'DESC' %}selected{% endif %}>Décroissant</option>
+                            <option value="ASC" {% if ordre == 'ASC' %}selected{% endif %}>Croissant</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-lg-5 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Rechercher et filtrer
+                        </button>
+                        <a href="{{ path('annuaire') }}" class="btn btn-outline-secondary">
+                            Réinitialiser
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="annuaire-panel">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 class="mb-0">Liste officielle des admis</h2>
+                <span class="badge bg-primary">
+                    {{ totalFiltres }} résultat(s)
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table annuaire-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Numéro d'admission</th>
+                            <th>Nom</th>
+                            <th>Prénoms</th>
+                            <th>Métier</th>
+                            <th>Date d'admission</th>
+                            <th>Voir le dossier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in items %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if a.candidat.photoIdentite %}
+                                        <img
+                                            src="{{ path('candidat_photo_identite', {'id': a.candidat.id}) }}"
+                                            alt="Photo de {{ a.candidat.nom }} {{ a.candidat.prenoms }}"
+                                            width="56"
+                                            height="68"
+                                            loading="lazy"
+                                            class="rounded border shadow-sm"
+                                            style="object-fit: cover;"
+                                        >
+                                    {% else %}
+                                        <span class="badge bg-light text-secondary border">À ajouter</span>
+                                    {% endif %}
+                                </td>
+                                <td class="annuaire-code">
+                                    {{ a.codeAdmission ?: 'Non attribué' }}
+                                </td>
+                                <td>{{ a.candidat.nom }}</td>
+                                <td>{{ a.candidat.prenoms }}</td>
+                                <td>
+                                    <span class="annuaire-metier">
+                                        {{ a.metierAffecte ?: 'Non renseigné' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ a.dateAdmission ? a.dateAdmission|date('d/m/Y') : 'Non renseignée' }}
+                                </td>
+                                <td>
+                                    {% if estGestionnaire or a.candidat.id in dossiersAccessibles %}
+                                        <a
+                                            href="{{ path('candidat_show', {'id': a.candidat.id}) }}"
+                                            class="btn btn-sm btn-primary"
+                                        >
+                                            Voir le dossier
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Accès non autorisé</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <strong>Aucun admis ne correspond aux critères sélectionnés.</strong>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="annuaire-panel">
+            <h2>Répartition des admissions par métier</h2>
+
+            {% for nomMetier, nombre in admissionsParMetier %}
+                <div class="annuaire-total-metier">
+                    <span>{{ nomMetier }}</span>
+                    <strong>{{ nombre }}</strong>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Aucune admission à répartir pour les filtres sélectionnés.</p>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="alert alert-warning">
+            Aucune campagne active n'a été trouvée. Activez une campagne pour afficher son annuaire des admis.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

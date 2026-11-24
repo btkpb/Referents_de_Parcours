@@ -1,0 +1,241 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des notifications - E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+.notification-admin {
+    color: #26384a;
+    padding-bottom: 40px;
+}
+.notification-admin .hero {
+    padding: 30px;
+    margin: 10px 0 24px;
+    color: white;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #12365a, #1769aa 70%, #3187c8);
+}
+.notification-admin .hero h1 {
+    color: white;
+    font-weight: 800;
+}
+.notification-admin .panel {
+    padding: 25px;
+    margin-bottom: 22px;
+    border: 1px solid #e3ebf3;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 5px 18px rgba(24,55,85,.045);
+}
+.notification-admin .panel h2 {
+    color: #12365a;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+.notification-admin .form-label {
+    font-weight: 700;
+    color: #315777;
+}
+.notification-admin .history-item {
+    padding: 16px;
+    border: 1px solid #e3ebf3;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+.notification-admin .history-item h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #173d62;
+}
+.notification-admin .history-message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+@media(max-width:767px) {
+    .notification-admin .hero {padding: 23px 18px}
+    .notification-admin .panel {padding: 18px 14px}
+}
+</style>
+
+<div class="container py-4 notification-admin">
+
+    <header class="hero">
+        <div class="small fw-bold mb-2">E2C-MENAET · COMMUNICATION</div>
+        <h1 class="h2 mb-2">Gestion des notifications</h1>
+        <p class="mb-0">
+            <span style="color: #ffffff !important;">Diffusez une information aux apprentis depuis la plateforme.</span>
+        </p>
+    </header>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <section class="panel">
+        <h2>Nouvelle notification</h2>
+
+        <form method="post" action="{{ path('notification_admin_envoyer') }}">
+            <input type="hidden" name="_token"
+                   value="{{ csrf_token('notification_manuelle') }}">
+
+            <div class="mb-3">
+                <label for="mode" class="form-label">Destinataires</label>
+                <select class="form-select" id="mode" name="mode" required>
+                    <option value="unique">Un apprenti précis</option>
+                    <option value="selection">Plusieurs apprentis sélectionnés</option>
+                    <option value="tous">Tous les apprentis actifs</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="bloc-unique">
+                <label for="destinataire_id" class="form-label">
+                    Choisir l'apprenti
+                </label>
+                <select class="form-select" id="destinataire_id"
+                        name="destinataire_id">
+                    <option value="">-- Sélectionner un apprenti --</option>
+                    {% for apprenti in apprentis %}
+                        <option value="{{ apprenti.id }}">
+                            {{ apprenti.nom }} {{ apprenti.prenoms }}
+                            — {{ apprenti.email }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3 d-none" id="bloc-selection">
+                <label for="destinataires" class="form-label">
+                    Sélectionner les apprentis
+                </label>
+                <select class="form-select" id="destinataires"
+                        name="destinataires[]" multiple size="7">
+                    {% for apprenti in apprentis %}
+                        <option value="{{ apprenti.id }}">
+                            {{ apprenti.nom }} {{ apprenti.prenoms }}
+                            — {{ apprenti.email }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">
+                    Maintenir Ctrl (ou Cmd sur Mac) pour choisir plusieurs comptes.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="titre" class="form-label">Titre de la notification</label>
+                <input type="text" class="form-control" id="titre"
+                       name="titre" maxlength="180" required
+                       placeholder="Ex. : Information importante sur votre formation">
+            </div>
+
+            <div class="mb-3">
+                <label for="type" class="form-label">Catégorie</label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="INFORMATION">Information</option>
+                    <option value="RAPPEL">Rappel</option>
+                    <option value="CONVOCATION">Convocation</option>
+                    <option value="IMPORTANT">Important</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="message" class="form-label">Contenu du message</label>
+                <textarea class="form-control" id="message" name="message"
+                          rows="6" maxlength="5000" required
+                          placeholder="Saisir le message destiné aux apprentis..."></textarea>
+                <div class="form-text">
+                    Maximum 5 000 caractères. Ne pas inclure de données médicales confidentielles.
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button type="submit" class="btn btn-primary px-4"
+                        onclick="return confirm('Confirmer l’enregistrement et la diffusion de cette notification ?');">
+                    Envoyer la notification
+                </button>
+                <span class="small text-secondary">
+                    Diffusion dans l'espace personnel des apprentis.
+                </span>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h2 class="mb-0">Historique des notifications manuelles</h2>
+            <span class="badge bg-secondary">
+                {{ historique|length }} entrée(s) récente(s)
+            </span>
+        </div>
+
+        {% for notification in historique %}
+            <article class="history-item">
+                <div class="d-flex flex-wrap justify-content-between gap-2">
+                    <h3>{{ notification.titre }}</h3>
+                    <span class="badge bg-light text-dark">
+                        {{ notification.type|replace({'_': ' '}) }}
+                    </span>
+                </div>
+
+                <p class="history-message mb-2">{{ notification.message }}</p>
+
+                <div class="small text-secondary">
+                    Destinataire :
+                    <strong>
+                        {{ notification.destinataire.nom }}
+                        {{ notification.destinataire.prenoms }}
+                    </strong>
+                    · {{ notification.createdAt|date('d/m/Y à H:i') }}
+                    ·
+                    {% if notification.isRead %}
+                        <span class="text-success">Lue</span>
+                    {% else %}
+                        <span class="text-primary">Non lue</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="alert alert-light border mb-0">
+                Aucune notification manuelle n'a encore été diffusée.
+            </div>
+        {% endfor %}
+    </section>
+
+    <div class="alert alert-info">
+        <strong>Information :</strong>
+        cet écran enregistre et diffuse les notifications dans la plateforme.
+        L'envoi de SMS n'est pas activé.
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mode = document.getElementById('mode');
+    const blocUnique = document.getElementById('bloc-unique');
+    const blocSelection = document.getElementById('bloc-selection');
+    const destinataireUnique = document.getElementById('destinataire_id');
+    const destinataires = document.getElementById('destinataires');
+
+    function actualiserDestinataires() {
+        const valeur = mode.value;
+
+        blocUnique.classList.toggle('d-none', valeur !== 'unique');
+        blocSelection.classList.toggle('d-none', valeur !== 'selection');
+
+        destinataireUnique.required = valeur === 'unique';
+        destinataires.required = valeur === 'selection';
+    }
+
+    mode.addEventListener('change', actualiserDestinataires);
+    actualiserDestinataires();
+});
+</script>
+{% endblock %}

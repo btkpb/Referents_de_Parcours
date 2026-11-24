@@ -1,0 +1,626 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription candidat - MENAET{% endblock %}
+
+{% block body %}
+<style>
+/* ==========================================
+   DESIGN PROFESSIONNEL - INSCRIPTION E2C
+   ========================================== */
+
+.e2c-inscription-page {
+    max-width: 1180px;
+    padding-top: 38px !important;
+    padding-bottom: 55px !important;
+}
+
+.e2c-inscription-card {
+    overflow: hidden;
+    border-radius: 20px !important;
+    background: #ffffff;
+    box-shadow: 0 15px 45px rgba(7, 26, 58, .12) !important;
+}
+
+.e2c-inscription-header {
+    position: relative;
+    overflow: hidden;
+    padding: 30px 36px !important;
+    border: 0 !important;
+    border-bottom: 4px solid #f4b400 !important;
+    background: linear-gradient(125deg, #071a3a, #102d60, #1d5685) !important;
+}
+
+.e2c-inscription-header::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    right: -65px;
+    top: -115px;
+    border: 28px solid rgba(255,255,255,.07);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.e2c-inscription-header h1 {
+    position: relative;
+    z-index: 1;
+    color: #ffffff !important;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: .2px;
+}
+
+.e2c-inscription-header p {
+    position: relative;
+    z-index: 1;
+    color: #ffda70 !important;
+    font-size: .98rem;
+    font-weight: 600;
+}
+
+.e2c-inscription-body {
+    padding: 34px 40px !important;
+}
+
+.e2c-inscription-body > p:first-child {
+    padding: 15px 18px;
+    margin-bottom: 28px;
+    border-left: 4px solid #f4b400;
+    border-radius: 8px;
+    background: #f2f6fc;
+    color: #42536b !important;
+    line-height: 1.7;
+}
+
+.e2c-inscription-body fieldset {
+    position: relative;
+    padding: 23px 24px 25px;
+    margin-bottom: 27px !important;
+    border: 1px solid #e1e8f1;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(7, 26, 58, .035);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.e2c-inscription-body fieldset:hover {
+    border-color: #b9cce2;
+    box-shadow: 0 7px 20px rgba(7, 26, 58, .06);
+}
+
+.e2c-inscription-body legend {
+    float: none;
+    width: auto;
+    display: table;
+    padding: 0 12px 12px 0 !important;
+    margin-bottom: 20px !important;
+    border-bottom: 2px solid #f4b400 !important;
+    color: #102d60;
+    font-size: 1.08rem !important;
+    font-weight: 800;
+}
+
+.e2c-inscription-body .form-label {
+    margin-bottom: 7px;
+    color: #263b57;
+    font-size: .91rem;
+    font-weight: 700;
+}
+
+.e2c-inscription-body .form-control,
+.e2c-inscription-body .form-select {
+    min-height: 46px;
+    padding: 10px 13px;
+    border: 1px solid #d5deea;
+    border-radius: 9px;
+    background-color: #fbfcfe;
+    color: #263247;
+    font-size: .94rem;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.e2c-inscription-body textarea.form-control {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.e2c-inscription-body .form-control:focus,
+.e2c-inscription-body .form-select:focus {
+    border-color: #2876b8;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 .22rem rgba(40, 118, 184, .13);
+}
+
+.e2c-inscription-body .form-control[readonly] {
+    background: #edf2f8;
+    color: #52657c;
+    font-weight: 700;
+}
+
+.e2c-inscription-body .form-text {
+    margin-top: 7px;
+    color: #718096;
+    font-size: .82rem;
+}
+
+.e2c-inscription-body .alert {
+    padding: 15px 18px;
+    border-radius: 10px;
+    line-height: 1.6;
+}
+
+.e2c-inscription-body .alert-info {
+    border: 1px solid #c9e1f5;
+    border-left: 4px solid #2876b8;
+    background: #eff7fd;
+    color: #244c70;
+}
+
+.e2c-inscription-body .btn {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 22px;
+    border-radius: 9px;
+    font-weight: 700;
+    transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.e2c-inscription-body .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(7, 26, 58, .13);
+}
+
+.e2c-inscription-body .btn-primary {
+    border-color: #102d60;
+    background: linear-gradient(120deg, #102d60, #21649a);
+}
+
+.e2c-inscription-body .btn-primary:hover {
+    border-color: #071a3a;
+    background: #071a3a;
+}
+
+.e2c-inscription-body .btn-outline-secondary {
+    border-color: #cbd5e1;
+    color: #42536b;
+}
+
+.e2c-inscription-body .btn-outline-secondary:hover {
+    background: #edf2f8;
+    color: #102d60;
+}
+
+@media (max-width: 767.98px) {
+    .e2c-inscription-page {
+        padding: 15px 10px 30px !important;
+    }
+
+    .e2c-inscription-header {
+        padding: 24px 20px !important;
+    }
+
+    .e2c-inscription-body {
+        padding: 22px 15px !important;
+    }
+
+    .e2c-inscription-body fieldset {
+        padding: 18px 14px 20px;
+        margin-bottom: 20px !important;
+    }
+
+    .e2c-inscription-body legend {
+        font-size: 1rem !important;
+    }
+
+    .e2c-inscription-body .d-flex.justify-content-between {
+        flex-direction: column-reverse;
+    }
+
+    .e2c-inscription-body .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .e2c-inscription-body *,
+    .e2c-inscription-card * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+</style>
+    <div class="container py-4 e2c-inscription-page">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="card border-0 shadow e2c-inscription-card">
+                    <div class="card-header text-white py-4 e2c-inscription-header" style="background:#101f45">
+                        <h1 class="h3 mb-1 text-white">Inscription d'un candidat</h1>
+                        <p class="mb-0">Plateforme MENAET - E2C</p>
+                    </div>
+
+                    <div class="card-body p-3 p-md-5 e2c-inscription-body">
+                        <p class="text-secondary">
+                            Renseignez les informations demandées. Les champs marqués
+                            d'un astérisque (*) sont obligatoires.
+                        </p>
+
+                        {% for message in app.flashes('danger') %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endfor %}
+                        {% for message in app.flashes('warning') %}
+                            <div class="alert alert-warning">{{ message }}</div>
+                        {% endfor %}
+
+                        <form
+                            method="post"
+                            action="{{ path('public_inscription') }}"
+                            enctype="multipart/form-data"
+                        >
+
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('public_inscription_form') }}">
+<fieldset class="mb-4">
+                                <legend class="h5 border-bottom pb-2">
+                                    1. Identité et état civil
+                                </legend>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="nom">Nom *</label>
+                                        <input
+                                            class="form-control"
+                                            id="nom"
+                                            name="candidat[nom]"
+                                            required
+                                            maxlength="100"
+                                            autocomplete="family-name"
+                                            value="{{ data.nom|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="prenoms">Prénoms *</label>
+                                        <input
+                                            class="form-control"
+                                            id="prenoms"
+                                            name="candidat[prenoms]"
+                                            required
+                                            maxlength="160"
+                                            autocomplete="given-name"
+                                            value="{{ data.prenoms|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="sexe">Sexe *</label>
+                                        <select
+                                            class="form-select"
+                                            id="sexe"
+                                            name="candidat[sexe]"
+                                            required
+                                        >
+                                            <option value="">Choisir</option>
+                                            <option value="Masculin" {{ data.sexe|default('') == 'Masculin' ? 'selected' : '' }}>Masculin</option>
+                                            <option value="Féminin" {{ data.sexe|default('') == 'Féminin' ? 'selected' : '' }}>Féminin</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="dateNaissance">Date de naissance *</label>
+                                        <input
+                                            type="date"
+                                            class="form-control"
+                                            id="dateNaissance"
+                                            name="candidat[dateNaissance]"
+                                            required
+                                            max="{{ 'now'|date('Y-m-d') }}"
+                                            value="{{ data.dateNaissance|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="age">Âge calculé</label>
+                                        <input
+                                            class="form-control"
+                                            id="age"
+                                            readonly
+                                            placeholder="Calcul automatique"
+                                        >
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="lieuNaissance">Lieu de naissance</label>
+                                        <input
+                                            class="form-control"
+                                            id="lieuNaissance"
+                                            name="candidat[lieuNaissance]"
+                                            value="{{ data.lieuNaissance|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="nationalite">Nationalité *</label>
+                                        <select
+                                            class="form-select"
+                                            id="nationalite"
+                                            name="candidat[nationalite]"
+                                            required
+                                        >
+                                            {% for pays in ['Ivoirienne', 'Béninoise', 'Burkinabè', 'Malienne', 'Guinéenne', 'Togolaise', 'Sénégalaise', 'Autre'] %}
+                                                <option value="{{ pays }}" {{ data.nationalite|default('Ivoirienne') == pays ? 'selected' : '' }}>{{ pays }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="telephone">Téléphone principal *</label>
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="telephone"
+                                            name="candidat[telephone]"
+                                            required
+                                            maxlength="30"
+                                            autocomplete="tel"
+                                            value="{{ data.telephone|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="telephoneAlt">Téléphone secondaire</label>
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="telephoneAlt"
+                                            name="candidat[telephoneAlt]"
+                                            maxlength="30"
+                                            value="{{ data.telephoneAlt|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="email">Adresse e-mail (facultative)</label>
+                                        <input
+                                            type="email"
+                                            class="form-control"
+                                            id="email"
+                                            name="candidat[email]"
+                                            maxlength="180"
+                                            autocomplete="email"
+                                            placeholder="exemple@domaine.com"
+                                            value="{{ data.email|default('') }}"
+                                        >
+                                        <small class="text-muted">Pour recevoir les communications par e-mail.</small>
+                                    </div>                                    <div class="col-12">
+                                        <label class="form-label" for="lieuResidence">Lieu de résidence *</label>
+                                        <input
+                                            class="form-control"
+                                            id="lieuResidence"
+                                            name="candidat[lieuResidence]"
+                                            required
+                                            maxlength="160"
+                                            placeholder="Commune, ville, quartier"
+                                            value="{{ data.lieuResidence|default('') }}"
+                                        >
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="mb-4">
+                                <legend class="h5 border-bottom pb-2">
+                                    2. Pièce d'identité
+                                </legend>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="pieceIdentite">Type de pièce *</label>
+                                        <select
+                                            class="form-select"
+                                            id="pieceIdentite"
+                                            name="candidat[pieceIdentite]"
+                                            required
+                                        >
+                                            {% for piece in ['CNI', 'Attestation d’identité', 'Extrait de naissance', 'Passeport', 'Aucun'] %}
+                                                <option value="{{ piece }}" {{ data.pieceIdentite|default('') == piece ? 'selected' : '' }}>{{ piece }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="pieceIdentiteFichier">Copie de la pièce</label>
+                                        <input
+                                            type="file"
+                                            class="form-control"
+                                            id="pieceIdentiteFichier"
+                                            name="candidat[pieceIdentiteFichier]"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                        >
+                                        <div class="form-text">PDF, JPG ou PNG. Taille maximale : 10 Mo.</div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="mb-4">
+                                <legend class="h5 border-bottom pb-2">
+                                    3. Contact en cas d'urgence
+                                </legend>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="contactUrgenceNom">Nom et prénoms</label>
+                                        <input
+                                            class="form-control"
+                                            id="contactUrgenceNom"
+                                            name="candidat[contactUrgenceNom]"
+                                            value="{{ data.contactUrgenceNom|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="contactUrgenceTel">Téléphone</label>
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="contactUrgenceTel"
+                                            name="candidat[contactUrgenceTel]"
+                                            value="{{ data.contactUrgenceTel|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="contactUrgenceLien">Lien avec le candidat</label>
+                                        <input
+                                            class="form-control"
+                                            id="contactUrgenceLien"
+                                            name="candidat[contactUrgenceLien]"
+                                            placeholder="Parent, conjoint, tuteur..."
+                                            value="{{ data.contactUrgenceLien|default('') }}"
+                                        >
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="mb-4">
+                                <legend class="h5 border-bottom pb-2">
+                                    4. Scolarité et diplôme
+                                </legend>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="niveau">Niveau d'études *</label>
+                                        <select
+                                            class="form-select"
+                                            id="niveau"
+                                            name="candidat[niveau]"
+                                            required
+                                        >
+                                            {% for niveau in ['Primaire', 'Collège', 'Lycée', 'Supérieur'] %}
+                                                <option value="{{ niveau }}" {{ data.niveau|default('') == niveau ? 'selected' : '' }}>{{ niveau }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="diplome">Dernier diplôme obtenu *</label>
+                                        <select
+                                            class="form-select"
+                                            id="diplome"
+                                            name="candidat[diplome]"
+                                            required
+                                        >
+                                            {% for diplome in ['CEPE', 'BEPC', 'BT/CAP', 'Certificat', 'BAC', 'BAC+', 'Aucun'] %}
+                                                <option value="{{ diplome }}" {{ data.diplome|default('') == diplome ? 'selected' : '' }}>{{ diplome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="diplomeFichier">Copie du diplôme ou justificatif</label>
+                                        <input
+                                            type="file"
+                                            class="form-control"
+                                            id="diplomeFichier"
+                                            name="candidat[diplomeFichier]"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                        >
+                                        <div class="form-text">PDF, JPG ou PNG. Taille maximale : 10 Mo.</div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="mb-4">
+                                <legend class="h5 border-bottom pb-2">
+                                    5. Métier et disponibilité
+                                </legend>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="metier">Métier souhaité *</label>
+                                        <select
+                                            class="form-select"
+                                            id="metier"
+                                            name="candidat[metier]"
+                                            required
+                                        >
+                                            <option value="">Choisir un métier</option>
+                                            {% for metier in ['Maçon', 'Menuisier-coffreur', 'Peintre', 'Carreleur', 'Staffeur-plaquiste', 'Ferrailleur', 'Ferronnier'] %}
+                                                <option value="{{ metier }}" {{ data.metier|default('') == metier ? 'selected' : '' }}>{{ metier }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="ancienMetier">Métier déjà exercé</label>
+                                        <select
+                                            class="form-select"
+                                            id="ancienMetier"
+                                            name="candidat[ancienMetier]"
+                                        >
+                                            {% for ancien in ['Aucun', 'Maçon', 'Menuisier-coffreur', 'Peintre', 'Carreleur', 'Staffeur-plaquiste', 'Ferrailleur', 'Ferronnier', 'Plombier', 'Électricien', 'Autre'] %}
+                                                <option value="{{ ancien }}" {{ data.ancienMetier|default('Aucun') == ancien ? 'selected' : '' }}>{{ ancien }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="disponibilite">Disponible pour la formation et les stages ? *</label>
+                                        <select
+                                            class="form-select"
+                                            id="disponibilite"
+                                            name="candidat[disponibilite]"
+                                            required
+                                        >
+                                            <option value="Oui" {{ data.disponibilite|default('Oui') == 'Oui' ? 'selected' : '' }}>Oui</option>
+                                            <option value="Non" {{ data.disponibilite|default('') == 'Non' ? 'selected' : '' }}>Non</option>
+                                            <option value="À confirmer" {{ data.disponibilite|default('') == 'À confirmer' ? 'selected' : '' }}>À confirmer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="disponibleLe">Date de disponibilité</label>
+                                        <input
+                                            type="date"
+                                            class="form-control"
+                                            id="disponibleLe"
+                                            name="candidat[disponibleLe]"
+                                            value="{{ data.disponibleLe|default('') }}"
+                                        >
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="experience">Expérience professionnelle</label>
+                                        <textarea class="form-control" id="experience"
+                                              name="candidat[experience]" rows="4"
+                                              placeholder="Précisez les dates, employeurs, postes occupés, stages ou autres expériences.">{{ data.experience|default('') }}</textarea>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div class="alert alert-info">
+                                <strong>Étape suivante :</strong> vos informations seront
+                                présentées dans un récapitulatif. Vous pourrez les vérifier
+                                avant la confirmation définitive de votre candidature.
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 justify-content-between">
+                                <a href="/" class="btn btn-outline-secondary">
+                                    Retour à l'accueil
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    Vérifier et afficher le récapitulatif
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const naissance = document.getElementById("dateNaissance");
+            const age = document.getElementById("age");
+
+            function calculerAge() {
+                if (!naissance.value) {
+                    age.value = "";
+                    return;
+                }
+
+                const date = new Date(naissance.value + "T00:00:00");
+                const aujourdHui = new Date();
+                let annees = aujourdHui.getFullYear() - date.getFullYear();
+                const mois = aujourdHui.getMonth() - date.getMonth();
+
+                if (mois < 0 || (mois === 0 && aujourdHui.getDate() < date.getDate())) {
+                    annees--;
+                }
+
+                age.value = annees >= 0 ? annees + " ans" : "Date invalide";
+            }
+
+            naissance.addEventListener("change", calculerAge);
+            calculerAge();
+        });
+    </script>
+{% endblock %}

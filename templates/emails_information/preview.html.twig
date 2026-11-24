@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Prévisualisation de l'e-mail{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(120deg,#164b78,#2878b8);color:white;">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-2 text-white">Prévisualisation de l'e-mail</h1>
+            <p class="mb-0 text-white">Vérifiez le message et les destinataires avant toute confirmation.</p>
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        <strong>Attention :</strong> le bouton « Confirmer l'envoi » déclenchera l'envoi réel des e-mails.
+        Ne cliquez pas dessus pendant les tests techniques.
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Destinataires sélectionnés avec adresse valide</div>
+                    <div class="display-6 text-success">{{ destinataires|length }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Destinataires exclus (adresse absente ou invalide)</div>
+                    <div class="display-6 text-danger">{{ exclus|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">Message à envoyer</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Audience :</strong> {{ audience == 'CANDIDAT' ? 'Candidats' : 'Apprentis' }}</p>
+            <p><strong>Expéditeur :</strong> Admin Référent de Parcours Plateforme — bakari_parfait@yahoo.fr</p>
+            <p><strong>Objet :</strong> {{ sujet }}</p>
+            <hr>
+            <div class="border rounded p-3" style="white-space:pre-wrap;">{{ contenu }}</div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h2 class="h5 mb-0">Destinataires qui recevront le message</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Nom</th><th>Adresse e-mail</th><th>Campagne</th><th>Métier</th></tr>
+                </thead>
+                <tbody>
+                {% for destinataire in destinataires %}
+                    <tr>
+                        <td>{{ destinataire.nom_complet }}</td>
+                        <td>{{ destinataire.email }}</td>
+                        <td>{{ destinataire.campagne|default('—') }}</td>
+                        <td>{{ destinataire.metier|default('—') }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">Aucun destinataire valide.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if exclus is not empty %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h2 class="h5 mb-0">Destinataires exclus</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead><tr><th>Nom</th><th>Adresse e-mail</th></tr></thead>
+                    <tbody>
+                    {% for destinataire in exclus %}
+                        <tr>
+                            <td>{{ destinataire.nom_complet }}</td>
+                            <td class="text-danger">{{ destinataire.email ?: 'Absente' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ path('email_information_index', {audience: audience|lower}) }}"
+           class="btn btn-outline-secondary">Retour à la sélection</a>
+
+        {% if destinataires is not empty %}
+            <form method="post" action="{{ path('email_information_send') }}"
+                  onsubmit="return confirm('Confirmez-vous l’envoi réel de cet e-mail à {{ destinataires|length }} destinataire(s) ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('email_information_send') }}">
+                <button type="submit" class="btn btn-danger">
+                    Confirmer l'envoi réel
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

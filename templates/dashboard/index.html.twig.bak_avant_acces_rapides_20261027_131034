@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set roles = app.user ? app.user.roles : [] %}
+
+    {% set estAdmin =
+        is_granted('ROLE_ADMIN')
+        or is_granted('ROLE_ADMINISTRATEUR')
+        or is_granted('ROLE_SUPER_ADMIN')
+        or 'ROLE_ADMIN' in roles
+        or 'ROLE_ADMINISTRATEUR' in roles
+        or 'ROLE_SUPER_ADMIN' in roles
+    %}
+
+    {% set estGestionnaire =
+        estAdmin
+        or is_granted('ROLE_GESTIONNAIRE')
+        or 'ROLE_GESTIONNAIRE' in roles
+        or 'GESTIONNAIRE' in roles
+    %}
+
+    {% set estApprenti =
+        is_granted('ROLE_APPRENTI')
+        or 'ROLE_APPRENTI' in roles
+        or 'APPRENTI' in roles
+    %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p class="text-muted">
+                Pilotage du recrutement et de l'accompagnement socioprofessionnel.
+            </p>
+        </div>
+    </div>
+
+    {# Indicateurs existants #}
+    <div class="row g-3">
+        {% for k, v in stats %}
+            <div class="col-md-3">
+                <div class="card metric shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted text-uppercase small">{{ k }}</div>
+                        <div class="display-6 fw-bold">{{ v }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-4 g-3">
+        {# Vue synthétique du parcours #}
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Vue synthétique du parcours</h5>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar" style="width: 72%">
+                            Recrutement
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-warning text-dark" style="width: 54%">
+                            Visites médicales
+                        </div>
+                    </div>
+
+                    <div class="progress my-3" style="height: 18px">
+                        <div class="progress-bar bg-success" style="width: 38%">
+                            Suivi
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-0">
+                        Ces indicateurs visuels sont illustratifs.
+                        Ils ne représentent pas nécessairement les statistiques réelles.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {# Raccourcis réservés aux actions distinctes des modules de navigation #}
+        <div class="col-lg-4">
+            {% if estGestionnaire %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5>Actions rapides</h5>
+                        <p class="text-muted small">
+                            Accédez directement aux opérations courantes.
+                        </p>
+
+                        <a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('public_inscription') }}">
+                            <i class="bi bi-person-plus me-1"></i>
+                            Ouvrir une inscription
+                        </a>
+                    </div>
+                </div>
+
+            {% elseif estApprenti %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5>Découvrir la formation</h5>
+                        <p class="text-muted small">
+                            Consultez les informations utiles à votre parcours.
+                        </p>
+
+<a class="btn btn-primary w-100 mb-2"
+                           href="{{ path('apprenti_accueil') }}">Mon espace apprenti</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('apprenti_profil') }}">Mon profil</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('apprenti_parcours') }}">Mon parcours</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('apprenti_rendez_vous') }}">Mes rendez-vous</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('apprenti_evaluations') }}">Mes évaluations</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('apprenti_accompagnement') }}">Mon accompagnement</a>
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           <a class="btn btn-outline-primary w-100 mb-2"
+   href="{{ path('apprenti_profil') }}">Mon profil</a>
+
+<a class="btn btn-outline-primary w-100 mb-2"
+   href="{{ path('apprenti_parcours') }}">Mon parcours</a>
+<!-- Accès rapides apprenti - Mon profil -->
+                        <a class="btn btn-outline-primary w-100 mb-2" href="{{ path('apprenti_notifications') }}">Mes notifications</a>
+
+                        <a class="btn btn-outline-primary w-100 mb-2"
+                           href="{{ path('app_metiers_list') }}">
+                            Consulter les métiers
+                        </a>
+
+                        <a class="btn btn-outline-primary w-100"
+                           href="{{ path('app_etablissements_list') }}">
+                            Consulter les établissements
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

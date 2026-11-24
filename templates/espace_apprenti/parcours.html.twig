@@ -1,0 +1,657 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon parcours | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .parcours-page {
+        --parcours-blue: #174a78;
+        --parcours-blue-dark: #10365b;
+        --parcours-light: #edf4fa;
+        --parcours-border: #e5eaf0;
+        color: #26384a;
+    }
+
+    .parcours-hero {
+        background: linear-gradient(125deg, #10365b 0%, #1d5b91 65%, #347fb4 100%);
+        border-radius: 18px;
+        padding: 30px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .parcours-hero::after {
+        content: "";
+        position: absolute;
+        width: 230px;
+        height: 230px;
+        border: 35px solid rgba(255,255,255,.07);
+        border-radius: 50%;
+        right: -65px;
+        top: -100px;
+    }
+
+    .parcours-hero h1 {
+        color: #fff;
+        font-weight: 750;
+        letter-spacing: -.5px;
+    }
+
+    .parcours-hero p {
+        color: rgba(255,255,255,.82);
+        max-width: 650px;
+    }
+
+    .parcours-stat {
+        height: 100%;
+        border: 1px solid var(--parcours-border);
+        border-radius: 14px;
+        background: #fff;
+        padding: 18px;
+        box-shadow: 0 4px 16px rgba(25,55,85,.045);
+    }
+
+    .parcours-stat .stat-label {
+        color: #718096;
+        font-size: .83rem;
+        font-weight: 600;
+    }
+
+    .parcours-stat .stat-value {
+        color: var(--parcours-blue-dark);
+        font-size: 1.8rem;
+        font-weight: 750;
+        line-height: 1.3;
+    }
+
+    .parcours-section {
+        background: #fff;
+        border: 1px solid var(--parcours-border);
+        border-radius: 16px;
+        padding: 23px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 16px rgba(25,55,85,.035);
+    }
+
+    .parcours-section-title {
+        color: var(--parcours-blue-dark);
+        font-weight: 750;
+        font-size: 1.08rem;
+        margin-bottom: 5px;
+    }
+
+    .parcours-section-subtitle {
+        color: #7b8794;
+        font-size: .88rem;
+    }
+
+    .parcours-team-card {
+        height: 100%;
+        border: 1px solid var(--parcours-border);
+        border-radius: 13px;
+        padding: 19px;
+        background: #fff;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .parcours-team-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(25,55,85,.09);
+    }
+
+    .parcours-team-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--parcours-light);
+        color: var(--parcours-blue);
+        font-size: 1.15rem;
+        font-weight: 750;
+        margin-bottom: 14px;
+    }
+
+    .parcours-team-name {
+        color: #243b53;
+        font-weight: 700;
+        font-size: .97rem;
+    }
+
+    .parcours-team-mission {
+        color: #748295;
+        font-size: .83rem;
+        line-height: 1.55;
+        min-height: 52px;
+    }
+
+    .parcours-timeline {
+        position: relative;
+        padding-left: 27px;
+    }
+
+    .parcours-timeline::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        left: 7px;
+        width: 2px;
+        background: #dce7f1;
+    }
+
+    .parcours-timeline-item {
+        position: relative;
+        padding: 0 0 23px 15px;
+    }
+
+    .parcours-timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .parcours-timeline-dot {
+        position: absolute;
+        left: -26px;
+        top: 4px;
+        width: 17px;
+        height: 17px;
+        border: 4px solid #dcebf8;
+        border-radius: 50%;
+        background: #24699d;
+        z-index: 1;
+    }
+
+    .parcours-timeline-card {
+        border: 1px solid var(--parcours-border);
+        border-radius: 12px;
+        padding: 16px;
+        background: #fff;
+    }
+
+    .parcours-timeline-date {
+        color: #718096;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+    .parcours-timeline-title {
+        color: #234b70;
+        font-weight: 700;
+        margin: 5px 0 9px;
+    }
+
+    .parcours-info-box {
+        background: #f7fafd;
+        border: 1px solid #e6edf4;
+        border-radius: 10px;
+        padding: 12px 14px;
+        height: 100%;
+    }
+
+    .parcours-info-label {
+        color: #77869a;
+        font-size: .76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .35px;
+        margin-bottom: 5px;
+    }
+
+    .parcours-info-value {
+        color: #34495e;
+        font-size: .9rem;
+        overflow-wrap: anywhere;
+    }
+
+    .parcours-empty {
+        text-align: center;
+        padding: 30px 15px;
+        background: #f8fafc;
+        border: 1px dashed #d6e0e9;
+        border-radius: 12px;
+        color: #78889a;
+    }
+
+    .parcours-empty-icon {
+        font-size: 1.8rem;
+        color: #91a9bf;
+        margin-bottom: 8px;
+    }
+
+    .parcours-table {
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+
+    .parcours-table thead th {
+        background: #f4f7fa;
+        color: #52677c;
+        font-size: .76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .35px;
+        border-bottom: 1px solid #e4eaf0;
+        padding: 13px;
+        white-space: nowrap;
+    }
+
+    .parcours-table tbody td {
+        padding: 14px 13px;
+        color: #43566a;
+        font-size: .88rem;
+    }
+
+    .parcours-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 30px;
+        font-size: .73rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .parcours-badge-success {
+        background: #e4f5eb;
+        color: #207447;
+    }
+
+    .parcours-badge-warning {
+        background: #fff3d9;
+        color: #946200;
+    }
+
+    .parcours-badge-info {
+        background: #e5f1fb;
+        color: #245f91;
+    }
+
+    .parcours-badge-neutral {
+        background: #edf0f3;
+        color: #657384;
+    }
+
+    .parcours-footer {
+        color: #8492a2;
+        font-size: .8rem;
+        text-align: center;
+        padding: 5px 0 18px;
+    }
+
+    @media (max-width: 767.98px) {
+        .parcours-hero {
+            padding: 23px 19px;
+            border-radius: 14px;
+        }
+
+        .parcours-section {
+            padding: 17px;
+        }
+
+        .parcours-stat {
+            padding: 14px;
+        }
+
+        .parcours-stat .stat-value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid px-3 px-lg-4 py-4 parcours-page">
+
+    {% set totalEntretiens = entretiensParcours|length %}
+    {% set totalChantiers = affectations|length %}
+    {% set totalEmplois = emplois|length %}
+
+    {% set totalResponsables = 0 %}
+    {% for type, configuration in {
+        'REFERENT_PARCOURS': 'Référent',
+        'FORMATEUR': 'Formateur',
+        'MAITRE_STAGE': 'Maître de stage'
+    } %}
+        {% if responsablesApprenti[type]|default(null) and responsablesApprenti[type].responsable %}
+            {% set totalResponsables = totalResponsables + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="parcours-hero mb-4">
+        <div class="position-relative" style="z-index:1">
+            <div class="small fw-semibold mb-2 text-uppercase" style="letter-spacing:1.2px">
+                E2C-MENAET · Espace apprenti
+            </div>
+            <h1 class="h2 mb-2">Mon parcours</h1>
+            <p class="mb-0">
+                Retrouvez les étapes de votre accompagnement, votre équipe
+                d'encadrement, vos affectations professionnelles et votre
+                situation d'insertion.
+            </p>
+        </div>
+    </div>
+
+    {% include 'espace_apprenti/_menu.html.twig' %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="parcours-stat">
+                <div class="stat-label">Entretiens de parcours</div>
+                <div class="stat-value">{{ totalEntretiens }}</div>
+                <div class="small text-muted">Accueil, suivi et sortie</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="parcours-stat">
+                <div class="stat-label">Équipe mobilisée</div>
+                <div class="stat-value">{{ totalResponsables }}<span class="fs-6 text-muted"> / 3</span></div>
+                <div class="small text-muted">Professionnels affectés</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="parcours-stat">
+                <div class="stat-label">Affectations chantier</div>
+                <div class="stat-value">{{ totalChantiers }}</div>
+                <div class="small text-muted">Historique des affectations</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="parcours-stat">
+                <div class="stat-label">Situations professionnelles</div>
+                <div class="stat-value">{{ totalEmplois }}</div>
+                <div class="small text-muted">Informations enregistrées</div>
+            </div>
+        </div>
+    </div>
+
+    {# EQUIPE D'ACCOMPAGNEMENT #}
+    <section class="parcours-section" id="equipe-responsables-apprenti">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+            <div>
+                <h2 class="parcours-section-title">Mon équipe d'accompagnement</h2>
+                <p class="parcours-section-subtitle mb-0">
+                    Les professionnels qui contribuent à votre formation et à votre insertion.
+                </p>
+            </div>
+            <span class="parcours-badge parcours-badge-info">
+                {{ totalResponsables }} responsable(s) affecté(s)
+            </span>
+        </div>
+
+        {% set rolesResponsables = {
+            'REFERENT_PARCOURS': {
+                'titre': 'Référent de parcours',
+                'mission': 'Votre accompagnement socio-professionnel, le suivi individuel et la coordination de votre parcours.',
+                'icone': 'R'
+            },
+            'FORMATEUR': {
+                'titre': 'Formateur',
+                'mission': 'Votre formation théorique, le développement de vos compétences et votre progression pédagogique.',
+                'icone': 'F'
+            },
+            'MAITRE_STAGE': {
+                'titre': 'Maître de stage',
+                'mission': 'Votre encadrement pratique, votre intégration et votre apprentissage en milieu professionnel.',
+                'icone': 'M'
+            }
+        } %}
+
+        <div class="row g-3">
+            {% for type, configuration in rolesResponsables %}
+                {% set affectationResponsable = responsablesApprenti[type]|default(null) %}
+
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="parcours-team-card">
+                        <div class="parcours-team-icon">{{ configuration.icone }}</div>
+                        <h3 class="h6 fw-bold mb-2">{{ configuration.titre }}</h3>
+                        <p class="parcours-team-mission mb-3">{{ configuration.mission }}</p>
+
+                        {% if affectationResponsable and affectationResponsable.responsable %}
+                            <div class="parcours-team-name">
+                                {{ affectationResponsable.responsable.prenoms }}
+                                {{ affectationResponsable.responsable.nom }}
+                            </div>
+                            <span class="parcours-badge parcours-badge-success mt-2">
+                                Affectation active
+                            </span>
+                            <div class="small text-muted mt-2">
+                                Depuis le
+                                {{ affectationResponsable.dateDebut|date('d/m/Y') }}
+                            </div>
+                        {% else %}
+                            <span class="parcours-badge parcours-badge-neutral">
+                                Non encore affecté
+                            </span>
+                            <div class="small text-muted mt-2">
+                                Votre responsable sera affiché ici après son affectation.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# CHRONOLOGIE DES ENTRETIENS #}
+    <section class="parcours-section" id="historique-entretiens">
+        <div class="mb-4">
+            <h2 class="parcours-section-title">Historique de mon accompagnement</h2>
+            <p class="parcours-section-subtitle mb-0">
+                Retrouvez les entretiens, leurs synthèses et les actions prévues.
+            </p>
+        </div>
+
+        {% if entretiensParcours is empty %}
+            <div class="parcours-empty">
+                <div class="parcours-empty-icon">◷</div>
+                <div class="fw-semibold text-dark mb-1">Aucun entretien de parcours enregistré</div>
+                <div class="small">
+                    Les entretiens réalisés avec votre référent apparaîtront dans cette rubrique.
+                </div>
+            </div>
+        {% else %}
+            <div class="parcours-timeline">
+                {% for entretien in entretiensParcours %}
+                    {% set typeEntretien = entretien.typeEntretien|upper %}
+
+                    {% set titreEntretien = {
+                        'ACCUEIL': 'Entretien d’accueil et d’entrée en parcours',
+                        'MI_PARCOURS': 'Entretien de suivi à mi-parcours',
+                        'SORTIE': 'Entretien de sortie de parcours'
+                    }[typeEntretien]|default('Entretien de parcours') %}
+
+                    {% set statutEntretien = entretien.statut|upper %}
+
+                    <div class="parcours-timeline-item">
+                        <span class="parcours-timeline-dot"></span>
+
+                        <div class="parcours-timeline-card">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <span class="parcours-timeline-date">
+                                    {% if entretien.dateEntretien %}
+                                        {{ entretien.dateEntretien|date('d/m/Y') }}
+                                    {% else %}
+                                        Date non renseignée
+                                    {% endif %}
+                                </span>
+
+                                {% if statutEntretien in ['REALISE', 'TERMINE', 'TERMINEE', 'EFFECTUE'] %}
+                                    <span class="parcours-badge parcours-badge-success">Réalisé</span>
+                                {% elseif statutEntretien in ['PLANIFIE', 'PROGRAMME', 'EN_COURS'] %}
+                                    <span class="parcours-badge parcours-badge-warning">Planifié / en cours</span>
+                                {% elseif statutEntretien in ['ANNULE', 'ANNULEE'] %}
+                                    <span class="parcours-badge parcours-badge-neutral">Annulé</span>
+                                {% else %}
+                                    <span class="parcours-badge parcours-badge-info">
+                                        {{ entretien.statut }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="parcours-timeline-title">{{ titreEntretien }}</h3>
+
+                            {% if entretien.synthese %}
+                                <div class="parcours-info-box mb-2">
+                                    <div class="parcours-info-label">Synthèse de l'entretien</div>
+                                    <div class="parcours-info-value">
+                                        {{ entretien.synthese|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if entretien.planAction %}
+                                <div class="parcours-info-box">
+                                    <div class="parcours-info-label">Plan d'action / prochaines étapes</div>
+                                    <div class="parcours-info-value">
+                                        {{ entretien.planAction|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if not entretien.synthese and not entretien.planAction %}
+                                <div class="small text-muted">
+                                    Aucun compte rendu détaillé n'est disponible pour cet entretien.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {# AFFECTATIONS DE CHANTIER #}
+    <section class="parcours-section" id="affectations-chantier">
+        <div class="mb-4">
+            <h2 class="parcours-section-title">Mes affectations de chantier</h2>
+            <p class="parcours-section-subtitle mb-0">
+                Suivez vos expériences pratiques et vos périodes d'affectation.
+            </p>
+        </div>
+
+        {% if affectations is empty %}
+            <div class="parcours-empty">
+                <div class="parcours-empty-icon">⌂</div>
+                <div class="fw-semibold text-dark mb-1">Aucune affectation enregistrée</div>
+                <div class="small">
+                    Vos affectations de chantier seront présentées ici.
+                </div>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table parcours-table">
+                    <thead>
+                        <tr>
+                            <th>Chantier</th>
+                            <th>Date de début</th>
+                            <th>Date de fin</th>
+                            <th>Situation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for affectation in affectations %}
+                            <tr>
+                                <td class="fw-semibold">
+                                    {{ affectation.chantier ?: 'Chantier non précisé' }}
+                                </td>
+                                <td>
+                                    {{ affectation.dateDebut ? affectation.dateDebut|date('d/m/Y') : 'Non précisée' }}
+                                </td>
+                                <td>
+                                    {{ affectation.dateFin ? affectation.dateFin|date('d/m/Y') : 'Non renseignée' }}
+                                </td>
+                                <td>
+                                    {% set statutChantier = affectation.statut|upper %}
+
+                                    {% if statutChantier in ['EN_COURS', 'ACTIVE'] %}
+                                        <span class="parcours-badge parcours-badge-success">En cours</span>
+                                    {% elseif statutChantier in ['TERMINE', 'TERMINEE', 'TERMINEE'] %}
+                                        <span class="parcours-badge parcours-badge-info">Terminée</span>
+                                    {% else %}
+                                        <span class="parcours-badge parcours-badge-neutral">
+                                            {{ affectation.statut }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+
+    {# SITUATION PROFESSIONNELLE #}
+    <section class="parcours-section" id="situation-professionnelle">
+        <div class="mb-4">
+            <h2 class="parcours-section-title">Ma situation professionnelle</h2>
+            <p class="parcours-section-subtitle mb-0">
+                Retrouvez les informations relatives à votre insertion professionnelle.
+            </p>
+        </div>
+
+        {% if emplois is empty %}
+            <div class="parcours-empty">
+                <div class="parcours-empty-icon">↗</div>
+                <div class="fw-semibold text-dark mb-1">Aucune situation professionnelle enregistrée</div>
+                <div class="small">
+                    Les informations relatives à votre insertion seront affichées ici.
+                </div>
+            </div>
+        {% else %}
+            <div class="row g-3">
+                {% for emploi in emplois %}
+                    <div class="col-12 col-lg-6">
+                        <div class="parcours-info-box">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                <div class="fw-bold text-dark">
+                                    {{ emploi.poste ?: 'Poste non renseigné' }}
+                                </div>
+
+                                {% set statutEmploi = emploi.statut|upper %}
+
+                                {% if statutEmploi in ['EN_POSTE', 'EN_EMPLOI', 'INSERE', 'INSEREE', 'ACTIF'] %}
+                                    <span class="parcours-badge parcours-badge-success">En emploi</span>
+                                {% elseif statutEmploi in ['EN_RECHERCHE', 'RECHERCHE'] %}
+                                    <span class="parcours-badge parcours-badge-warning">En recherche</span>
+                                {% else %}
+                                    <span class="parcours-badge parcours-badge-info">{{ emploi.statut }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-2">
+                                <div class="parcours-info-label">Employeur</div>
+                                <div class="parcours-info-value">
+                                    {{ emploi.employeur ?: 'Non renseigné' }}
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <div class="parcours-info-label">Date d'insertion</div>
+                                <div class="parcours-info-value">
+                                    {{ emploi.dateInsertion ? emploi.dateInsertion|date('d/m/Y') : 'Non renseignée' }}
+                                </div>
+                            </div>
+
+                            {% if emploi.observations %}
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="parcours-info-label">Observations</div>
+                                    <div class="parcours-info-value">
+                                        {{ emploi.observations|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    <div class="parcours-footer">
+        E2C-MENAET · Suivi de votre parcours de formation et d'insertion professionnelle
+    </div>
+</div>
+{% endblock %}

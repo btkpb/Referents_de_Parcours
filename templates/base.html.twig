@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}MENAET - E2C{% endblock %}</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="{{ asset('assets/styles/app.css') }}">
+
+    {% block stylesheets %}{% endblock %}
+    {% if (app.request.attributes.get('_route') != 'app_login' and app.request.attributes.get('_route') != 'public_compte_creer' and not (app.request.pathInfo starts with '/reset-password')) %}<script src="https://cdn.tailwindcss.com"></script>{% endif %}
+</head>
+
+<body class="{% if (app.request.attributes.get('_route') == 'app_login' or app.request.attributes.get('_route') == 'public_compte_creer' or app.request.pathInfo starts with '/reset-password') %}login-page{% endif %}">
+
+{% if (app.request.attributes.get('_route') != 'app_login' and app.request.attributes.get('_route') != 'public_compte_creer' and not (app.request.pathInfo starts with '/reset-password')) %}
+<nav class="daip-navbar">
+    <div class="daip-nav-container">
+
+        <a class="daip-brand" href="{{ path('daip_accueil') }}">
+            <img
+                src="{{ asset('images/logo DAIP.png') }}"
+                alt="Logo DAIP"
+                class="daip-logo"
+            >
+        </a>
+
+        {% set roles = app.user ? app.user.roles : [] %}
+
+        {% set estAdmin =
+            is_granted('ROLE_ADMIN')
+            or is_granted('ROLE_ADMINISTRATEUR')
+            or is_granted('ROLE_SUPER_ADMIN')
+            or 'ADMIN' in roles
+            or 'ROLE_ADMINISTRATEUR' in roles
+        %}
+
+        {% set estGestionnaire =
+            estAdmin
+            or is_granted('ROLE_GESTIONNAIRE')
+            or 'GESTIONNAIRE' in roles
+        %}
+
+        {% set estJury =
+            is_granted('ROLE_JURY')
+            or 'JURY' in roles
+        %}
+
+        {% set estReferent =
+            is_granted('ROLE_REFERENT_PARCOURS')
+            or is_granted('ROLE_REFERENT')
+            or 'REFERENT_PARCOURS' in roles
+            or 'REFERENT' in roles
+        %}
+
+        {% set estFormateur =
+            is_granted('ROLE_FORMATEUR')
+            or 'FORMATEUR' in roles
+        %}
+
+        {% set estApprenti =
+            is_granted('ROLE_APPRENTI')
+            or 'APPRENTI' in roles
+        %}
+
+        <button
+            class="daip-menu-toggle"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#daipNavigation"
+            aria-controls="daipNavigation"
+            aria-expanded="false"
+            aria-label="Afficher ou masquer le menu"
+        >
+            Menu
+        </button>
+
+        <div class="daip-navigation-collapse" id="daipNavigation">
+
+            <div class="daip-nav-links">
+    {% if app.user %}
+        <a href="{{ path('dashboard') }}">Tableau de bord</a>
+        {% if estGestionnaire %}
+            <a href="{{ path('admin_entreprises_index') }}">Entreprises d'accueil</a>
+            <a href="{{ path('admin_placements_index') }}">Placements en entreprise</a>
+            <a href="{{ path('notification_admin_envoyer') }}">Notifications</a>
+        {% endif %}
+    {% else %}
+        <a href="{{ path('daip_accueil') }}">Accueil</a>
+        <a href="{{ path('public_inscription') }}">Inscription</a>
+    {% endif %}
+</div>
+
+            <div class="daip-nav-login">
+
+    {% if app.user %}
+        <span class="daip-user-label">
+            {{ app.user.userIdentifier }}
+        </span>
+
+        {% set rolesUtilisateur = app.user.roles|default([]) %}
+        {% set rolePrincipal = 'ROLE_UTILISATEUR' %}
+
+        {% if 'ROLE_SUPER_ADMIN' in rolesUtilisateur or is_granted('ROLE_SUPER_ADMIN') %}
+            {% set rolePrincipal = 'ROLE_SUPER_ADMIN' %}
+        {% elseif 'ROLE_ADMINISTRATEUR' in rolesUtilisateur or 'ROLE_ADMIN' in rolesUtilisateur or is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_ADMIN') %}
+            {% set rolePrincipal = 'ROLE_ADMIN' %}
+        {% elseif 'ROLE_GESTIONNAIRE' in rolesUtilisateur or 'GESTIONNAIRE' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_GESTIONNAIRE' %}
+        {% elseif 'ROLE_JURY' in rolesUtilisateur or 'JURY' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_JURY' %}
+        {% elseif 'ROLE_MEDICAL' in rolesUtilisateur or 'MEDICAL' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_MEDICAL' %}
+        {% elseif 'ROLE_REFERENT_PARCOURS' in rolesUtilisateur or 'ROLE_REFERENT' in rolesUtilisateur or 'REFERENT_PARCOURS' in rolesUtilisateur or 'REFERENT' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_REFERENT_PARCOURS' %}
+        {% elseif 'ROLE_FORMATEUR' in rolesUtilisateur or 'FORMATEUR' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_FORMATEUR' %}
+        {% elseif 'ROLE_APPRENTI' in rolesUtilisateur or 'APPRENTI' in rolesUtilisateur %}
+            {% set rolePrincipal = 'ROLE_APPRENTI' %}
+        {% endif %}
+
+        {% set libellesRoles = {
+            'ROLE_SUPER_ADMIN': 'Super administrateur',
+            'ROLE_ADMIN': 'Administrateur',
+            'ROLE_GESTIONNAIRE': 'Gestionnaire',
+            'ROLE_JURY': 'Membre du jury',
+            'ROLE_REFERENT_PARCOURS': 'Référent de parcours',
+            'ROLE_FORMATEUR': 'Formateur',
+            'ROLE_APPRENTI': 'Apprenti',
+            'ROLE_MEDICAL': 'Personnel Médical',
+            'ROLE_UTILISATEUR': 'Utilisateur'
+        } %}
+
+        <span class="badge rounded-pill bg-primary ms-2"
+              id="role-utilisateur-connecte"
+              title="R&ocirc;le de votre espace">
+            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
+            {{ libellesRoles[rolePrincipal]|default('Utilisateur') }}
+        </span>
+
+        <a class="daip-login-btn" href="{{ path('app_logout') }}">
+            D&eacute;connexion
+        </a>
+    {% else %}
+        <a class="daip-login-btn" href="{{ path('app_login') }}">
+            Connexion
+        </a>
+    {% endif %}
+
+</div>
+
+        </div>
+    </div>
+
+
+</nav>
+{% endif %}
+
+
+<main class="{% if (app.request.attributes.get('_route') == 'app_login' or app.request.attributes.get('_route') == 'public_compte_creer' or app.request.pathInfo starts with '/reset-password') %}login-main{% else %}container py-4 daip-main{% endif %}">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% block body %}{% endblock %}
+
+</main>
+
+{% if (app.request.attributes.get('_route') != 'app_login' and app.request.attributes.get('_route') != 'public_compte_creer' and not (app.request.pathInfo starts with '/reset-password')) %}
+<footer class="daip-footer">
+    <small>
+        MENAET - E2C | Formation, apprentissage et insertion
+    </small>
+</footer>
+{% endif %}
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+{% block javascripts %}{% endblock %}
+
+</body>
+</html>
+
+
+

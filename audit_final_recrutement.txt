@@ -1,0 +1,159 @@
+﻿=== AUDIT FINAL DU RECRUTEMENT E2C-MTFPA ===
+
+====================================
+FICHIER : src\Entity\Entretien.php
+====================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Entretien { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\ManyToOne] private ?Candidat $candidat=null; #[ORM\Column(type:'datetime')] private ?\DateTimeInterface $dateHeure=null; #[ORM\Column(length:180)] private string $lieu=''; #[ORM\Column] private int $nombreJury=1; #[ORM\Column(length:30)] private string $statut='PLANIFIE'; #[ORM\Column(nullable:true)] private ?string $juryNoms=null; #[ORM\Column(nullable:true)] private ?string $convocationEnvoyeeAt=null; public function getId():?int{return $this->id;} public function getCandidat():?Candidat{return $this->candidat;} public function setCandidat(?Candidat $v):self{$this->candidat=$v;return $this;} public function getDateHeure():?\DateTimeInterface{return $this->dateHeure;} public function setDateHeure(?\DateTimeInterface $v):self{$this->dateHeure=$v;return $this;} public function getLieu():string{return $this->lieu;} public function setLieu(string $v):self{$this->lieu=$v;return $this;} public function getNombreJury():int{return $this->nombreJury;} public function setNombreJury(int $v):self{$this->nombreJury=$v;return $this;} public function getStatut():string{return $this->statut;} public function setStatut(string $v):self{$this->statut=$v;return $this;} public function getJuryNoms():?string{return $this->juryNoms;} public function setJuryNoms(?string $v):self{$this->juryNoms=$v;return $this;} public function getConvocationEnvoyeeAt():?string{return $this->convocationEnvoyeeAt;} public function setConvocationEnvoyeeAt(?string $v):self{$this->convocationEnvoyeeAt=$v;return $this;} }
+
+====================================
+FICHIER : src\Entity\Evaluation.php
+====================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity]
+class Evaluation { #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null; #[ORM\OneToOne] private ?Entretien $entretien=null; #[ORM\Column] private float $scoreMotivation=0; #[ORM\Column] private float $scoreProjet=0; #[ORM\Column] private float $scoreTechnique=0; #[ORM\Column] private float $scoreCommunication=0; #[ORM\Column] private float $scoreSocial=0; #[ORM\Column] private float $scoreMobilite=0; #[ORM\Column] private float $scoreFinances=0; #[ORM\Column] private float $scoreLogement=0; #[ORM\Column] private float $scoreSante=0; #[ORM\Column(length:20)] private string $decision='EN_ATTENTE'; #[ORM\Column(type:'text',nullable:true)] private ?string $observations=null; public function getId():?int{return $this->id;} public function getEntretien():?Entretien{return $this->entretien;} public function setEntretien(?Entretien $v):self{$this->entretien=$v;return $this;} public function total():float{return $this->scoreMotivation+$this->scoreProjet+$this->scoreTechnique+$this->scoreCommunication+$this->scoreSocial+$this->scoreMobilite+$this->scoreFinances+$this->scoreLogement+$this->scoreSante;} public function getDecision():string{return $this->decision;} public function setDecision(string $v):self{$this->decision=$v;return $this;} public function setScores(array $s):self{foreach($s as $k=>$v){$p='score'.ucfirst($k); if(property_exists($this,$p))$this->$p=(float)$v;}return $this;} public function getObservations():?string{return $this->observations;} public function setObservations(?string $v):self{$this->observations=$v;return $this;} }
+
+====================================
+FICHIER : src\Entity\User.php
+====================================
+<?php
+namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+#[ORM\Entity]
+#[ORM\Table(name:'app_user')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface {
+ #[ORM\Id,ORM\GeneratedValue,ORM\Column] private ?int $id=null;
+ #[ORM\Column(length:180,unique:true)] private string $email='';
+ #[ORM\Column] private array $roles=[];
+ #[ORM\Column] private string $password='';
+ #[ORM\Column(length:120)] private string $nom='';
+ #[ORM\Column(length:120)] private string $prenoms='';
+ #[ORM\Column(length:40)] private string $profil='gestionnaire';
+ #[ORM\Column] private bool $active=true;
+ #[ORM\OneToOne(targetEntity: Candidat::class)]
+ #[ORM\JoinColumn(name: 'candidat_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+ private ?Candidat $candidat = null;
+ public function getId():?int{return $this->id;} public function getEmail():string{return $this->email;} public function setEmail(string $v):self{$this->email=$v;return $this;} public function getUserIdentifier():string{return $this->email;} public function getRoles():array{return array_values(array_unique(array_merge($this->roles,['ROLE_USER'])));} public function setRoles(array $v):self{$this->roles=$v;return $this;} public function getPassword():string{return $this->password;} public function setPassword(string $v):self{$this->password=$v;return $this;} public function eraseCredentials():void{} public function getNom():string{return $this->nom;} public function setNom(string $v):self{$this->nom=$v;return $this;} public function getPrenoms():string{return $this->prenoms;} public function setPrenoms(string $v):self{$this->prenoms=$v;return $this;} public function getProfil():string{return $this->profil;} public function setProfil(string $v):self{$this->profil=$v;return $this;} public function isActive():bool{return $this->active;} public function setActive(bool $v):self{$this->active=$v;return $this;}
+
+ public function getCandidat(): ?Candidat
+ {
+     return $this->candidat;
+ }
+
+ public function setCandidat(?Candidat $candidat): self
+ {
+     $this->candidat = $candidat;
+     return $this;
+ }}
+
+====================================
+FICHIER : src\Controller\RecruitmentController.php
+====================================
+<?php
+namespace App\Controller;
+use App\Entity\{Candidat,Entretien,Evaluation};
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\{Request,Response};
+class RecruitmentController extends AbstractController { #[Route('/recrutement/entretiens',name:'recruitment_interviews')] public function interviews(EntityManagerInterface $em):Response{return $this->render('recrutement/entretiens.html.twig',['items'=>$em->getRepository(Entretien::class)->findBy([],['dateHeure'=>'ASC'])]);} #[Route('/recrutement/entretiens/{id}/evaluation',name:'recruitment_eval',methods:['GET','POST'])] public function eval(Entretien $e,Request $r,EntityManagerInterface $em):Response{$ev=$em->getRepository(Evaluation::class)->findOneBy(['entretien'=>$e])??new Evaluation();$ev->setEntretien($e);if($r->isMethod('POST')){$d=$r->request->all('evaluation');$ev->setScores($d);$ev->setDecision(($ev->total()>=24)?'APTE':'INAPTE');$em->persist($ev);$em->flush();$this->addFlash('success','Évaluation enregistrée.');return $this->redirectToRoute('recruitment_interviews');}return $this->render('recrutement/evaluation.html.twig',['entretien'=>$e,'evaluation'=>$ev]);} }
+
+====================================
+FICHIER : config\packages\security.yaml
+====================================
+security:
+    password_hashers:
+        App\Entity\User: 'auto'
+
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMINISTRATEUR]
+        ROLE_ADMINISTRATEUR: [ROLE_ADMIN]
+        ROLE_ADMIN: [ROLE_GESTIONNAIRE, ROLE_JURY, ROLE_REFERENT, ROLE_MEDICAL, ROLE_FORMATEUR]
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: dashboard
+            logout:
+                path: app_logout
+
+                target: daip_accueil
+    access_control:
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/accueil$, roles: PUBLIC_ACCESS }
+        - { path: ^/etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/metiers$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-etablissements$, roles: PUBLIC_ACCESS }
+        - { path: ^/load-metiers$, roles: PUBLIC_ACCESS }
+
+        - { path: ^/candidats(?:/|$), roles: ROLE_GESTIONNAIRE }
+        - { path: ^/recrutement/entretiens/\d+/evaluation$, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/recrutement/entretiens, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_JURY')" }
+        - { path: ^/medical, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_MEDICAL')" }
+        - { path: ^/suivi, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR')" }
+        - { path: ^/annuaire, allow_if: "is_granted('ROLE_GESTIONNAIRE') or is_granted('ROLE_REFERENT') or is_granted('ROLE_FORMATEUR') or is_granted('ROLE_APPRENTI')" }
+
+        - { path: ^/admin/catalogue, roles: ROLE_GESTIONNAIRE }
+        - { path: ^/admin/utilisateurs, allow_if: "is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR')" }
+        - { path: ^/espace-apprenti, roles: ROLE_APPRENTI }
+        - { path: '^/evaluations-apprentis/nouvelle$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/modifier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis/[0-9]+/publier$', allow_if: "is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')" }
+        - { path: '^/evaluations-apprentis$', allow_if: "is_granted('ROLE_GESTIONNAIRE') or (is_granted('ROLE_FORMATEUR') and not is_granted('ROLE_GESTIONNAIRE')) or is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS')" }
+
+        - { path: ^/, roles: ROLE_USER }
+
+====================================
+FICHIER : templates\recrutement\entretiens.html.twig
+====================================
+{% extends 'base.html.twig' %}{% block body %}<h1>Entretiens physiques / Jury</h1><div class="card shadow-sm mt-3"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Candidat</th><th>Date</th><th>Lieu</th><th>Jury</th><th>Statut</th><th></th></tr></thead><tbody>{% for e in items %}<tr><td>{{e.candidat.nom}} {{e.candidat.prenoms}}</td><td>{{e.dateHeure?e.dateHeure|date('d/m/Y H:i'):''}}</td><td>{{e.lieu}}</td><td>{{e.nombreJury}}</td><td>{{e.statut}}</td><td><a class="btn btn-sm btn-primary" href="{{path('recruitment_eval',{id:e.id})}}">Évaluer</a></td></tr>{% else %}<tr><td colspan="6" class="text-center">Aucun entretien planifié.</td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}
+
+====================================
+FICHIER : templates\recrutement\evaluation.html.twig
+====================================
+{% extends 'base.html.twig' %}{% block body %}<div class="row justify-content-center"><div class="col-xl-8"><div class="card shadow-sm"><div class="card-body"><h2>Évaluation jury</h2><p>{{entretien.candidat.nom}} {{entretien.candidat.prenoms}}</p><form method="post"><div class="row g-3">{% for f,l,max in [['motivation','Motivation',3],['projet','Projet professionnel',8],['technique','Aptitude technique',15],['communication','Communication',2],['social','Freins sociaux',2],['mobilite','Mobilité',2],['finances','Situation financière',4],['logement','Logement',2],['sante','Santé',2]] %}<div class="col-md-6"><label class="form-label">{{l}} (max {{max}})</label><input class="form-control" type="number" min="0" max="{{max}}" step="0.5" name="evaluation[{{f}}]" value="0"></div>{% endfor %}</div><div class="mt-3"><label class="form-label">Observations</label><textarea name="evaluation[observations]" class="form-control"></textarea></div><button class="btn btn-primary mt-3">Enregistrer la décision</button></form></div></div></div></div>{% endblock %}
++----------------------------------------------------------------------------------------------------------------------+
+| Configuration                                                                                                        |
++----------------------+----------------------+------------------------------------------------------------------------+
+| Storage              | Type                 | Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration |
+|                      | Table Name           | doctrine_migration_versions                                            |
+|                      | Column Name          | version                                                                |
+|----------------------------------------------------------------------------------------------------------------------|
+| Database             | Driver               | Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver               |
+|                      | Name                 | e2c_mtfpa                                                              |
+|----------------------------------------------------------------------------------------------------------------------|
+| Versions             | Previous             | DoctrineMigrations\Version20261023152155                               |
+|                      | Current              | DoctrineMigrations\Version20261027000100                               |
+|                      | Next                 | Already at latest version                                              |
+|                      | Latest               | DoctrineMigrations\Version20261027000100                               |
+|----------------------------------------------------------------------------------------------------------------------|
+| Migrations           | Executed             | 4                                                                      |
+|                      | Executed Unavailable | 0                                                                      |
+|                      | Available            | 4                                                                      |
+|                      | New                  | 0                                                                      |
+|----------------------------------------------------------------------------------------------------------------------|
+| Migration Namespaces | DoctrineMigrations   | C:\Users\HP PROBOOK 440 G10\Desktop\OPOUE\e2c_v2_2complete/migrations  |
++----------------------+----------------------+------------------------------------------------------------------------+

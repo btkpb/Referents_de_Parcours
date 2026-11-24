@@ -1,0 +1,803 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ edition ? 'Modifier une campagne' : 'Nouvelle campagne' }} | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .camp-form-page {
+        --camp-blue: #245b91;
+        --camp-sky: #5B9BD5;
+        --camp-border: #e5edf5;
+        padding-bottom: 35px;
+    }
+
+    .camp-form-header {
+        background: linear-gradient(120deg, #245b91, #5B9BD5);
+        border-radius: 18px;
+        padding: 27px 30px;
+        color: #fff;
+        box-shadow: 0 8px 22px rgba(36, 91, 145, .16);
+    }
+
+    .camp-form-header h1 {
+        color: #fff;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .camp-form-header p {
+        color: rgba(255,255,255,.88);
+        margin-bottom: 0;
+    }
+
+    .camp-form-header .btn {
+        border-radius: 9px;
+        font-weight: 600;
+    }
+
+    .camp-form-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 275px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .camp-form-main {
+        min-width: 0;
+    }
+
+    .camp-form-section,
+    .camp-form-aside {
+        background: #fff;
+        border: 1px solid var(--camp-border);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(30, 55, 85, .045);
+    }
+
+    .camp-form-section {
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .camp-section-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 17px 21px;
+        border-bottom: 1px solid #edf1f5;
+        background: #fbfdff;
+    }
+
+    .camp-section-icon {
+        width: 39px;
+        height: 39px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 39px;
+        border-radius: 11px;
+        background: #eaf3fb;
+        color: var(--camp-blue);
+        font-size: 1.1rem;
+    }
+
+    .camp-section-heading h2 {
+        font-size: 1rem;
+        color: #243b53;
+        font-weight: 750;
+        margin: 0;
+    }
+
+    .camp-section-heading p {
+        font-size: .79rem;
+        color: #7b8b9c;
+        margin: 3px 0 0;
+    }
+
+    .camp-section-body {
+        padding: 22px;
+    }
+
+    .camp-form-page .form-label {
+        font-weight: 650;
+        color: #34495e;
+        font-size: .88rem;
+        margin-bottom: 7px;
+    }
+
+    .camp-form-page .form-control,
+    .camp-form-page .form-select {
+        min-height: 44px;
+        border-color: #dce5ee;
+        border-radius: 9px;
+        color: #34495e;
+        box-shadow: none;
+    }
+
+    .camp-form-page textarea.form-control {
+        min-height: auto;
+        line-height: 1.55;
+    }
+
+    .camp-form-page .form-control:focus,
+    .camp-form-page .form-select:focus {
+        border-color: var(--camp-sky);
+        box-shadow: 0 0 0 3px rgba(91, 155, 213, .13);
+    }
+
+    .camp-form-page .form-text {
+        color: #8492a1;
+        font-size: .78rem;
+        margin-top: 6px;
+    }
+
+    .camp-required {
+        color: #dc3545;
+    }
+
+    .camp-timeline-item {
+        padding: 15px;
+        border: 1px solid #e8eef5;
+        border-radius: 11px;
+        background: #fbfdff;
+        height: 100%;
+    }
+
+    .camp-timeline-item .form-label {
+        min-height: 40px;
+    }
+
+    .camp-quota-box {
+        background: #edf6ff;
+        border: 1px solid #d5e9fa;
+        border-radius: 12px;
+        padding: 17px;
+    }
+
+    .camp-quota-value {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: #245b91;
+    }
+
+    .camp-color-preview {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 13px;
+        border: 1px solid #e5edf5;
+        background: #fbfdff;
+        border-radius: 10px;
+    }
+
+    .camp-form-page input[type="color"] {
+        width: 62px;
+        height: 45px;
+        padding: 4px;
+        cursor: pointer;
+    }
+
+    .camp-form-aside {
+        padding: 19px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .camp-aside-title {
+        color: #243b53;
+        font-weight: 750;
+        font-size: .95rem;
+        margin-bottom: 17px;
+    }
+
+    .camp-step {
+        display: flex;
+        gap: 11px;
+        margin-bottom: 17px;
+    }
+
+    .camp-step-number {
+        width: 27px;
+        height: 27px;
+        flex: 0 0 27px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #245b91;
+        background: #eaf3fb;
+        font-size: .77rem;
+        font-weight: 800;
+    }
+
+    .camp-step strong {
+        display: block;
+        color: #34495e;
+        font-size: .82rem;
+    }
+
+    .camp-step span {
+        display: block;
+        color: #8290a0;
+        font-size: .75rem;
+        margin-top: 3px;
+        line-height: 1.4;
+    }
+
+    .camp-aside-note {
+        background: #f1f7fd;
+        border: 1px solid #d9e8f7;
+        border-radius: 10px;
+        padding: 13px;
+        color: #45627e;
+        font-size: .8rem;
+        line-height: 1.5;
+    }
+
+    .camp-form-footer {
+        background: #fff;
+        border: 1px solid var(--camp-border);
+        border-radius: 14px;
+        padding: 17px 20px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 4px 15px rgba(30, 55, 85, .045);
+    }
+
+    .camp-form-footer .btn {
+        min-height: 43px;
+        border-radius: 9px;
+        font-weight: 650;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    @media (max-width: 991px) {
+        .camp-form-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .camp-form-aside {
+            position: static;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .camp-form-header {
+            padding: 21px 18px;
+        }
+
+        .camp-form-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .camp-section-body {
+            padding: 16px;
+        }
+
+        .camp-section-heading {
+            padding: 15px 16px;
+        }
+
+        .camp-form-footer {
+            align-items: stretch;
+        }
+
+        .camp-form-footer .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid camp-form-page">
+
+    <div class="camp-form-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="small mb-2 opacity-75">
+                    <i class="bi bi-grid-1x2-fill me-1"></i>
+                    ADMINISTRATION / CAMPAGNES
+                </div>
+
+                <h1 class="h3">
+                    <i class="bi bi-calendar2-plus me-2"></i>
+                    {{ edition ? 'Modifier la campagne' : 'Créer une campagne de recrutement' }}
+                </h1>
+
+                <p>
+                    Configurez les paramètres, les critères et le calendrier de recrutement E2C.
+                </p>
+            </div>
+
+            <a href="{{ path('admin_campagnes_index') }}" class="btn btn-light text-primary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Retour aux campagnes
+            </a>
+        </div>
+    </div>
+
+    <form method="post">
+        <input type="hidden" name="_token" value="{{ csrf_token('campagne_form') }}">
+
+        <div class="camp-form-layout">
+
+            <div class="camp-form-main">
+
+                {# SECTION 1 : IDENTIFICATION #}
+                <section class="camp-form-section">
+                    <div class="camp-section-heading">
+                        <div class="camp-section-icon"><i class="bi bi-card-heading"></i></div>
+                        <div>
+                            <h2>1. Identification de la campagne</h2>
+                            <p>Informations générales de la campagne de recrutement.</p>
+                        </div>
+                    </div>
+
+                    <div class="camp-section-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="nom">
+                                Nom de la campagne <span class="camp-required">*</span>
+                            </label>
+                            <input
+                                class="form-control"
+                                id="nom"
+                                name="nom"
+                                maxlength="160"
+                                value="{{ campagne.nom }}"
+                                placeholder="Ex. : Campagne E2C-MENAET 2027"
+                                required
+                                autofocus
+                            >
+                            <div class="form-text">160 caractères maximum.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="dateDebut">
+                                    Date de début <span class="camp-required">*</span>
+                                </label>
+                                <input
+                                    class="form-control"
+                                    type="date"
+                                    id="dateDebut"
+                                    name="dateDebut"
+                                    value="{{ campagne.dateDebut }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="dateFin">
+                                    Date de fin <span class="camp-required">*</span>
+                                </label>
+                                <input
+                                    class="form-control"
+                                    type="date"
+                                    id="dateFin"
+                                    name="dateFin"
+                                    value="{{ campagne.dateFin }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        <div class="form-text mt-2">
+                            La période définit les dates de validité de la campagne.
+                        </div>
+                    </div>
+                </section>
+
+                {# SECTION 2 : CRITERES #}
+                <section class="camp-form-section">
+                    <div class="camp-section-heading">
+                        <div class="camp-section-icon"><i class="bi bi-people"></i></div>
+                        <div>
+                            <h2>2. Critères d'éligibilité</h2>
+                            <p>Définissez la tranche d'âge et le niveau scolaire requis.</p>
+                        </div>
+                    </div>
+
+                    <div class="camp-section-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="ageMin">
+                                    Âge minimum <span class="camp-required">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        class="form-control"
+                                        type="number"
+                                        min="1"
+                                        max="120"
+                                        id="ageMin"
+                                        name="ageMin"
+                                        value="{{ campagne.ageMin }}"
+                                        required
+                                    >
+                                    <span class="input-group-text">ans</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="ageMax">
+                                    Âge maximum <span class="camp-required">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        class="form-control"
+                                        type="number"
+                                        min="1"
+                                        max="120"
+                                        id="ageMax"
+                                        name="ageMax"
+                                        value="{{ campagne.ageMax }}"
+                                        required
+                                    >
+                                    <span class="input-group-text">ans</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label" for="NiveauRequis">
+                                Niveau scolaire requis
+                            </label>
+                            <textarea
+                                class="form-control"
+                                id="NiveauRequis"
+                                name="NiveauRequis"
+                                rows="4"
+                                maxlength="60000"
+                                placeholder="Précisez les niveaux scolaires ou diplômes exigés..."
+                            >{{ campagne.NiveauRequis|default('') }}</textarea>
+                            <div class="form-text">
+                                Décrivez librement les conditions scolaires applicables à cette campagne.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {# SECTION 3 : CHRONOGRAMME #}
+                <section class="camp-form-section">
+                    <div class="camp-section-heading">
+                        <div class="camp-section-icon"><i class="bi bi-calendar3"></i></div>
+                        <div>
+                            <h2>3. Chronogramme de recrutement</h2>
+                            <p>Calendrier des principales étapes à communiquer aux candidats.</p>
+                        </div>
+                    </div>
+
+                    <div class="camp-section-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="camp-timeline-item">
+                                    <label class="form-label" for="DateCandidatures">
+                                        <i class="bi bi-file-earmark-person text-primary me-1"></i>
+                                        Dépôt des candidatures
+                                    </label>
+                                    <input
+                                        class="form-control"
+                                        type="text"
+                                        id="DateCandidatures"
+                                        name="DateCandidatures"
+                                        maxlength="60000"
+                                        placeholder="Ex. : Du 16 au 28 février 2027"
+                                        value="{{ campagne.DateCandidatures|default('') }}"
+                                    >
+                                    <div class="form-text">Période d'inscription des candidats.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="camp-timeline-item">
+                                    <label class="form-label" for="DateEtudeDossiers">
+                                        <i class="bi bi-folder-check text-primary me-1"></i>
+                                        Étude des dossiers
+                                    </label>
+                                    <input
+                                        class="form-control"
+                                        type="text"
+                                        id="DateEtudeDossiers"
+                                        name="DateEtudeDossiers"
+                                        maxlength="60000"
+                                        placeholder="Ex. : Du 1er au 15 mars 2027"
+                                        value="{{ campagne.DateEtudeDossiers|default('') }}"
+                                    >
+                                    <div class="form-text">Période d'examen des candidatures.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="camp-timeline-item">
+                                    <label class="form-label" for="DateSelection">
+                                        <i class="bi bi-person-check text-primary me-1"></i>
+                                        Entretiens de sélection
+                                    </label>
+                                    <input
+                                        class="form-control"
+                                        type="text"
+                                        id="DateSelection"
+                                        name="DateSelection"
+                                        maxlength="60000"
+                                        placeholder="Ex. : Du 16 mars au 15 avril 2027"
+                                        value="{{ campagne.DateSelection|default('') }}"
+                                    >
+                                    <div class="form-text">Période des entretiens et de sélection.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="camp-timeline-item">
+                                    <label class="form-label" for="DateDebutFormations">
+                                        <i class="bi bi-mortarboard text-primary me-1"></i>
+                                        Début des formations
+                                    </label>
+                                    <input
+                                        class="form-control"
+                                        type="text"
+                                        id="DateDebutFormations"
+                                        name="DateDebutFormations"
+                                        maxlength="60000"
+                                        placeholder="Ex. : Mai 2027"
+                                        value="{{ campagne.DateDebutFormations|default('') }}"
+                                    >
+                                    <div class="form-text">Date ou période prévisionnelle.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-text mt-3">
+                            Ces informations sont destinées à être affichées sur la page d'accueil.
+                        </div>
+                    </div>
+                </section>
+
+                {# SECTION 4 : QUOTAS #}
+                <section class="camp-form-section">
+                    <div class="camp-section-heading">
+                        <div class="camp-section-icon"><i class="bi bi-bar-chart-line"></i></div>
+                        <div>
+                            <h2>4. Capacité de recrutement</h2>
+                            <p>Consultez le quota global de la campagne.</p>
+                        </div>
+                    </div>
+
+                    <div class="camp-section-body">
+                        <div class="camp-quota-box">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                <div>
+                                    <div class="small fw-semibold text-secondary">
+                                        QUOTA GLOBAL CALCULÉ
+                                    </div>
+                                    <div class="camp-quota-value">
+                                        {{ campagne.quotaGlobal|default(0) }}
+                                        <span class="fs-6 fw-normal">places</span>
+                                    </div>
+                                </div>
+                                <div class="camp-section-icon">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                            </div>
+
+                            <p class="small text-muted mb-2 mt-2">
+                                Ce total correspond à la somme des quotas attribués aux différents métiers.
+                            </p>
+
+                            {% if edition %}
+                                <a href="{{ path('admin_campagnes_quotas', {id: campagne.id}) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-sliders me-1"></i>
+                                    Configurer les quotas métiers
+                                </a>
+                            {% else %}
+                                <span class="small text-primary">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Les quotas métiers seront configurables après la création.
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                {# SECTION 5 : PERSONNALISATION #}
+                <section class="camp-form-section">
+                    <div class="camp-section-heading">
+                        <div class="camp-section-icon"><i class="bi bi-palette"></i></div>
+                        <div>
+                            <h2>5. Communication et identité visuelle</h2>
+                            <p>Personnalisez les informations présentées sur la page d'accueil.</p>
+                        </div>
+                    </div>
+
+                    <div class="camp-section-body">
+                        <div class="mb-4">
+                            <label class="form-label" for="texteCampagne">
+                                Texte affiché sur la page d'accueil
+                            </label>
+                            <textarea
+                                class="form-control"
+                                id="texteCampagne"
+                                name="texteCampagne"
+                                rows="5"
+                                maxlength="60000"
+                                placeholder="Présentez la campagne, ses objectifs et les informations utiles aux candidats..."
+                            >{{ campagne.texteCampagne|default('') }}</textarea>
+                            <div class="form-text">
+                                Ce texte sera affiché sur la page d'accueil pendant cette campagne.
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label" for="couleurAccueil">
+                                Couleur de fond de la page d'accueil
+                            </label>
+
+                            <div class="camp-color-preview">
+                                <input
+                                    class="form-control form-control-color"
+                                    type="color"
+                                    id="couleurAccueil"
+                                    name="couleurAccueil"
+                                    value="{{ campagne.couleurAccueil|default('#5B9BD5') }}"
+                                    title="Choisir la couleur d'accueil"
+                                >
+                                <div>
+                                    <div class="fw-semibold text-dark">Couleur de la campagne</div>
+                                    <div class="small text-muted">
+                                        <span id="couleurValeur">{{ campagne.couleurAccueil|default('#5B9BD5') }}</span>
+                                        — Aperçu de la couleur sélectionnée.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {% if edition and campagne.active %}
+                    <div class="alert alert-success border-0 rounded-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Campagne active :</strong>
+                        sa modification ne changera pas son statut d'activation.
+                    </div>
+                {% elseif not edition %}
+                    <div class="alert alert-info border-0 rounded-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Nouvelle campagne :</strong>
+                        elle sera créée avec le statut inactif. Vous pourrez l'activer depuis la liste des campagnes.
+                    </div>
+                {% endif %}
+
+                <div class="camp-form-footer">
+                    <div class="small text-muted">
+                        <i class="bi bi-shield-check text-success me-1"></i>
+                        Les champs marqués d'un astérisque sont obligatoires.
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('admin_campagnes_index') }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Annuler
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            {{ edition ? 'Enregistrer les modifications' : 'Créer la campagne' }}
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            {# AIDE LATERALE #}
+            <aside class="camp-form-aside">
+                <div class="camp-aside-title">
+                    <i class="bi bi-list-check text-primary me-2"></i>
+                    Étapes de configuration
+                </div>
+
+                <div class="camp-step">
+                    <div class="camp-step-number">1</div>
+                    <div>
+                        <strong>Identification</strong>
+                        <span>Nom et période de validité.</span>
+                    </div>
+                </div>
+
+                <div class="camp-step">
+                    <div class="camp-step-number">2</div>
+                    <div>
+                        <strong>Éligibilité</strong>
+                        <span>Âges et niveau scolaire requis.</span>
+                    </div>
+                </div>
+
+                <div class="camp-step">
+                    <div class="camp-step-number">3</div>
+                    <div>
+                        <strong>Chronogramme</strong>
+                        <span>Calendrier des opérations de recrutement.</span>
+                    </div>
+                </div>
+
+                <div class="camp-step">
+                    <div class="camp-step-number">4</div>
+                    <div>
+                        <strong>Capacité</strong>
+                        <span>Répartition des places par métier.</span>
+                    </div>
+                </div>
+
+                <div class="camp-step">
+                    <div class="camp-step-number">5</div>
+                    <div>
+                        <strong>Communication</strong>
+                        <span>Texte et couleur de la page d'accueil.</span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="camp-aside-note mb-3">
+                    <i class="bi bi-lightbulb-fill me-1"></i>
+                    <strong>Conseil :</strong>
+                    vérifiez les dates et les critères d'éligibilité avant d'enregistrer la campagne.
+                </div>
+
+                <div class="camp-aside-note">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    <strong>Sécurité :</strong>
+                    la création et la modification sont protégées par un jeton CSRF.
+                </div>
+            </aside>
+
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const couleur = document.getElementById('couleurAccueil');
+    const valeur = document.getElementById('couleurValeur');
+
+    if (couleur && valeur) {
+        couleur.addEventListener('input', function () {
+            valeur.textContent = couleur.value.toUpperCase();
+        });
+    }
+
+    const debut = document.getElementById('dateDebut');
+    const fin = document.getElementById('dateFin');
+
+    if (debut && fin) {
+        debut.addEventListener('change', function () {
+            fin.min = debut.value;
+
+            if (fin.value && fin.value < debut.value) {
+                fin.value = '';
+            }
+        });
+
+        fin.addEventListener('change', function () {
+            debut.max = fin.value;
+        });
+    }
+
+    const ageMin = document.getElementById('ageMin');
+    const ageMax = document.getElementById('ageMax');
+
+    if (ageMin && ageMax) {
+        ageMin.addEventListener('change', function () {
+            ageMax.min = ageMin.value;
+        });
+
+        ageMax.addEventListener('change', function () {
+            ageMin.max = ageMax.value;
+        });
+    }
+});
+</script>
+{% endblock %}

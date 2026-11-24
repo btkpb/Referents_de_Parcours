@@ -1,0 +1,1440 @@
+:root {
+    --navy: #071a3a;
+    --navy-light: #102d60;
+    --gold: #f4b400;
+    --gold-light: #ffda70;
+    --page-bg: #f5f7fb;
+    --text: #263247;
+    --white: #ffffff;
+}
+
+html {
+    scroll-behavior: smooth;
+    background: var(--page-bg);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--page-bg) !important;
+    color: var(--text) !important;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.daip-navbar {
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+    background: var(--navy) !important;
+    color: var(--white);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.daip-nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 12px 24px;
+}
+
+.daip-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.daip-logo {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 175px;
+    max-height: 72px;
+    object-fit: contain;
+}
+
+.daip-navigation-collapse {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    gap: 16px;
+}
+
+.daip-nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.daip-nav-links a {
+    display: inline-block;
+    padding: 10px 9px;
+    border-radius: 5px;
+    color: var(--gold-light) !important;
+    font-size: 0.94rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.daip-nav-links a:hover,
+.daip-nav-links a:focus {
+    color: var(--white) !important;
+    background: var(--navy-light);
+}
+
+.daip-nav-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.daip-user-label {
+    max-width: 180px;
+    overflow-wrap: anywhere;
+    color: var(--white);
+    font-size: 0.85rem;
+}
+
+.daip-login-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    background: var(--gold);
+    color: var(--navy) !important;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.daip-login-btn:hover,
+.daip-login-btn:focus {
+    background: var(--white);
+    border-color: var(--white);
+    color: var(--navy) !important;
+}
+
+.daip-menu-toggle {
+    display: none;
+    padding: 8px 12px;
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--gold-light);
+}
+
+.daip-main {
+    flex: 1;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px !important;
+    background: var(--white);
+    color: var(--text);
+}
+
+.daip-main h1,
+.daip-main h2,
+.daip-main h3,
+.daip-main h4,
+.daip-main p,
+.daip-main li,
+.daip-main label {
+    color: var(--text);
+}
+
+.daip-main a:not(.btn) {
+    overflow-wrap: anywhere;
+}
+
+.daip-main .btn-primary,
+.btn-primary {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: var(--white);
+}
+
+.daip-main .btn-primary:hover,
+.btn-primary:hover {
+    background: var(--navy-light);
+    border-color: var(--navy-light);
+}
+
+.bg-navy {
+    background: var(--navy) !important;
+}
+
+.metric {
+    border-left: 5px solid var(--gold);
+}
+
+.card {
+    border-radius: 16px;
+}
+
+.display-1 {
+    color: #198754;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+#contact {
+    scroll-margin-top: 24px;
+    padding: 28px;
+    margin-top: 32px;
+    border-radius: 10px;
+    background: #eef2f8;
+    color: var(--text);
+}
+
+#contact h2,
+#contact h3,
+#contact p,
+#contact li,
+#contact a {
+    color: var(--text);
+}
+
+.daip-footer {
+    margin-top: auto;
+    padding: 18px 12px;
+    background: var(--navy) !important;
+    color: var(--white) !important;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .daip-nav-container {
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    .daip-navigation-collapse {
+        flex-basis: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .daip-nav-links {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .daip-nav-container {
+        justify-content: space-between;
+        padding: 12px;
+    }
+
+    .daip-logo {
+        max-width: 145px;
+        max-height: 60px;
+    }
+
+    .daip-menu-toggle {
+        display: inline-block;
+    }
+
+    .daip-navigation-collapse {
+        display: none;
+        flex-basis: 100%;
+        width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .daip-navigation-collapse.show {
+        display: flex;
+    }
+
+    .daip-nav-links {
+        width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .daip-nav-links a {
+        display: block;
+        text-align: center;
+    }
+
+    .daip-nav-login {
+        flex-wrap: wrap;
+    }
+
+    .daip-main {
+        padding: 24px 16px !important;
+    }
+
+    #contact {
+        padding: 20px 16px;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+}
+
+/* E2C NAVIGATION COMPACTE */
+@media (min-width: 992px) {
+    .daip-navigation-collapse {
+        min-width: 0;
+    }
+
+    .daip-nav-links {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: .25rem;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .daip-nav-links > a,
+    .daip-nav-dropdown > summary {
+        white-space: nowrap;
+        padding: .55rem .65rem;
+    }
+
+    .daip-nav-dropdown {
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .daip-nav-dropdown > summary {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .daip-nav-dropdown > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .daip-nav-dropdown > summary::after {
+        content: " â–¾";
+    }
+
+    .daip-nav-dropdown-menu {
+        position: absolute;
+        z-index: 1050;
+        top: 100%;
+        right: 0;
+        min-width: 210px;
+        padding: .5rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.12);
+        display: flex;
+        flex-direction: column;
+        white-space: normal;
+    }
+
+    .daip-nav-dropdown-menu a {
+        display: block;
+        padding: .55rem .7rem;
+        text-decoration: none;
+        color: #212529;
+        border-radius: .25rem;
+    }
+
+    .daip-nav-dropdown-menu a:hover {
+        background: #f1f4f8;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .daip-nav-links {
+        flex-wrap: wrap;
+    }
+
+    .daip-nav-dropdown-menu {
+        display: flex;
+        flex-direction: column;
+        padding-left: 1rem;
+    }
+
+    .daip-nav-dropdown-menu a {
+        padding: .5rem;
+    }
+}
+/* FIN E2C NAVIGATION COMPACTE */
+/* ============================================================
+   THEME BLEU CLAIR PROFESSIONNEL - E2C MENAET V2
+   ============================================================ */
+
+:root {
+    --e2c-fond: #EAF4FF;
+    --e2c-bleu-clair: #DCEEFF;
+    --e2c-bleu-principal: #2563A6;
+    --e2c-bleu-fonce: #17365D;
+    --e2c-blanc: #FFFFFF;
+}
+
+/* Fond gÃ©nÃ©ral */
+html,
+body {
+    background: var(--e2c-fond) !important;
+    color: #24364B;
+}
+
+/* Zones principales */
+main,
+.main-content,
+.content-wrapper,
+.dashboard-container,
+.container-fluid {
+    background-color: transparent;
+}
+
+/* Cartes, formulaires et fenÃªtres */
+.card,
+.modal-content,
+.dropdown-menu {
+    background-color: var(--e2c-blanc);
+    color: #24364B;
+}
+
+/* Barre de navigation */
+.navbar {
+    background-color: var(--e2c-blanc);
+}
+
+/* Tableaux */
+.table {
+    --bs-table-bg: #FFFFFF;
+    --bs-table-color: #24364B;
+}
+
+/* Champs de saisie */
+.form-control,
+.form-select {
+    background-color: #FFFFFF;
+    color: #24364B;
+}
+
+/* Liens */
+a {
+    color: var(--e2c-bleu-principal);
+}
+
+/* Boutons principaux */
+.btn-primary {
+    background-color: var(--e2c-bleu-principal);
+    border-color: var(--e2c-bleu-principal);
+}
+
+.btn-primary:hover {
+    background-color: var(--e2c-bleu-fonce);
+    border-color: var(--e2c-bleu-fonce);
+}
+
+/* Fin du thÃ¨me bleu clair */
+
+/* E2C_THEME_BLEU_CLAIR_DEBUT */
+html, body {
+    background-color: #EAF4FF !important;
+    color: #24364B !important;
+    min-height: 100%;
+}
+
+body {
+    background-image: none !important;
+}
+
+main, .main-content, .content-wrapper, .page-content,
+.daip-main, .daip-content, .container, .container-fluid {
+    background-color: transparent !important;
+}
+
+.card, .modal-content, .dropdown-menu, .offcanvas {
+    background-color: #FFFFFF !important;
+    color: #24364B !important;
+}
+
+.navbar, .navbar-light {
+    background-color: #FFFFFF !important;
+}
+
+.table {
+    --bs-table-bg: #FFFFFF;
+    --bs-table-color: #24364B;
+}
+
+.form-control, .form-select {
+    background-color: #FFFFFF !important;
+    color: #24364B !important;
+}
+
+.btn-primary {
+    background-color: #145DA0 !important;
+    border-color: #145DA0 !important;
+    color: #FFFFFF !important;
+}
+/* E2C_THEME_BLEU_CLAIR_FIN */
+
+
+/* ==========================================================
+   E2C-MENAET - PAGE PROFESSIONNELLE DE CREATION DE COMPTE
+   ========================================================== */
+
+.account-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #eef3f9;
+    color: #18324f;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.account-main {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.account-shell {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.88fr) minmax(520px, 1.12fr);
+    min-height: 100vh;
+    background: #fff;
+}
+
+.account-presentation {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 42px clamp(28px, 5vw, 76px);
+    color: #fff;
+    background:
+        radial-gradient(circle at 12% 88%, rgba(83, 165, 225, .28), transparent 34%),
+        linear-gradient(145deg, #102d55 0%, #174a7d 55%, #246ca4 100%);
+}
+
+.account-presentation::after {
+    position: absolute;
+    right: -145px;
+    bottom: 100px;
+    width: 340px;
+    height: 340px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+    content: "";
+    box-shadow: 0 0 0 35px rgba(255,255,255,.035), 0 0 0 70px rgba(255,255,255,.025);
+    pointer-events: none;
+}
+
+.account-brand {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.account-brand img {
+    width: 66px;
+    height: 66px;
+    padding: 5px;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.account-brand-title,
+.account-brand-subtitle {
+    display: block;
+}
+
+.account-brand-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+.account-brand-subtitle {
+    margin-top: 4px;
+    color: rgba(255,255,255,.76);
+    font-size: 12px;
+}
+
+.account-presentation-content {
+    position: relative;
+    z-index: 1;
+    max-width: 540px;
+    margin: 65px 0;
+}
+
+.account-kicker {
+    display: inline-block;
+    color: #b9dcff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.account-presentation h1 {
+    max-width: 500px;
+    margin: 18px 0;
+    color: #fff;
+    font-size: clamp(30px, 3.4vw, 46px);
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.account-presentation-content > p {
+    max-width: 470px;
+    color: rgba(255,255,255,.82);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.account-benefits {
+    display: grid;
+    gap: 24px;
+    margin-top: 48px;
+}
+
+.account-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.account-benefit-number {
+    display: grid;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 11px;
+    color: #d6ebff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.account-benefit strong,
+.account-benefit span:last-child {
+    display: block;
+}
+
+.account-benefit strong {
+    margin: 1px 0 5px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.account-benefit div span {
+    color: rgba(255,255,255,.72);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.account-presentation-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.72);
+    font-size: 11px;
+}
+
+.account-form-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 34px clamp(24px, 5vw, 76px);
+    background: #fff;
+}
+
+.account-form-container {
+    width: 100%;
+    max-width: 610px;
+    margin: auto;
+}
+
+.account-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 34px;
+    color: #61758c;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.account-back-link:hover {
+    color: #1765a1;
+}
+
+.account-back-link span {
+    font-size: 19px;
+}
+
+.account-form-heading {
+    margin-bottom: 25px;
+}
+
+.account-kicker-blue {
+    color: #2876b5;
+}
+
+.account-form-heading h2 {
+    margin: 10px 0 8px;
+    color: #16385f;
+    font-size: clamp(27px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.7px;
+}
+
+.account-form-heading p {
+    margin: 0;
+    color: #718096;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.account-info {
+    display: flex;
+    gap: 13px;
+    margin: 22px 0 27px;
+    padding: 15px 17px;
+    border: 1px solid #d8e9f8;
+    border-radius: 12px;
+    background: #f2f8fd;
+}
+
+.account-info-icon {
+    display: grid;
+    flex: 0 0 25px;
+    width: 25px;
+    height: 25px;
+    place-items: center;
+    border-radius: 50%;
+    background: #d9ebfa;
+    color: #1d659e;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.account-info strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #1d4f7b;
+    font-size: 12px;
+}
+
+.account-info p {
+    margin: 0;
+    color: #617b94;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.account-alert {
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.account-section-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 26px 0 17px;
+}
+
+.account-section-label > span {
+    display: grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 9px;
+    background: #e8f2fb;
+    color: #236ba5;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.account-section-label strong,
+.account-section-label small {
+    display: block;
+}
+
+.account-section-label strong {
+    color: #244563;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.account-section-label small {
+    margin-top: 3px;
+    color: #8291a2;
+    font-size: 10px;
+}
+
+.account-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.account-field {
+    min-width: 0;
+}
+
+.account-field-full {
+    grid-column: 1 / -1;
+}
+
+.account-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #344e68;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.account-field label span {
+    color: #d14c4c;
+}
+
+.account-field input {
+    display: block;
+    width: 100%;
+    min-height: 47px;
+    padding: 11px 13px;
+    border: 1px solid #dce4ed;
+    border-radius: 9px;
+    outline: none;
+    background: #fbfcfe;
+    color: #233e59;
+    font-family: inherit;
+    font-size: 13px;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.account-field input::placeholder {
+    color: #a7b2bf;
+}
+
+.account-field input:focus {
+    border-color: #438ac2;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(48, 125, 185, .12);
+}
+
+.account-field > small {
+    display: block;
+    margin-top: 6px;
+    color: #8493a3;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.account-password-wrap {
+    position: relative;
+}
+
+.account-password-wrap input {
+    padding-right: 83px;
+}
+
+.account-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 11px;
+    padding: 5px 7px;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #2876b5;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-password-toggle:hover {
+    background: #edf5fb;
+}
+
+.account-section-password {
+    margin-top: 30px;
+}
+
+.account-submit {
+    display: flex;
+    width: 100%;
+    min-height: 51px;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 27px;
+    padding: 13px 20px;
+    border: 0;
+    border-radius: 9px;
+    background: linear-gradient(110deg, #174a7d, #287bb7);
+    box-shadow: 0 7px 17px rgba(23, 74, 125, .18);
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.account-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(23, 74, 125, .24);
+    filter: brightness(1.06);
+}
+
+.account-submit:focus-visible,
+.account-password-toggle:focus-visible,
+.account-back-link:focus-visible {
+    outline: 3px solid rgba(48, 125, 185, .3);
+    outline-offset: 3px;
+}
+
+.account-submit span {
+    font-size: 18px;
+}
+
+.account-secure-note {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin: 13px 0 0;
+    color: #8191a1;
+    font-size: 10px;
+}
+
+.account-secure-note span {
+    color: #26936c;
+    font-weight: 800;
+}
+
+.account-login-link {
+    margin-top: 26px;
+    padding-top: 21px;
+    border-top: 1px solid #edf0f4;
+    color: #718096;
+    font-size: 12px;
+    text-align: center;
+}
+
+.account-login-link a {
+    margin-left: 4px;
+    color: #216da8;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.account-login-link a:hover {
+    text-decoration: underline;
+}
+
+.account-bottom-note {
+    margin-top: 28px;
+    color: #a1acb8;
+    font-size: 10px;
+    text-align: center;
+}
+
+@media (max-width: 1050px) {
+    .account-shell {
+        grid-template-columns: minmax(280px, .78fr) minmax(480px, 1.22fr);
+    }
+
+    .account-presentation {
+        padding-right: 30px;
+        padding-left: 30px;
+    }
+
+    .account-form-section {
+        padding-right: 30px;
+        padding-left: 30px;
+    }
+}
+
+@media (max-width: 760px) {
+    .account-shell {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .account-presentation {
+        min-height: auto;
+        padding: 25px 24px 28px;
+    }
+
+    .account-brand img {
+        width: 52px;
+        height: 52px;
+    }
+
+    .account-presentation-content {
+        margin: 35px 0 25px;
+    }
+
+    .account-presentation h1 {
+        max-width: 600px;
+        font-size: 30px;
+    }
+
+    .account-presentation-content > p {
+        font-size: 13px;
+    }
+
+    .account-benefits {
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .account-benefit-number {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .account-presentation-footer {
+        margin-top: 12px;
+    }
+
+    .account-form-section {
+        padding: 30px 22px 40px;
+    }
+
+    .account-form-container {
+        max-width: 600px;
+    }
+
+    .account-back-link {
+        margin-bottom: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .account-fields-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .account-field-full {
+        grid-column: auto;
+    }
+
+    .account-form-section {
+        padding-right: 17px;
+        padding-left: 17px;
+    }
+
+    .account-form-heading h2 {
+        font-size: 27px;
+    }
+
+    .account-presentation h1 {
+        font-size: 27px;
+    }
+
+    .account-presentation-footer {
+        flex-direction: column;
+    }
+}
+
+/* ==========================================================
+   E2C_NAVIGATION_SANS_DEBORDEMENT
+   Navigation adaptative sans defilement horizontal
+   ========================================================== */
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+.daip-navbar,
+.daip-nav-container,
+.daip-navigation-collapse {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.daip-nav-container {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+}
+
+.daip-navigation-collapse {
+    flex: 1 1 0;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+
+.daip-nav-links {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    white-space: normal;
+    gap: 2px;
+}
+
+.daip-nav-links a {
+    padding: 8px 7px;
+    font-size: 0.88rem;
+    white-space: normal;
+}
+
+.daip-nav-login {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.daip-user-label {
+    display: inline-block;
+    max-width: min(240px, 28vw);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+    font-size: 0.80rem;
+}
+
+#role-utilisateur-connecte {
+    max-width: 180px;
+    white-space: normal;
+    text-align: center;
+}
+
+.daip-login-btn {
+    padding: 8px 11px;
+    white-space: nowrap;
+}
+
+@media (min-width: 769px) {
+    .daip-nav-links {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .daip-navigation-collapse {
+        flex: 1 1 100%;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .daip-nav-links {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .daip-nav-login {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .daip-navigation-collapse {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .daip-nav-links {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .daip-nav-login {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .daip-user-label {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    #role-utilisateur-connecte {
+        max-width: 100%;
+    }
+}
+
+/* FIN E2C_NAVIGATION_SANS_DEBORDEMENT */
+
+/* ==========================================================
+   E2C_RESPONSIVE_GLOBAL_V1
+   Adaptation générale : téléphones, tablettes et ordinateurs
+   ========================================================== */
+
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+img, video, iframe, canvas, svg {
+    max-width: 100%;
+}
+
+img, video {
+    height: auto;
+}
+
+.daip-main,
+.container,
+.container-fluid,
+.e2c-dashboard,
+main {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.row {
+    min-width: 0;
+}
+
+.row > *,
+.d-flex > *,
+.card,
+.card-body,
+.table-responsive,
+form,
+fieldset {
+    min-width: 0;
+}
+
+h1, h2, h3, h4, h5, h6,
+p, a, label, span, td, th {
+    overflow-wrap: anywhere;
+}
+
+.form-control,
+.form-select,
+textarea,
+input,
+select {
+    max-width: 100%;
+}
+
+.table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    max-width: 100%;
+}
+
+.btn,
+button,
+input[type="submit"],
+input[type="button"] {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.card,
+.action-card,
+.stat-card {
+    max-width: 100%;
+}
+
+.action-card > span:last-child {
+    min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+    .container,
+    .container-fluid {
+        max-width: 100%;
+    }
+
+    .daip-main {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .card-body {
+        overflow-wrap: anywhere;
+    }
+
+    .table-responsive {
+        margin-bottom: 1rem;
+    }
+
+    .btn-toolbar,
+    .d-flex.flex-wrap {
+        row-gap: 10px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .daip-main {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .container,
+    .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    h1 {
+        font-size: clamp(1.45rem, 5vw, 1.9rem);
+    }
+
+    h2 {
+        font-size: clamp(1.2rem, 4.5vw, 1.55rem);
+    }
+
+    .row {
+        --bs-gutter-x: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .btn,
+    .btn-group,
+    .btn-toolbar {
+        max-width: 100%;
+    }
+
+    .btn-group {
+        flex-wrap: wrap;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 42px;
+    }
+
+    .table-responsive table {
+        min-width: 600px;
+    }
+
+    .e2c-dashboard .hero {
+        padding: 20px;
+    }
+
+    .e2c-dashboard .action-card {
+        align-items: flex-start;
+    }
+
+    .e2c-dashboard .stat-card {
+        padding: 15px;
+    }
+
+    .e2c-dashboard .stat-number {
+        font-size: 1.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .daip-main {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .container,
+    .container-fluid {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .e2c-dashboard .hero {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .e2c-dashboard .hero h1 {
+        font-size: 1.45rem;
+    }
+
+    .e2c-dashboard .switch-design {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    .e2c-dashboard .stat-card {
+        padding: 12px;
+    }
+
+    .e2c-dashboard .stat-number {
+        font-size: 1.45rem;
+    }
+
+    .e2c-dashboard .action-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .e2c-dashboard .action-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .table-responsive table {
+        min-width: 560px;
+    }
+}
+
+/* Fin E2C_RESPONSIVE_GLOBAL_V1 */

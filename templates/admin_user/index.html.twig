@@ -1,0 +1,414 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs - E2C-MENAET{% endblock %}
+
+{% block body %}
+{% set total = utilisateurs|length %}
+{% set actifs = 0 %}
+{% set inactifs = 0 %}
+
+{% for u in utilisateurs %}
+    {% if u.active %}
+        {% set actifs = actifs + 1 %}
+    {% else %}
+        {% set inactifs = inactifs + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% set profils = {
+    'medical': 'Personnel médical',
+    'referent': 'Référent de parcours',
+    'referent_parcours': 'Référent de parcours',
+    'gestionnaire': 'Gestionnaire',
+    'jury': 'Membre du jury',
+    'formateur': 'Formateur',
+    'apprenti': 'Apprenti',
+    'administrateur': 'Administrateur',
+    'super_admin': 'Super administrateur',
+    'demandeur': 'Demandeur',
+    'refuse': 'Demande refusée'
+} %}
+
+<style>
+.users-page {
+    padding: 28px 0 45px;
+}
+.users-header {
+    background: linear-gradient(120deg, #12395f, #174675 58%, #5B9BD5);
+    color: #fff;
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 24px rgba(18,57,95,.16);
+}
+.users-header h1 {
+    color: #fff;
+    font-weight: 750;
+    margin-bottom: 8px;
+}
+.users-header p {
+    color: rgba(255,255,255,.86);
+    margin: 0;
+}
+.users-header .btn {
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 15px;
+}
+.users-stat {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%;
+    box-shadow: 0 4px 14px rgba(30,55,80,.045);
+}
+.users-stat-label {
+    color: #6b7785;
+    font-size: .88rem;
+    font-weight: 600;
+}
+.users-stat-number {
+    color: #173e63;
+    font-size: 1.9rem;
+    font-weight: 750;
+    margin-top: 5px;
+}
+.users-stat-icon {
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+.users-panel {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(30,55,80,.05);
+    overflow: hidden;
+}
+.users-panel-heading {
+    padding: 20px 22px;
+    border-bottom: 1px solid #edf0f4;
+}
+.users-panel-heading h2 {
+    color: #173e63;
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin: 0;
+}
+.users-search {
+    background: #f6f8fb;
+    border: 1px solid #e3e9f0;
+    border-radius: 11px;
+    padding: 9px 12px;
+}
+.users-search .form-control {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+.users-table {
+    margin: 0;
+    min-width: 760px;
+}
+.users-table thead th {
+    background: #f3f6fa;
+    color: #536579;
+    font-size: .77rem;
+    text-transform: uppercase;
+    letter-spacing: .045em;
+    padding: 15px 17px;
+    white-space: nowrap;
+}
+.users-table tbody td {
+    padding: 15px 17px;
+    border-color: #edf0f4;
+    vertical-align: middle;
+}
+.users-table tbody tr:hover {
+    background: #f8fbff;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e7f1fb;
+    color: #174675;
+    font-weight: 750;
+    margin-right: 10px;
+}
+.user-name {
+    color: #203b56;
+    font-weight: 700;
+}
+.user-email {
+    color: #718096;
+    font-size: .84rem;
+}
+.user-profile {
+    display: inline-block;
+    background: #edf4fb;
+    color: #24527c;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 650;
+}
+.user-status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .79rem;
+    font-weight: 700;
+}
+.user-status.active {
+    color: #147a46;
+    background: #e5f6ed;
+}
+.user-status.inactive {
+    color: #687586;
+    background: #edf0f3;
+}
+.user-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.user-actions .btn {
+    border-radius: 8px;
+    font-size: .82rem;
+}
+.users-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #718096;
+}
+.users-empty i {
+    display: block;
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+    color: #9aafc3;
+}
+@media(max-width:767px) {
+    .users-page { padding-top: 15px; }
+    .users-header { padding: 22px 18px; }
+    .users-header .btn { width: 100%; }
+    .users-panel-heading { padding: 16px; }
+}
+</style>
+
+<div class="container users-page">
+
+    <div class="users-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+            <div>
+                <div class="small text-uppercase fw-bold mb-2" style="letter-spacing: .12em; color:#d8eaff;">
+                    Administration de la plateforme
+                </div>
+                <h1 class="h3">Gestion des utilisateurs</h1>
+                <p>Gérez les comptes, les profils et les accès à la plateforme E2C-MENAET.</p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-warning" href="{{ path('admin_users_demandes') }}">
+                    <i class="bi bi-person-plus me-1"></i> Demandes de comptes
+                </a>
+                <a class="btn btn-light text-primary" href="{{ path('admin_users_new') }}">
+                    <i class="bi bi-plus-circle me-1"></i> Nouvel utilisateur
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'danger' ? 'danger' : (type == 'success' ? 'success' : 'info') }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes affichés</div>
+                        <div class="users-stat-number">{{ total }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e7f1fb;color:#245b8d;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes actifs</div>
+                        <div class="users-stat-number">{{ actifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#e5f6ed;color:#198754;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="users-stat">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="users-stat-label">Comptes désactivés</div>
+                        <div class="users-stat-number">{{ inactifs }}</div>
+                    </div>
+                    <div class="users-stat-icon" style="background:#edf0f3;color:#687586;">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="users-panel">
+        <div class="users-panel-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h2><i class="bi bi-person-lines-fill me-2"></i>Annuaire des utilisateurs</h2>
+                    <div class="text-muted small mt-1">Consultez et gérez les comptes enregistrés.</div>
+                </div>
+                <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                    {{ total }} résultat(s)
+                </span>
+            </div>
+
+            <form method="get" action="{{ path('admin_users_index') }}" class="row g-2">
+                <div class="col-12 col-md">
+                    <div class="users-search d-flex align-items-center">
+                        <i class="bi bi-search text-secondary ms-1"></i>
+                        <input
+                            class="form-control"
+                            type="search"
+                            name="q"
+                            value="{{ recherche }}"
+                            placeholder="Nom, prénom, adresse e-mail ou profil..."
+                            aria-label="Rechercher un utilisateur"
+                        >
+                    </div>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search me-1"></i> Rechercher
+                    </button>
+                </div>
+                <div class="col-6 col-md-auto d-grid">
+                    <a class="btn btn-outline-secondary" href="{{ path('admin_users_index') }}">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table users-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Profil</th>
+                        <th>Statut du compte</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for utilisateur in utilisateurs %}
+                    {% set nomComplet = (utilisateur.nom ~ ' ' ~ utilisateur.prenoms)|trim %}
+                    {% set initiales = (utilisateur.nom|default('U')|slice(0, 1) ~ utilisateur.prenoms|default('')|slice(0, 1))|upper %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar">{{ initiales }}</span>
+                                <div>
+                                    <div class="user-name">{{ nomComplet }}</div>
+                                    <div class="user-email">{{ utilisateur.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="user-profile">
+                                {{ profils[utilisateur.profil]|default(utilisateur.profil|replace({'_':' '})|title) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if utilisateur.active %}
+                                <span class="user-status active">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Actif
+                                </span>
+                            {% else %}
+                                <span class="user-status inactive">
+                                    <i class="bi bi-pause-circle-fill me-1"></i> Désactivé
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="user-actions">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ path('admin_users_edit', {id: utilisateur.id}) }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Modifier
+                                </a>
+
+                                <form method="post"
+                                      action="{{ path('admin_users_status', {id: utilisateur.id}) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('{{ utilisateur.active ? 'Désactiver ce compte ?' : 'Activer ce compte ?' }}');">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('user_status_' ~ utilisateur.id) }}">
+
+                                    {% if utilisateur.active %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="bi bi-person-x me-1"></i> Désactiver
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="bi bi-person-check me-1"></i> Activer
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="users-empty">
+                                <i class="bi bi-people"></i>
+                                <strong class="d-block text-dark mb-1">Aucun utilisateur trouvé</strong>
+                                <span>Modifiez votre recherche ou réinitialisez les filtres.</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-3 border-top d-flex flex-wrap justify-content-between gap-2">
+            <span class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ total }} compte(s) affiché(s)
+            </span>
+            <span class="text-muted small">E2C-MENAET · Administration des accès</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

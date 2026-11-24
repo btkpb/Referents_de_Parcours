@@ -1,0 +1,315 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }} | Catalogue E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+.catalogue-form-page {
+    --catalogue-blue: #245b91;
+    --catalogue-sky: #5B9BD5;
+    background: #f3f7fb;
+    min-height: calc(100vh - 80px);
+    padding: 32px 15px 55px;
+}
+.catalogue-form-page .page-heading {
+    background: linear-gradient(120deg, #245b91, #5B9BD5);
+    color: #fff;
+    border-radius: 16px;
+    padding: 27px 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 22px rgba(36, 91, 145, .15);
+}
+.catalogue-form-page .page-heading h1 {
+    color: #fff;
+    font-size: 1.55rem;
+    font-weight: 700;
+    margin: 0 0 7px;
+}
+.catalogue-form-page .breadcrumb-line {
+    color: rgba(255,255,255,.85);
+    font-size: .9rem;
+}
+.catalogue-form-page .breadcrumb-line a {
+    color: #fff;
+    text-decoration: underline;
+}
+.catalogue-form-page .form-card {
+    background: #fff;
+    border: 1px solid #e3ebf3;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(31, 64, 95, .07);
+    overflow: hidden;
+}
+.catalogue-form-page .form-card-heading {
+    padding: 22px 28px;
+    border-bottom: 1px solid #e9eef4;
+    background: #fbfdff;
+}
+.catalogue-form-page .form-card-heading h2 {
+    color: #203b59;
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin: 0 0 5px;
+}
+.catalogue-form-page .form-card-heading p {
+    color: #718096;
+    font-size: .9rem;
+    margin: 0;
+}
+.catalogue-form-page .form-content {
+    padding: 28px;
+}
+.catalogue-form-page .form-label {
+    color: #263e57;
+    font-weight: 600;
+    font-size: .92rem;
+    margin-bottom: 8px;
+}
+.catalogue-form-page .required-mark {
+    color: #dc3545;
+}
+.catalogue-form-page .form-control {
+    min-height: 47px;
+    border: 1px solid #d7e1eb;
+    border-radius: 9px;
+    padding: 11px 14px;
+    color: #263e57;
+    background-color: #fff;
+    transition: border-color .2s, box-shadow .2s;
+}
+.catalogue-form-page textarea.form-control {
+    min-height: 145px;
+    resize: vertical;
+}
+.catalogue-form-page .form-control:focus {
+    border-color: #5B9BD5;
+    box-shadow: 0 0 0 3px rgba(91, 155, 213, .16);
+}
+.catalogue-form-page .form-text {
+    color: #8190a2;
+    font-size: .82rem;
+    margin-top: 7px;
+}
+.catalogue-form-page .status-panel {
+    background: #f3f8fd;
+    border: 1px solid #dceaf6;
+    border-radius: 11px;
+    padding: 17px 19px;
+}
+.catalogue-form-page .status-panel .form-check-label {
+    color: #28445f;
+    font-weight: 600;
+}
+.catalogue-form-page .form-check-input {
+    cursor: pointer;
+}
+.catalogue-form-page .form-check-input:checked {
+    background-color: #27845b;
+    border-color: #27845b;
+}
+.catalogue-form-page .form-actions {
+    border-top: 1px solid #e9eef4;
+    margin-top: 28px;
+    padding-top: 23px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.catalogue-form-page .btn {
+    border-radius: 9px;
+    padding: 11px 20px;
+    font-weight: 600;
+    min-height: 44px;
+}
+.catalogue-form-page .btn-save {
+    background: #245b91;
+    border-color: #245b91;
+    color: #fff;
+}
+.catalogue-form-page .btn-save:hover {
+    background: #194774;
+    border-color: #194774;
+    color: #fff;
+}
+.catalogue-form-page .btn-cancel {
+    border: 1px solid #cbd5df;
+    color: #536579;
+    background: #fff;
+}
+.catalogue-form-page .btn-cancel:hover {
+    background: #f1f5f9;
+}
+.catalogue-form-page .required-note {
+    color: #718096;
+    font-size: .83rem;
+}
+@media (max-width: 576px) {
+    .catalogue-form-page { padding: 20px 10px 35px; }
+    .catalogue-form-page .page-heading { padding: 22px 19px; }
+    .catalogue-form-page .page-heading h1 { font-size: 1.3rem; }
+    .catalogue-form-page .form-content { padding: 20px 17px; }
+    .catalogue-form-page .form-card-heading { padding: 19px 17px; }
+    .catalogue-form-page .form-actions { align-items: stretch; }
+    .catalogue-form-page .form-actions > div { width: 100%; }
+    .catalogue-form-page .form-actions .btn { width: 100%; }
+}
+</style>
+
+<div class="catalogue-form-page">
+    <div class="container" style="max-width: 960px;">
+
+        <div class="page-heading">
+            <div class="breadcrumb-line mb-2">
+                <a href="{{ path('admin_catalogue_index') }}">Catalogue</a>
+                <span class="mx-2">›</span>
+                <span>{{ titre }}</span>
+            </div>
+            <h1>{{ titre }}</h1>
+            <div class="breadcrumb-line">
+                Gestion du référentiel des établissements et des métiers E2C-MENAET.
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-heading">
+                <h2>
+                    {% if type == 'etablissement' %}
+                        Informations de l'établissement
+                    {% else %}
+                        Informations du métier
+                    {% endif %}
+                </h2>
+                <p>Renseignez les informations ci-dessous puis enregistrez votre saisie.</p>
+            </div>
+
+            <div class="form-content">
+                {% for typeMessage, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ typeMessage }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                <form method="post" action="{{ action }}">
+                    {% if type == 'etablissement' %}
+                        <input type="hidden" name="_token" value="{{ csrf_token('catalogue_etablissement_form') }}">
+
+                        <div class="mb-4">
+                            <label for="nom" class="form-label">
+                                Nom de l'établissement <span class="required-mark">*</span>
+                            </label>
+                            <input id="nom" name="nom" type="text" class="form-control"
+                                   maxlength="180" value="{{ item.nom|default('') }}"
+                                   placeholder="Ex. : Lycée professionnel, Centre de formation..."
+                                   autocomplete="organization" required>
+                            <div class="form-text">Nom officiel de l'établissement (180 caractères maximum).</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="ville" class="form-label">
+                                Ville <span class="required-mark">*</span>
+                            </label>
+                            <input id="ville" name="ville" type="text" class="form-control"
+                                   maxlength="120" value="{{ item.ville|default('') }}"
+                                   placeholder="Ex. : Abidjan, Bouaké, Yamoussoukro..."
+                                   autocomplete="address-level2" required>
+                            <div class="form-text">Ville dans laquelle se situe l'établissement.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control"
+                                      rows="5" maxlength="5000"
+                                      placeholder="Présentez brièvement l'établissement, ses activités ou ses domaines de formation...">{{ item.description|default('') }}</textarea>
+                            <div class="form-text text-end">
+                                <span id="description-count">0</span> / 5000 caractères
+                            </div>
+                        </div>
+                    {% else %}
+                        <input type="hidden" name="_token" value="{{ csrf_token('catalogue_metier_form') }}">
+
+                        <div class="mb-4">
+                            <label for="nom" class="form-label">
+                                Nom du métier <span class="required-mark">*</span>
+                            </label>
+                            <input id="nom" name="nom" type="text" class="form-control"
+                                   maxlength="120" value="{{ item.nom|default('') }}"
+                                   placeholder="Ex. : Maçon, Menuisier-coffreur..."
+                                   required>
+                            <div class="form-text">Intitulé du métier (120 caractères maximum).</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="secteur" class="form-label">
+                                Secteur <span class="required-mark">*</span>
+                            </label>
+                            <input id="secteur" name="secteur" type="text" class="form-control"
+                                   maxlength="120" value="{{ item.secteur|default('') }}"
+                                   placeholder="Ex. : Bâtiment et travaux publics..."
+                                   required>
+                            <div class="form-text">Secteur d'activité auquel appartient ce métier.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control"
+                                      rows="5" maxlength="5000"
+                                      placeholder="Décrivez les principales activités et compétences associées à ce métier...">{{ item.description|default('') }}</textarea>
+                            <div class="form-text text-end">
+                                <span id="description-count">0</span> / 5000 caractères
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="status-panel">
+                        <div class="form-check form-switch mb-0">
+                            <input id="actif" name="actif" value="1" type="checkbox"
+                                   class="form-check-input"
+                                   {% if item.actif is defined and item.actif == 1 %}checked{% endif %}>
+                            <label for="actif" class="form-check-label">
+                                Actif dans le catalogue
+                            </label>
+                            <div class="form-text">
+                                Un élément actif peut être proposé dans les listes de sélection de l'application.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <span class="required-note"><span class="required-mark">*</span> Champs obligatoires</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ annulation }}" class="btn btn-cancel">Annuler</a>
+                            <button type="submit" class="btn btn-save">
+                                Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <small class="text-muted">E2C-MENAET · Gestion du catalogue de référence</small>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const description = document.getElementById('description');
+    const counter = document.getElementById('description-count');
+
+    if (description && counter) {
+        const updateCounter = function () {
+            counter.textContent = description.value.length;
+        };
+        description.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace apprenti - Association du dossier{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width: 850px;">
+    <div class="card shadow-sm border-warning">
+        <div class="card-body p-4">
+            <h1 class="h3">Votre dossier apprenti n'est pas encore associé</h1>
+            <p class="mt-3">
+                Votre compte est reconnu, mais aucun dossier candidat ne lui est associé.
+                Pour protéger vos informations personnelles, les données de candidature,
+                de rendez-vous et de suivi ne peuvent pas être affichées.
+            </p>
+            <p>Veuillez contacter le gestionnaire de la plateforme pour faire vérifier cette association.</p>
+            <a class="btn btn-outline-primary" href="{{ path('app_logout') }}">Se déconnecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

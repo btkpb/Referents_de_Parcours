@@ -1,0 +1,356 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - E2C-MENAET{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .e2c-dashboard {
+            --navy: #12345a;
+            --blue: #2563a6;
+            color: #26384d;
+        }
+
+        .e2c-dashboard .hero {
+            background: linear-gradient(120deg, #102b4e, #2563a6);
+            color: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(16,43,78,.15);
+        }
+
+        .e2c-dashboard .eyebrow {
+            font-size: .75rem;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            opacity: .8;
+            font-weight: 700;
+        }
+
+        .e2c-dashboard .hero h1 {
+            color: #ffffff !important;
+            font-weight: 800;
+            letter-spacing: -.03em;
+        }
+
+        .e2c-dashboard .switch-design {
+            display: inline-block;
+            padding: 11px 15px;
+            border: 1px solid rgba(255,255,255,.6);
+            border-radius: 10px;
+            color: white;
+            background: rgba(255,255,255,.12);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .e2c-dashboard .switch-design:hover {
+            background: white;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .section-title {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .e2c-dashboard .stat-card {
+            height: 100%;
+            padding: 21px;
+            background: white;
+            border: 1px solid #e6edf5;
+            border-radius: 16px;
+            box-shadow: 0 5px 18px rgba(25,50,80,.05);
+        }
+
+        .e2c-dashboard .stat-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            background: #eaf2fb;
+            color: #225b91;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+
+        .e2c-dashboard .stat-number {
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .e2c-dashboard .stat-label {
+            font-size: .86rem;
+            color: #718096;
+        }
+
+        .e2c-dashboard .action-card {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            height: 100%;
+            padding: 15px;
+            border: 1px solid #e6edf5;
+            border-radius: 14px;
+            background: #fff;
+            color: #26384d;
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+        .e2c-dashboard .action-card:hover {
+            transform: translateY(-3px);
+            border-color: #8bb9e1;
+            background: #f7fbff;
+            box-shadow: 0 8px 20px rgba(25,50,80,.07);
+        }
+
+        .e2c-dashboard .action-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: grid;
+            place-items: center;
+            background: #edf4fc;
+            border-radius: 12px;
+            font-size: 1.15rem;
+        }
+
+        .e2c-dashboard .action-title {
+            display: block;
+            font-weight: 700;
+            font-size: .92rem;
+        }
+
+        .e2c-dashboard .action-description {
+            display: block;
+            margin-top: 3px;
+            color: #7b899b;
+            font-size: .77rem;
+        }
+
+        .e2c-dashboard .footer-note {
+            color: #8290a0;
+            font-size: .8rem;
+        }
+
+        @media(max-width: 576px) {
+            .e2c-dashboard .hero { padding: 22px; }
+            .e2c-dashboard .hero h1 {
+            color: #ffffff !important; font-size: 1.6rem; }
+        }
+
+        @media(prefers-reduced-motion: reduce) {
+            .e2c-dashboard * { transition: none !important; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+{% set admin = is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') or is_granted('ROLE_SUPER_ADMIN') %}
+{% set gestionnaire = is_granted('ROLE_GESTIONNAIRE') %}
+{% set jury = is_granted('ROLE_JURY') %}
+{% set referent = is_granted('ROLE_REFERENT_PARCOURS') or is_granted('ROLE_REFERENT') %}
+{% set formateur = is_granted('ROLE_FORMATEUR') %}
+{% set medical = is_granted('ROLE_MEDICAL') %}
+{% set apprenti = is_granted('ROLE_APPRENTI') %}
+{% set responsable = admin or gestionnaire %}
+
+{% set roleLabel = 'Utilisateur' %}
+{% if admin %}
+    {% set roleLabel = 'Administrateur' %}
+{% elseif gestionnaire %}
+    {% set roleLabel = 'Gestionnaire' %}
+{% elseif jury %}
+    {% set roleLabel = 'Membre du jury' %}
+{% elseif referent %}
+    {% set roleLabel = 'Référent de parcours' %}
+{% elseif formateur %}
+    {% set roleLabel = 'Formateur' %}
+{% elseif medical %}
+    {% set roleLabel = 'Personnel médical' %}
+{% elseif apprenti %}
+    {% set roleLabel = 'Apprenti' %}
+{% endif %}
+
+<div class="e2c-dashboard">
+<section class="hero mb-4">
+        <div class="eyebrow mb-2">E2C-MENAET · Formation et insertion</div>
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <h1 class="mb-2">Bienvenue dans votre espace</h1>
+                <p class="mb-2 opacity-75" style="color: #ffffff !important;">
+                    Retrouvez vos outils de travail et pilotez vos activités.
+                </p>
+                <div class="small">
+                    <strong>{{ roleLabel }}</strong>
+                    {% if app.user %} · {{ app.user.userIdentifier }}{% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a class="switch-design" href="{{ path('dashboard', {design: 'classique'}) }}">
+                    ↶ Utiliser le design classique
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% if responsable %}
+        <h2 class="section-title h5 mb-3">Vue d'ensemble</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">♙</div>
+                    <div class="stat-number">{{ stats.candidats|default(0) }}</div>
+                    <div class="stat-label">Candidats enregistrés</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">▣</div>
+                    <div class="stat-number">{{ stats.entretiens|default(0) }}</div>
+                    <div class="stat-label">Entretiens enregistrés</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">✚</div>
+                    <div class="stat-number">{{ stats.visites|default(0) }}</div>
+                    <div class="stat-label">Visites médicales enregistrées</div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon">✓</div>
+                    <div class="stat-number">{{ stats.admissions|default(0) }}</div>
+                    <div class="stat-label">Candidats admis</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <h2 class="section-title h5 mb-3">Mes accès rapides</h2>
+    <div class="row g-3">
+
+        {% if responsable %}
+            {% set links = [
+                {route:'candidat_index', icon:'♙', title:'Candidatures', desc:'Gestion des candidats'},
+                {route:'admin_campagnes_index', icon:'▦', title:'Campagnes', desc:'Paramètres de recrutement'},
+                {route:'recruitment_interviews', icon:'▣', title:'Entretiens', desc:'Planification et évaluations'},
+                {route:'medical_index', icon:'✚', title:'Visites médicales', desc:'Gestion des aptitudes'},
+                {route:'recruitment_admissions', icon:'✓', title:'Admissions', desc:'Décisions d’admission'},
+                {route:'annuaire', icon:'☷', title:'Annuaire des admis', desc:'Répertoire des apprentis'},
+                {route:'followup_index', icon:'⌁', title:'Suivi des parcours', desc:'Accompagnement des apprentis'},
+                {route:'app_etablissements_list', icon:'⌂', title:'Établissements', desc:'Centres de formation'},
+                {route:'app_metiers_list', icon:'⚒', title:'Métiers', desc:'Catalogue des métiers'},
+                {route:'evaluation_apprenti_index', icon:'★', title:'Évaluations', desc:'Bilans pédagogiques'},
+                {route:'admin_catalogue_index', icon:'▤', title:'Catalogue', desc:'Administration des référentiels'},
+                {route:'public_inscription', icon:'＋', title:'Inscription publique', desc:'Formulaire de candidature'}
+            ] %}
+            {% for link in links %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(link.route) }}">
+                        <span class="action-icon">{{ link.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ link.title }}</span>
+                            <span class="action-description">{{ link.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+
+            {% if admin %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path('admin_users_index') }}">
+                        <span class="action-icon">♧</span>
+                        <span>
+                            <span class="action-title">Utilisateurs et accès</span>
+                            <span class="action-description">Gestion des comptes et profils</span>
+                        </span>
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if jury %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('recruitment_interviews') }}">
+                    <span class="action-icon">▣</span>
+                    <span>
+                        <span class="action-title">Mes entretiens</span>
+                        <span class="action-description">Candidats affectés et évaluations</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if referent or formateur %}
+            {% for item in [
+                {route:'annuaire', icon:'☷', title:'Annuaire des apprentis', desc:'Consulter les apprentis'},
+                {route:'followup_index', icon:'⌁', title:'Suivi des parcours', desc:'Bilans et accompagnement'},
+                {route:'evaluation_apprenti_index', icon:'★', title:'Évaluations', desc:'Suivi pédagogique'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if medical %}
+            <div class="col-md-6 col-xl-4">
+                <a class="action-card" href="{{ path('medical_index') }}">
+                    <span class="action-icon">✚</span>
+                    <span>
+                        <span class="action-title">Espace médical</span>
+                        <span class="action-description">Accès aux dossiers médicaux autorisés</span>
+                    </span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if apprenti %}
+            {% for item in [
+                {route:'apprenti_accueil', icon:'⌂', title:'Mon espace apprenti', desc:'Mon espace personnel'},
+                {route:'apprenti_profil', icon:'♙', title:'Mon profil', desc:'Mes informations'},
+                {route:'apprenti_parcours', icon:'⌁', title:'Mon parcours', desc:'Ma progression'},
+                {route:'apprenti_rendez_vous', icon:'▣', title:'Mes rendez-vous', desc:'Mes prochains rendez-vous'},
+                {route:'apprenti_evaluations', icon:'★', title:'Mes évaluations', desc:'Mes résultats'},
+                {route:'apprenti_accompagnement', icon:'♡', title:'Mon accompagnement', desc:'Mon suivi personnel'},
+                {route:'apprenti_notifications', icon:'♢', title:'Mes notifications', desc:'Mes alertes et informations'}
+            ] %}
+                <div class="col-md-6 col-xl-4">
+                    <a class="action-card" href="{{ path(item.route) }}">
+                        <span class="action-icon">{{ item.icon }}</span>
+                        <span>
+                            <span class="action-title">{{ item.title }}</span>
+                            <span class="action-description">{{ item.desc }}</span>
+                        </span>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+
+    {% if not responsable and not jury and not referent and not formateur and not medical and not apprenti %}
+        <div class="alert alert-info mt-4">
+            Votre espace est en cours de configuration. Contactez un administrateur si un accès vous manque.
+        </div>
+    {% endif %}
+
+    <div class="footer-note text-center mt-4">
+        E2C-MENAET · Centraliser · Former · Accompagner · Insérer
+    </div>
+</div>
+{% endblock %}

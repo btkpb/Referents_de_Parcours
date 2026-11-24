@@ -1,0 +1,442 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Validation des comptes | E2C-MENAET{% endblock %}
+
+{% block body %}
+<style>
+    .e2c-requests {
+        --e2c-blue: #245B91;
+        --e2c-light: #5B9BD5;
+        --e2c-ink: #20354b;
+        --e2c-muted: #718096;
+        background: #f3f6fa;
+        min-height: 85vh;
+        padding: 28px 0 50px;
+    }
+
+    .e2c-requests .page-heading {
+        background: linear-gradient(120deg, #174675, #5B9BD5);
+        color: #fff;
+        border-radius: 18px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 25px rgba(36, 91, 145, .16);
+    }
+
+    .e2c-requests .page-heading h1 {
+        font-weight: 750;
+        letter-spacing: -.5px;
+    }
+
+    .e2c-requests .heading-subtitle {
+        color: rgba(255,255,255,.85);
+    }
+
+    .e2c-requests .stat-card {
+        background: #fff;
+        border: 1px solid #e7edf4;
+        border-radius: 15px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 3px 12px rgba(20, 50, 80, .04);
+    }
+
+    .e2c-requests .stat-label {
+        color: var(--e2c-muted);
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .e2c-requests .stat-number {
+        color: var(--e2c-ink);
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .e2c-requests .section-card {
+        background: #fff;
+        border: 1px solid #e6edf4;
+        border-radius: 17px;
+        box-shadow: 0 4px 16px rgba(20, 50, 80, .045);
+        overflow: hidden;
+    }
+
+    .e2c-requests .section-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #edf1f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .e2c-requests .request-item {
+        padding: 24px;
+        border-bottom: 1px solid #edf1f5;
+        transition: background .2s ease;
+    }
+
+    .e2c-requests .request-item:last-child {
+        border-bottom: 0;
+    }
+
+    .e2c-requests .request-item:hover {
+        background: #fbfdff;
+    }
+
+    .e2c-requests .identity-avatar {
+        width: 52px;
+        height: 52px;
+        flex: 0 0 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #e8f2fc;
+        color: var(--e2c-blue);
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .e2c-requests .request-name {
+        color: var(--e2c-ink);
+        font-size: 1.08rem;
+        font-weight: 750;
+        margin-bottom: 5px;
+    }
+
+    .e2c-requests .contact-line {
+        color: #5d6c7d;
+        font-size: .9rem;
+        overflow-wrap: anywhere;
+        margin-top: 7px;
+    }
+
+    .e2c-requests .request-id {
+        color: #8795a5;
+        font-size: .78rem;
+    }
+
+    .e2c-requests .pending-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff4dc;
+        color: #946200;
+        border: 1px solid #f4e2b9;
+        border-radius: 30px;
+        padding: 6px 11px;
+        font-size: .77rem;
+        font-weight: 700;
+    }
+
+    .e2c-requests .approval-panel {
+        background: #f7f9fc;
+        border: 1px solid #e8edf4;
+        border-radius: 13px;
+        padding: 18px;
+    }
+
+    .e2c-requests .form-label {
+        color: #354b62;
+        font-size: .86rem;
+        font-weight: 700;
+    }
+
+    .e2c-requests .form-select {
+        min-height: 44px;
+        border-color: #dce4ed;
+        border-radius: 9px;
+    }
+
+    .e2c-requests .form-select:focus {
+        border-color: var(--e2c-light);
+        box-shadow: 0 0 0 .2rem rgba(91,155,213,.15);
+    }
+
+    .e2c-requests .btn {
+        border-radius: 9px;
+        font-weight: 650;
+        padding: 9px 15px;
+    }
+
+    .e2c-requests .btn-approve {
+        background: #198754;
+        color: #fff;
+        border: 1px solid #198754;
+    }
+
+    .e2c-requests .btn-approve:hover {
+        background: #146c43;
+        color: #fff;
+    }
+
+    .e2c-requests .empty-state {
+        padding: 65px 20px;
+        text-align: center;
+    }
+
+    .e2c-requests .empty-icon {
+        width: 76px;
+        height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #e9f3fc;
+        color: var(--e2c-blue);
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    @media (max-width: 767px) {
+        .e2c-requests {
+            padding-top: 15px;
+        }
+
+        .e2c-requests .page-heading {
+            padding: 22px 18px;
+        }
+
+        .e2c-requests .request-item {
+            padding: 17px;
+        }
+
+        .e2c-requests .section-header {
+            padding: 17px;
+        }
+    }
+</style>
+
+<div class="e2c-requests">
+    <div class="container">
+
+        {# En-tête principal #}
+        <div class="page-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="small text-uppercase fw-bold mb-2" style="letter-spacing:1.5px;">
+                        E2C-MENAET / Administration
+                    </div>
+                    <h1 class="h2 mb-2 text-white">Validation des comptes</h1>
+                    <p class="heading-subtitle mb-0">
+                        Gestion et validation des demandes d'accès à la plateforme.
+                    </p>
+                </div>
+                <a href="{{ path('admin_users_index') }}"
+                   class="btn btn-light">
+                    Retour à la gestion des utilisateurs
+                </a>
+            </div>
+        </div>
+
+        {# Messages système #}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show shadow-sm">
+                    {{ message }}
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Indicateurs #}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Demandes en attente</div>
+                    <div class="stat-number">{{ demandes|length }}</div>
+                    <div class="small text-muted mt-1">Comptes à examiner</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Validation administrative</div>
+                    <div class="fw-bold text-primary fs-5">Obligatoire</div>
+                    <div class="small text-muted mt-1">Avant toute activation</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label mb-2">Attribution des profils</div>
+                    <div class="fw-bold text-success fs-5">Contrôlée</div>
+                    <div class="small text-muted mt-1">Réservée aux administrateurs autorisés</div>
+                </div>
+            </div>
+        </div>
+
+        {# Liste des demandes #}
+        <div class="section-card">
+            <div class="section-header">
+                <div>
+                    <h2 class="h5 fw-bold mb-1" style="color:#20354b;">
+                        Demandes de création de comptes
+                    </h2>
+                    <p class="small text-muted mb-0">
+                        Consultez les informations et prenez une décision pour chaque demande.
+                    </p>
+                </div>
+                <span class="badge rounded-pill text-bg-warning px-3 py-2">
+                    {{ demandes|length }} en attente
+                </span>
+            </div>
+
+            {% for demande in demandes %}
+                <div class="request-item">
+                    <div class="row g-4 align-items-start">
+
+                        {# Identité du demandeur #}
+                        <div class="col-lg-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="identity-avatar">
+                                    {{ demande.prenoms|first|upper }}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="request-name">
+                                        {{ demande.nom }} {{ demande.prenoms }}
+                                    </div>
+                                    <span class="pending-label">
+                                        En attente de validation
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="contact-line">
+                                <strong>E-mail :</strong> {{ demande.email }}
+                            </div>
+                            <div class="contact-line">
+                                <strong>Téléphone :</strong>
+                                {{ demande.telephone ?: 'Non renseigné' }}
+                            </div>
+                            <div class="request-id mt-3">
+                                Référence du compte : #{{ demande.id }}
+                            </div>
+                        </div>
+
+                        {# Traitement administratif #}
+                        <div class="col-lg-8">
+                            <div class="approval-panel">
+                                <div class="fw-bold mb-3" style="color:#20354b;">
+                                    Décision de l'administrateur
+                                </div>
+
+                                <form method="post"
+                                      action="{{ path('admin_users_approve', {id: demande.id}) }}"
+                                      class="approval-form"
+                                      data-candidat-id="candidat_{{ demande.id }}">
+
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('approve_user_' ~ demande.id) }}">
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label"
+                                                   for="profil_{{ demande.id }}">
+                                                Profil à attribuer *
+                                            </label>
+                                            <select class="form-select profil-select"
+                                                    id="profil_{{ demande.id }}"
+                                                    name="profil" required>
+                                                <option value="">Choisir un profil</option>
+                                                {% for cle, libelle in profils %}
+                                                    <option value="{{ cle }}">{{ libelle }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 candidat-field"
+                                             id="bloc_candidat_{{ demande.id }}"
+                                             hidden>
+                                            <label class="form-label"
+                                                   for="candidat_{{ demande.id }}">
+                                                Dossier candidat *
+                                            </label>
+                                            <select class="form-select candidat-select"
+                                                    id="candidat_{{ demande.id }}"
+                                                    name="candidat_id">
+                                                <option value="">Sélectionner un candidat</option>
+                                                {% for candidat in candidats %}
+                                                    <option value="{{ candidat.id }}">
+                                                        {{ candidat.nom }} {{ candidat.prenoms }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-2 mt-4">
+                                        <button type="submit" class="btn btn-approve">
+                                            Approuver et activer le compte
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="border-top mt-3 pt-3">
+                                    <form method="post"
+                                          action="{{ path('admin_users_refuse', {id: demande.id}) }}"
+                                          onsubmit="return confirm('Confirmez-vous le refus de cette demande ? Le compte restera conservé mais désactivé.');">
+                                        <input type="hidden" name="_token"
+                                               value="{{ csrf_token('refuse_user_' ~ demande.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            Refuser cette demande
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">✓</div>
+                    <h3 class="h5 fw-bold" style="color:#20354b;">
+                        Aucune demande en attente
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Toutes les demandes de création de comptes ont été traitées.
+                    </p>
+                    <a href="{{ path('admin_users_index') }}"
+                       class="btn btn-outline-primary">
+                        Consulter les utilisateurs
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4 small text-muted">
+            E2C-MENAET — Administration des accès utilisateurs
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.approval-form').forEach(function (form) {
+        const profil = form.querySelector('.profil-select');
+        const candidatId = form.dataset.candidatId;
+        const blocCandidat = document.getElementById(
+            'bloc_' + candidatId
+        );
+        const candidat = form.querySelector('.candidat-select');
+
+        function actualiserCandidat() {
+            const estApprenti = profil.value === 'apprenti';
+
+            blocCandidat.hidden = !estApprenti;
+            candidat.required = estApprenti;
+
+            if (!estApprenti) {
+                candidat.value = '';
+            }
+        }
+
+        profil.addEventListener('change', actualiserCandidat);
+        actualiserCandidat();
+    });
+});
+</script>
+{% endblock %}

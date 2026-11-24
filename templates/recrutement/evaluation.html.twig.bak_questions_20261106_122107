@@ -1,0 +1,194 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">Évaluation du candidat par le jury</h3>
+                </div>
+
+                <div class="card-body p-4">
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    {% endfor %}
+
+                    <div class="mb-4">
+                        <h5 class="text-primary">Informations du candidat</h5>
+                        <p class="mb-1">
+                            <strong>Nom :</strong>
+                            {{ entretien.candidat ? entretien.candidat.nom : 'Non renseigné' }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Prénoms :</strong>
+                            {{ entretien.candidat ? entretien.candidat.prenoms : 'Non renseignés' }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Date de l'entretien :</strong>
+                            {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : 'Non renseignée' }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Lieu :</strong> {{ entretien.lieu }}
+                        </p>
+                    </div>
+
+                    <hr>
+
+                    <h5 class="text-primary mb-3">Grille officielle de notation sur 40 points</h5>
+
+                    <div class="alert alert-primary d-flex justify-content-between align-items-center mb-3">
+    <strong>Total de l'évaluation</strong>
+    <span class="fs-4 fw-bold">
+        <span id="evaluation-total">0</span> / 40 points
+    </span>
+</div>
+<form method="post">
+                        <input type="hidden" name="_token"
+                               value="{{ csrf_token('evaluation_' ~ entretien.id) }}">
+
+                        <div class="row g-3">
+
+                            {% set criteres = [
+                                ['identification', 'Identification', 3, 'scoreIdentification'],
+                                ['motivation', 'Motivation', 8, 'scoreMotivation'],
+                                ['freins', 'Freins à l’insertion', 15, 'scoreFreins'],
+                                ['organisation', 'Organisation', 2, 'scoreOrganisation'],
+                                ['anticipation', 'Anticipation', 2, 'scoreAnticipation'],
+                                ['relations', 'Relations interpersonnelles', 2, 'scoreRelations'],
+                                ['projet', 'Projet professionnel', 4, 'scoreProjet'],
+                                ['premiereImpression', 'Première impression', 2, 'scorePremiereImpression'],
+                                ['expressionOrale', 'Expression orale', 2, 'scoreExpressionOrale']
+                            ] %}
+
+                            {% for critere in criteres %}
+                                {% set cle = critere[0] %}
+                                {% set libelle = critere[1] %}
+                                {% set maximum = critere[2] %}
+                                {% set propriete = critere[3] %}
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="score_{{ cle }}">
+                                        {{ libelle }}
+                                        <span class="text-muted">(maximum {{ maximum }} points)</span>
+                                    </label>
+
+                                    <input
+                                        id="score_{{ cle }}"
+                                        class="form-control"
+                                        type="number"
+                                        name="evaluation[{{ cle }}]"
+                                        min="0"
+                                        max="{{ maximum }}"
+                                        step="0.5"
+                                        required
+                                        value="{{ attribute(evaluation, propriete) }}"
+                                    >
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <strong>Barème :</strong> les notes peuvent être attribuées par demi-point.
+                            Le total maximal est de 40 points.
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" for="decision">
+                                Avis du jury
+                            </label>
+
+                            <select class="form-select" id="decision"
+                                    name="evaluation[decision]" required>
+                                <option value="EN_ATTENTE"
+                                    {{ evaluation.decision == 'EN_ATTENTE' ? 'selected' : '' }}>
+                                    En attente
+                                </option>
+                                <option value="FAVORABLE"
+                                    {{ evaluation.decision == 'FAVORABLE' ? 'selected' : '' }}>
+                                    Favorable
+                                </option>
+                                <option value="DEFAVORABLE"
+                                    {{ evaluation.decision == 'DEFAVORABLE' ? 'selected' : '' }}>
+                                    Défavorable
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" for="observations">
+                                Observations et recommandations du jury
+                            </label>
+
+                            <textarea
+                                id="observations"
+                                name="evaluation[observations]"
+                                class="form-control"
+                                rows="4"
+                                placeholder="Saisir les observations du jury..."
+                            >{{ evaluation.observations }}</textarea>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                Enregistrer l'évaluation
+                            </button>
+
+                            <a href="{{ path('recruitment_interviews') }}"
+                               class="btn btn-outline-secondary">
+                                Retour aux entretiens
+                            </a>
+                        </div>
+                    <script>
+(function () {
+    const notes = document.querySelectorAll('input[name^="evaluation["]');
+    const affichage = document.getElementById('evaluation-total');
+
+    if (!affichage) {
+        return;
+    }
+
+    function calculerTotal() {
+        let total = 0;
+
+        notes.forEach(function (champ) {
+            const valeur = parseFloat(champ.value);
+
+            if (champ.value.trim() !== '' && Number.isFinite(valeur)) {
+                total += valeur;
+            }
+        });
+
+        affichage.textContent = Number.isInteger(total)
+            ? total
+            : total.toFixed(1);
+    }
+
+    notes.forEach(function (champ) {
+        champ.addEventListener('input', calculerTotal);
+        champ.addEventListener('change', calculerTotal);
+    });
+
+    calculerTotal();
+})();
+</script>
+</form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

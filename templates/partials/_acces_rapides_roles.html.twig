@@ -1,0 +1,273 @@
+{% if app.user %}
+{% set profilRapide = 'Espace utilisateur' %}
+
+{% if is_granted('ROLE_SUPER_ADMIN') %}
+    {% set profilRapide = 'Super administrateur' %}
+{% elseif is_granted('ROLE_ADMINISTRATEUR') %}
+    {% set profilRapide = 'Administrateur' %}
+{% elseif is_granted('ROLE_ADMIN') %}
+    {% set profilRapide = 'Administrateur operationnel' %}
+{% elseif is_granted('ROLE_GESTIONNAIRE') %}
+    {% set profilRapide = 'Gestionnaire' %}
+{% elseif is_granted('ROLE_JURY') %}
+    {% set profilRapide = 'Membre du jury' %}
+{% elseif is_granted('ROLE_MEDICAL') %}
+    {% set profilRapide = 'Personnel medical' %}
+{% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+    {% set profilRapide = 'Referent de parcours' %}
+{% elseif is_granted('ROLE_FORMATEUR') %}
+    {% set profilRapide = 'Formateur / maitre de stage' %}
+{% elseif is_granted('ROLE_APPRENTI') %}
+    {% set profilRapide = 'Apprenti' %}
+{% endif %}
+
+<section class="container-fluid px-3 px-lg-4 mt-4 mb-4" id="acces-rapides-par-role">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h2 class="h4 mb-1">Acces rapides</h2>
+            <p class="text-muted mb-0">Raccourcis adaptes a votre profil : {{ profilRapide }}.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% if is_granted('ROLE_SUPER_ADMIN') or is_granted('ROLE_ADMINISTRATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_users_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Gestion des utilisateurs</h3>
+                        <p class="text-muted small mb-0">Comptes et habilitations autorisees.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_configuration_email_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Configuration des e-mails</h3>
+                        <p class="text-muted small mb-0">Modifier le nom affiché lors de l'envoi des convocations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('email_information_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">E-mails d'information</h3>
+                        <p class="text-muted small mb-0">Envoyer des informations aux candidats et aux apprentis.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Administrer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Consulter les dossiers de recrutement autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter le planning et les evaluations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les visites selon les habilitations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Acceder au module de suivi existant.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_ADMIN') or is_granted('ROLE_GESTIONNAIRE') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('candidat_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Candidatures</h3>
+                        <p class="text-muted small mb-0">Rechercher et consulter un candidat.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens</h3>
+                        <p class="text-muted small mb-0">Consulter les entretiens planifies.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Suivre les dossiers medicaux autorises.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les apprentis admis.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_configuration_email_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Configuration des e-mails</h3>
+                        <p class="text-muted small mb-0">Modifier le nom affiché lors de l'envoi des convocations.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('email_information_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">E-mails d'information</h3>
+                        <p class="text-muted small mb-0">Envoyer des informations aux candidats et aux apprentis.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('admin_catalogue_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Etablissements et metiers</h3>
+                        <p class="text-muted small mb-0">Gerer les catalogues de formation.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi des apprentis</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_JURY') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('recruitment_interviews') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes entretiens</h3>
+                        <p class="text-muted small mb-0">Acceder au module des entretiens.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_MEDICAL') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('medical_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Visites medicales</h3>
+                        <p class="text-muted small mb-0">Enregistrer et consulter les visites autorisees.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_REFERENT') or is_granted('ROLE_REFERENT_PARCOURS') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Retrouver les apprentis a accompagner.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Entretiens et suivis</h3>
+                        <p class="text-muted small mb-0">Renseigner les suivis autorises.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_FORMATEUR') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('annuaire') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Annuaire des apprentis</h3>
+                        <p class="text-muted small mb-0">Rechercher un apprenti.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('followup_index') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Suivi</h3>
+                        <p class="text-muted small mb-0">Consulter les suivis accessibles.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elseif is_granted('ROLE_APPRENTI') %}
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_profil') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon profil</h3>
+                        <p class="text-muted small mb-0">Consulter mes informations personnelles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_rendez_vous') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes rendez-vous</h3>
+                        <p class="text-muted small mb-0">Consulter mes prochains rendez-vous.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_parcours') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon parcours</h3>
+                        <p class="text-muted small mb-0">Suivre les etapes de mon parcours.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_evaluations') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mes evaluations</h3>
+                        <p class="text-muted small mb-0">Consulter mes evaluations disponibles.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_accompagnement') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Mon accompagnement</h3>
+                        <p class="text-muted small mb-0">Consulter les informations de suivi.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-4">
+                <a href="{{ path('apprenti_notifications') }}" class="card h-100 text-decoration-none shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6">Notifications</h3>
+                        <p class="text-muted small mb-0">Lire mes notifications.</p>
+                    </div>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}

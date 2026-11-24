@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des placements en entreprise{% endblock %}
+
+{% block body %}
+<style>
+.placements-page { color:#26374a; }
+.placements-page .page-header {
+    background:linear-gradient(120deg,#123c68,#2468a5);
+    border-radius:18px;padding:28px 30px;color:#fff;
+    box-shadow:0 8px 24px rgba(20,61,102,.16);
+}
+.placements-page .page-header h1 { color:#fff!important;font-weight:750;font-size:1.7rem; }
+.placements-page .page-header p { color:rgba(255,255,255,.82);margin:0; }
+.placements-page .btn-new { background:#fff;color:#174c83;border:0;border-radius:9px;font-weight:700;padding:11px 17px; }
+.placements-page .stat-card,.placements-page .panel {
+    background:#fff;border:1px solid #e8edf3;border-radius:14px;
+    box-shadow:0 3px 12px rgba(25,50,75,.045);
+}
+.placements-page .stat-card { padding:19px;height:100%; }
+.placements-page .stat-label { color:#778493;font-size:.83rem;font-weight:650; }
+.placements-page .stat-number { color:#243b53;font-size:1.8rem;font-weight:800; }
+.placements-page .panel { overflow:hidden; }
+.placements-page .panel-heading { padding:18px 21px;border-bottom:1px solid #edf0f4; }
+.placements-page .panel-heading h5 { margin:0;color:#263f59;font-size:1rem;font-weight:750; }
+.placements-page .table { font-size:.89rem; }
+.placements-page .table thead th { background:#f5f8fc;color:#607185;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;padding:14px;white-space:nowrap; }
+.placements-page .table td { padding:14px;vertical-align:middle; }
+.placements-page .badge-status { border-radius:20px;padding:6px 10px;font-size:.75rem;font-weight:700; }
+.placements-page .status-active { background:#e5f5eb;color:#167344; }
+.placements-page .status-ended { background:#eef0f3;color:#596575; }
+.placements-page .status-cancelled { background:#fce9e9;color:#a33333; }
+</style>
+
+<div class="container-fluid placements-page py-4">
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1><i class="bi bi-building-check me-2"></i>Placements en entreprise</h1>
+            <p>Gestion des affectations des apprentis admis dans les entreprises d’accueil</p>
+        </div>
+        <a href="{{ path('admin_placements_new') }}" class="btn btn-new">
+            <i class="bi bi-plus-circle me-1"></i> Nouveau placement
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-label">Tous les placements</div>
+                <div class="stat-number">{{ statistiques.total }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-label">Placements en cours</div>
+                <div class="stat-number text-success">{{ statistiques.enCours }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-label">Placements terminés</div>
+                <div class="stat-number">{{ statistiques.terminees }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-heading d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5>Historique des placements</h5>
+            <form method="get" class="d-flex gap-2">
+                <select name="statut" class="form-select form-select-sm" aria-label="Filtrer par statut">
+                    <option value="">Tous les statuts</option>
+                    <option value="EN_COURS" {{ statutFiltre == 'EN_COURS' ? 'selected' }}>En cours</option>
+                    <option value="TERMINEE" {{ statutFiltre == 'TERMINEE' ? 'selected' }}>Terminés</option>
+                    <option value="ANNULEE" {{ statutFiltre == 'ANNULEE' ? 'selected' }}>Annulés</option>
+                </select>
+                <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ path('admin_placements_index') }}">Réinitialiser</a>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Apprenti</th>
+                        <th>Entreprise d'accueil</th>
+                        <th>Chantier</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Statut</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for placement in placements %}
+                    <tr>
+                        <td>
+                            <strong>{{ placement.candidat.nom }} {{ placement.candidat.prenoms }}</strong>
+                            <div class="text-muted small">{{ placement.candidat.numero }}</div>
+                        </td>
+                        <td>{{ placement.entreprise.raisonSociale }}</td>
+                        <td>{{ placement.chantier ? placement.chantier.nom : 'Non précisé' }}</td>
+                        <td>{{ placement.dateDebut|date('d/m/Y') }}</td>
+                        <td>{{ placement.dateFin ? placement.dateFin|date('d/m/Y') : '—' }}</td>
+                        <td>
+                            {% if placement.statut == 'EN_COURS' and placement.dateFin is null %}
+                                <span class="badge-status status-active">En cours</span>
+                            {% elseif placement.statut == 'TERMINEE' %}
+                                <span class="badge-status status-ended">Terminé</span>
+                            {% else %}
+                                <span class="badge-status status-cancelled">{{ placement.statut }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ path('admin_placements_show', {id: placement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                Consulter
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="text-center text-muted py-5">Aucun placement enregistré pour le moment.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if nombrePages > 1 %}
+            <div class="p-3 d-flex justify-content-between align-items-center">
+                <span class="small text-muted">{{ total }} placement(s) — page {{ page }} sur {{ nombrePages }}</span>
+                <div class="btn-group">
+                    {% if page > 1 %}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ path('admin_placements_index', {page: page - 1, statut: statutFiltre}) }}">Précédent</a>
+                    {% endif %}
+                    {% if page < nombrePages %}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ path('admin_placements_index', {page: page + 1, statut: statutFiltre}) }}">Suivant</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

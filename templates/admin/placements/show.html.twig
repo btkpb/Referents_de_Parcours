@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du placement en entreprise{% endblock %}
+
+{% block body %}
+<style>
+.placement-show { max-width:1100px;margin:auto;color:#26374a; }
+.placement-show .page-header { background:linear-gradient(120deg,#123c68,#2468a5);border-radius:16px;padding:27px 30px;color:#fff; }
+.placement-show .page-header h1 { color:#fff!important;font-size:1.6rem;font-weight:750;margin:8px 0; }
+.placement-show .page-header p { color:rgba(255,255,255,.82);margin:0; }
+.placement-show .info-card { background:#fff;border:1px solid #e5ebf2;border-radius:13px;overflow:hidden;box-shadow:0 4px 14px rgba(28,48,73,.045);height:100%; }
+.placement-show .info-title { background:#f8fafc;padding:15px 20px;border-bottom:1px solid #e8edf3;font-weight:750;color:#20364d; }
+.placement-show .info-body { padding:20px; }
+.placement-show .info-label { color:#778493;font-size:.8rem;font-weight:650;margin-bottom:4px; }
+.placement-show .info-value { color:#26374a;font-weight:600;margin-bottom:17px;overflow-wrap:anywhere; }
+</style>
+
+<div class="container-fluid placement-show py-4">
+    <div class="page-header mb-4">
+        <a href="{{ path('admin_placements_index') }}" class="text-white text-decoration-none small"><i class="bi bi-arrow-left me-1"></i> Retour à la liste</a>
+        <h1><i class="bi bi-building-check me-2"></i>Fiche du placement</h1>
+        <p>Placement n° {{ placement.id }} — {{ placement.candidat.nom }} {{ placement.candidat.prenoms }}</p>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="info-title"><i class="bi bi-person-badge me-2 text-primary"></i>Apprenti</div>
+                <div class="info-body">
+                    <div class="info-label">Nom et prénoms</div>
+                    <div class="info-value">{{ placement.candidat.nom }} {{ placement.candidat.prenoms }}</div>
+                    <div class="info-label">Numéro de candidature</div>
+                    <div class="info-value">{{ placement.candidat.numero }}</div>
+                    <div class="info-label">Métier</div>
+                    <div class="info-value">{{ placement.candidat.metier ?: 'Non précisé' }}</div>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ path('candidat_show', {id: placement.candidat.id}) }}">Consulter le dossier apprenti</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="info-title"><i class="bi bi-buildings me-2 text-primary"></i>Entreprise d’accueil</div>
+                <div class="info-body">
+                    <div class="info-label">Raison sociale</div>
+                    <div class="info-value">{{ placement.entreprise.raisonSociale }}</div>
+                    <div class="info-label">Ville</div>
+                    <div class="info-value">{{ placement.entreprise.ville ?: 'Non précisée' }}</div>
+                    <div class="info-label">Téléphone</div>
+                    <div class="info-value">{{ placement.entreprise.telephone ?: 'Non renseigné' }}</div>
+                    <div class="info-label">Chantier</div>
+                    <div class="info-value">{{ placement.chantier ? placement.chantier.nom ~ ' — ' ~ placement.chantier.localisation : 'Aucun chantier précisé' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="info-card">
+                <div class="info-title"><i class="bi bi-calendar-check me-2 text-primary"></i>Dates et état du placement</div>
+                <div class="info-body row">
+                    <div class="col-md-3">
+                        <div class="info-label">Date de début</div>
+                        <div class="info-value">{{ placement.dateDebut|date('d/m/Y') }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-label">Date de fin</div>
+                        <div class="info-value">{{ placement.dateFin ? placement.dateFin|date('d/m/Y') : 'Non clôturé' }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-label">Statut</div>
+                        <div class="info-value">
+                            {% if placement.statut == 'EN_COURS' and placement.dateFin is null %}
+                                <span class="badge bg-success">En cours</span>
+                            {% elseif placement.statut == 'TERMINEE' %}
+                                <span class="badge bg-secondary">Terminé</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ placement.statut }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-label">Enregistré le</div>
+                        <div class="info-value">{{ placement.createdAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-label">Observations</div>
+                        <div class="info-value mb-0">{{ placement.observations ?: 'Aucune observation.' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 d-flex flex-wrap justify-content-between gap-2">
+            <a href="{{ path('admin_placements_index') }}" class="btn btn-outline-secondary">Retour à la liste</a>
+            {% if placement.estActive %}
+                <form method="post" action="{{ path('admin_placements_close', {id: placement.id}) }}"
+                      onsubmit="return confirm('Confirmez-vous la clôture de ce placement ? L’historique sera conservé.');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('placement_cloturer_' ~ placement.id) }}">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check2-circle me-1"></i> Clôturer le placement
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

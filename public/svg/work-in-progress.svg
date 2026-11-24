@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="titre">
+  <title id="titre">Calendrier du recrutement et de la formation</title>
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="bleu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" rx="32" fill="url(#fond)"/>
+  <circle cx="690" cy="110" r="75" fill="#fff" opacity=".5"/>
+  <circle cx="100" cy="490" r="90" fill="#fff" opacity=".45"/>
+
+  <rect x="115" y="65" width="570" height="455" rx="26" fill="#fff"/>
+  <rect x="115" y="65" width="570" height="105" rx="26" fill="url(#bleu)"/>
+  <path d="M115 145 H685 V170 H115Z" fill="url(#bleu)"/>
+
+  <text x="400" y="112" text-anchor="middle" font-family="Arial,sans-serif" font-size="29" font-weight="bold" fill="#fff">CHRONOGRAMME</text>
+  <text x="400" y="143" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#dbeafe">Les grandes étapes du parcours</text>
+
+  <line x1="210" y1="220" x2="210" y2="440" stroke="#cbd5e1" stroke-width="7" stroke-linecap="round"/>
+
+  <circle cx="210" cy="225" r="20" fill="#2563eb" stroke="#dbeafe" stroke-width="7"/>
+  <rect x="255" y="195" width="350" height="60" rx="12" fill="#eff6ff"/>
+  <text x="280" y="220" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#1e40af">01. Candidatures</text>
+  <text x="280" y="241" font-family="Arial,sans-serif" font-size="13" fill="#475569">Ouverture et réception des dossiers</text>
+
+  <circle cx="210" cy="295" r="20" fill="#7c3aed" stroke="#ede9fe" stroke-width="7"/>
+  <rect x="255" y="265" width="350" height="60" rx="12" fill="#f5f3ff"/>
+  <text x="280" y="290" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#6d28d9">02. Étude des dossiers</text>
+  <text x="280" y="311" font-family="Arial,sans-serif" font-size="13" fill="#475569">Vérification et présélection</text>
+
+  <circle cx="210" cy="365" r="20" fill="#0f766e" stroke="#ccfbf1" stroke-width="7"/>
+  <rect x="255" y="335" width="350" height="60" rx="12" fill="#f0fdfa"/>
+  <text x="280" y="360" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#0f766e">03. Sélection</text>
+  <text x="280" y="381" font-family="Arial,sans-serif" font-size="13" fill="#475569">Entretiens et décisions d'admission</text>
+
+  <circle cx="210" cy="435" r="20" fill="#d97706" stroke="#fef3c7" stroke-width="7"/>
+  <rect x="255" y="405" width="350" height="60" rx="12" fill="#fffbeb"/>
+  <text x="280" y="430" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#b45309">04. Début des formations</text>
+  <text x="280" y="451" font-family="Arial,sans-serif" font-size="13" fill="#475569">Démarrage du parcours professionnel</text>
+
+  <text x="400" y="495" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#64748b">Planifier • Sélectionner • Former • Insérer</text>
+</svg>
